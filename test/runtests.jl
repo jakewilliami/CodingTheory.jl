@@ -8,7 +8,7 @@ include(joinpath(dirname(dirname(@__FILE__)), "src", "CodingTheory.jl"))
 
 using .CodingTheory
 using Test
-using BenchmarkTools
+using Polynomials
 
 @testset "CodingTheory.jl" begin
 	p = Polynomial([1, 1, 2, 0, 1, 2, 1])
