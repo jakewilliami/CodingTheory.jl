@@ -6,7 +6,6 @@
 
 # Adapted from Levenshtein.jl
 
-
 function levenshtein(source::AbstractString, target::AbstractString)
     return levenshtein(source, target, 1)
 end
@@ -77,5 +76,3 @@ function levenshtein!(
         end
     end
 end
-
-distance = levenshtein(s1, s2)
