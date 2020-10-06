@@ -3,16 +3,16 @@ uuid = "89c41d41-0018-4667-9435-0b7cbc9fb764"
 authors = ["Jake W. Ireland <jakewilliami@icloud.com> and contributors"]
 version = "0.1.0"
 
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Mods = "7475f97c-0381-53b1-977b-4c60186c8d62"
+Polynomials = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
+
 [compat]
-julia = "1.5"
+julia = "1.5, 2"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test"]
-
-[deps]
-LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-Mods = "7475f97c-0381-53b1-977b-4c60186c8d62"
-Polynomials = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
