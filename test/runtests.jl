@@ -29,6 +29,10 @@ using Polynomials
 	@test code_distance([[0,0,0,0,0],[1,0,1,0,1],[0,1,0,1,0],[1,1,1,1,1]]) == 2
 	@test code_distance([[0,0,0,0,0],[1,1,1,0,0],[0,0,0,1,1],[1,1,1,1,1],[1,0,0,1,1],[0,1,1,0,0]]) == 1
 	
+	@test Alphabet("123").Σ == [1, 2, 3]
+	@test Alphabet([1, 2, 3]).Σ == [1, 2, 3]
+	@test Alphabet(["1", "2", "3"]).Σ == [1, 2, 3]
+	
 end # end runtests
 
 # @btime test()
