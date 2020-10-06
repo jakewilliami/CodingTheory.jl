@@ -10,6 +10,8 @@ Polynomials = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
 
 [compat]
 julia = "1.5, 2"
+Mods = "1.2.4"
+Polynomials = "1.1.9"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
