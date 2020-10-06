@@ -8,11 +8,6 @@ using Polynomials
 using Mods
 using LinearAlgebra
 
-export Polynomial, coeffs
-export displaymatrix
-export mod
-export list_polys, multiplication_table, list_span, islinear
-
 function displaymatrix(M::AbstractArray)
     return show(IOContext(stdout, :limit => true, :compact => true, :short => true), "text/plain", M); print("\n")
 end
