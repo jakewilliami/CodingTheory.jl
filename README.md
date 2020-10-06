@@ -1,6 +1,7 @@
 <h1 align="center">
     CodingTheory.jl
 </h1>
+
 [![Code Style: Blue][code-style-img]][code-style-url] [![Build Status](https://travis-ci.com/jakewilliami/CodingTheory.jl.svg?branch=master)](https://travis-ci.com/jakewilliami/CodingTheory.jl) ![Project Status](https://img.shields.io/badge/status-maturing-green)
 
 ## Description
@@ -13,3 +14,6 @@ We assume that Alice and Bob communicate by sending sequences of symbols from a 
 </p>
 
 **Block codes** are codes in which Alice transmits words of a preditermined and fixed length.  A **code** is a subset *C&SubsetEqual;&Sigma;<sup>n</sup>*.
+
+[code-style-img]: https://img.shields.io/badge/code%20style-blue-4495d1.svg
+[code-style-url]: https://github.com/invenia/BlueStyle
