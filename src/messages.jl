@@ -31,4 +31,20 @@ end # end struct
 
 struct Messages
     ℳ::AbstractArray
+    length::Integer
+    
+    function Messages(ℳ::AbstractArray)
+        length = length(ℳ[1]) # choose arbitrary message in the list of messages
+        
+        new(ℳ, length)
+    end # end constructor function
+end
+
+#=
+n is the word length
+q is the number of symbols in the code
+M is the size/number of elements in the code
+=#
+function rate(q::Integer, M::Integer, n::Integer)
+    return log(q, M) / n
 end
