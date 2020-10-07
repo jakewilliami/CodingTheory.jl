@@ -7,12 +7,11 @@
 using Polynomials
 using Mods
 using LinearAlgebra
-
-function displaymatrix(M::AbstractArray)
-    return show(IOContext(stdout, :limit => true, :compact => true, :short => true), "text/plain", M); print("\n")
-end
+using RowEchelon
 
 Base.mod(p::Polynomial, n::Integer) = Polynomial(mod.(p.coeffs, n))
+RowEchelon.rref(M::AbstractArray, n::Integer) = mod.(Int.(RowEchelon.rref(M)), n)
+RowEchelon.rref!(M::AbstractArray, n::Integer) = mod.(Int.(RowEchelon.rref!(M)), n)
 
 @generated function list_polys(::Val{n}, m::Integer)::AbstractArray where {n}
     quote
