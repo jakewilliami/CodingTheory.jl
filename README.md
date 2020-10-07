@@ -75,6 +75,9 @@ true
 
 julia> code_distance([[0,0,0,0,0],[1,0,1,0,1],[0,1,0,1,0],[1,1,1,1,1]]) # gets the minimum distance between two vectors in an array of vectors
 2
+
+julia> rate(3, 5, 4) # the rate of the code which has 3 symbols, 5 words in the code, and word length of 4 (e.g., Σ = {A, B, C}, C = {ABBA,CABA,BBBB,CAAB,ACBB})
+0.3662433801794817
 ```
 
 [code-style-img]: https://img.shields.io/badge/code%20style-blue-4495d1.svg

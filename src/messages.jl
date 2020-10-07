@@ -39,3 +39,12 @@ struct Messages
         new(ℳ, length)
     end # end constructor function
 end
+
+#=
+n is the word length
+q is the number of symbols in the code
+M is the size/number of elements in the code
+=#
+function rate(q::Integer, M::Integer, n::Integer)
+    return log(q, M) / n
+end

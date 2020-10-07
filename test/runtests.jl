@@ -15,6 +15,8 @@ using RowEchelon
 	@test hamming_distance("ABC", "DBC") == 1
 	@test hamming_distance("ABC", "DEF") == 3
 	
+	@test rate(3, 5, 4) ≈ 0.3662433802
+	
 	p = Polynomial([1, 1, 2, 0, 1, 2, 1])
 	q = Polynomial([2, 1, 1])
 	a = Polynomial([0, 1, 0, 1, 0, 0, 1])
@@ -25,6 +27,8 @@ using RowEchelon
 	
 	@test rref([1 0 1 1 1; 1 1 1 0 1; 0 1 1 1 1]) == [1 0 0 -1 0; 0 1 0 -1 0; 0 0 1 2 1]
 	@test rref([1 0 1 1 1; 1 1 1 0 1; 0 1 1 1 1], 2) == [1 0 0 1 0; 0 1 0 1 0; 0 0 1 0 1]
+	# @test rref([1 0 1 0 1 0; 0 1 0 0 1 0; 1 1 1 1 1 1], 2) == [1 0 0 1 0 1; 0 1 0 0 1 0; 0 0 1 1 0 1]
+	@test rref([1 0 1 0 1 0; 0 1 0 0 1 0; 1 1 1 1 1 1], 2) == [1 0 1 0 1 0; 0 1 0 0 1 0; 0 0 0 1 1 1]
 	
 	@test multiplication_table(2, 3) == Polynomial[Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]); Polynomial([0]) Polynomial([1]) Polynomial([2]) Polynomial([0, 1]) Polynomial([1, 1]) Polynomial([2, 1]) Polynomial([0, 2]) Polynomial([1, 2]) Polynomial([2, 2]); Polynomial([0]) Polynomial([2]) Polynomial([1]) Polynomial([0, 2]) Polynomial([2, 2]) Polynomial([1, 2]) Polynomial([0, 1]) Polynomial([2, 1]) Polynomial([1, 1]); Polynomial([0]) Polynomial([0, 1]) Polynomial([0, 2]) Polynomial([0, 0, 1]) Polynomial([0, 1, 1]) Polynomial([0, 2, 1]) Polynomial([0, 0, 2]) Polynomial([0, 1, 2]) Polynomial([0, 2, 2]); Polynomial([0]) Polynomial([1, 1]) Polynomial([2, 2]) Polynomial([0, 1, 1]) Polynomial([1, 2, 1]) Polynomial([2, 0, 1]) Polynomial([0, 2, 2]) Polynomial([1, 0, 2]) Polynomial([2, 1, 2]); Polynomial([0]) Polynomial([2, 1]) Polynomial([1, 2]) Polynomial([0, 2, 1]) Polynomial([2, 0, 1]) Polynomial([1, 1, 1]) Polynomial([0, 1, 2]) Polynomial([2, 2, 2]) Polynomial([1, 0, 2]); Polynomial([0]) Polynomial([0, 2]) Polynomial([0, 1]) Polynomial([0, 0, 2]) Polynomial([0, 2, 2]) Polynomial([0, 1, 2]) Polynomial([0, 0, 1]) Polynomial([0, 2, 1]) Polynomial([0, 1, 1]); Polynomial([0]) Polynomial([1, 2]) Polynomial([2, 1]) Polynomial([0, 1, 2]) Polynomial([1, 0, 2]) Polynomial([2, 2, 2]) Polynomial([0, 2, 1]) Polynomial([1, 1, 1]) Polynomial([2, 0, 1]); Polynomial([0]) Polynomial([2, 2]) Polynomial([1, 1]) Polynomial([0, 2, 2]) Polynomial([2, 1, 2]) Polynomial([1, 0, 2]) Polynomial([0, 1, 1]) Polynomial([2, 0, 1]) Polynomial([1, 2, 1])]
 	
