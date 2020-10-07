@@ -11,6 +11,9 @@ using Test
 using Polynomials
 
 @testset "CodingTheory.jl" begin
+	@test hamming_distance("ABC", "DBC") == 1
+	@test hamming_distance("ABC", "DEF") == 3
+	
 	p = Polynomial([1, 1, 2, 0, 1, 2, 1])
 	q = Polynomial([2, 1, 1])
 	a = Polynomial([0, 1, 0, 1, 0, 0, 1])
@@ -32,7 +35,6 @@ using Polynomials
 	@test Alphabet("123").Σ == [1, 2, 3]
 	@test Alphabet([1, 2, 3]).Σ == [1, 2, 3]
 	@test Alphabet(["1", "2", "3"]).Σ == [1, 2, 3]
-	
 end # end runtests
 
 # @btime test()
