@@ -5,7 +5,7 @@
     "${BASH_SOURCE[0]}" "$@"
     =#
 
-function hamming_distance(s1::AbstractString, s2::AbstractString)::Integer
+function hamming_distance(s1::Union{AbstractString, AbstractArray}, s2::Union{AbstractString, AbstractArray})::Integer
     if ! isequal(length(s1), length(s2))
         throw(error("Cannot compute Hamming Distance on strings of unequal length."))
     end
@@ -19,6 +19,18 @@ function hamming_distance(s1::AbstractString, s2::AbstractString)::Integer
     end
     
     return distance
+end
+
+function hamming_ball(Σⁿ::AbstractArray, w::AbstractArray, e::Integer)
+	e > 0 || throw(error("e (the ball \"radius\") must be a non-negative number."))
+	
+	ball = Vector[]
+	
+	for v in Σⁿ
+		hamming_distance(w, v) ≤ e && push!(ball, v)
+	end
+	
+	return ball
 end
 
 function code_distance(C::Array{String,1})::Integer

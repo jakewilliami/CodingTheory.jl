@@ -15,6 +15,8 @@ using RowEchelon
 	@test hamming_distance("ABC", "DBC") == 1
 	@test hamming_distance("ABC", "DEF") == 3
 	
+	@test hamming_ball([[1, 0, 1], [0, 1, 1], [1, 0, 0]], [1, 0, 0], 2) == [[1, 0, 1], [1, 0, 0]]
+	
 	@test rate(3, 5, 4) ≈ 0.3662433802
 	
 	p = Polynomial([1, 1, 2, 0, 1, 2, 1])
