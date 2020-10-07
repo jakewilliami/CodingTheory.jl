@@ -3,6 +3,8 @@
     exec julia --project="$(realpath $(dirname $(dirname $0)))" --color=yes --startup-file=no -e "include(popfirst!(ARGS))" \
     "${BASH_SOURCE[0]}" "$@"
     =#
+	
+include(joinpath(dirname(@__FILE__), "utils.jl"))
 
 using Polynomials
 using Mods
@@ -63,18 +65,6 @@ function list_span(u̲::Vector, v̲::Vector, t̲::Vector, modulo::Integer)::Vect
 	end
 	
 	return span
-end
-
-@inline function _allequal_length_(A::Array)::Bool
-    length(A) < 2 && return true
-	
-    e1 = A[1]
-	
-    @inbounds for i in 2:length(A)
-        isequal(length(A[i]), length(e1)) || return false
-    end
-	
-    return true
 end
 
 function islinear(C::Vector, modulo::Integer)#::Bool
