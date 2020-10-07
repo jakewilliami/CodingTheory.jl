@@ -43,6 +43,9 @@ Array{T,1} where T[[1, 0, 1], [1, 0, 0]]
 julia> t_error_detecting([[1, 0, 1], [0, 1, 1], [1, 0, 0]], 3)
 false
 
+julia> isirreducible(Polynomial([1, 1, 0, 0, 1]), 2) # is 1 + x + x^4 mod 2 irreducible?
+true
+
 julia> mod(rem(Polynomial([1, 1, 2, 0, 1, 2, 1]), Polynomial([2, 1, 1])), 3) # modulo arithmetic on the remainder of polynomials
 Polynomial(1.0 + 1.0*x)
 

@@ -7,7 +7,7 @@
 module CodingTheory
 
 export Alphabet, Messages, rate
-export list_polys, multiplication_table, list_span, islinear
+export list_polys, multiplication_table, list_span, islinear, isirreducible
 export hamming_distance, hamming_ball, code_distance, t_error_detecting, t_error_correcting
 export levenshtein, levenshtein!
 
