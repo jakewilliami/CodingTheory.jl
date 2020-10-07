@@ -27,7 +27,7 @@ RowEchelon.rref!(M::AbstractArray, n::Integer) = mod.(Int.(RowEchelon.rref!(M)),
     end
 end
 
-list_polys(n::Integer, modulo::Integer)::AbstractArray = list_polys(Val(n), modulo)
+list_polys(deg::Integer, modulo::Integer)::AbstractArray = list_polys(Val(deg), modulo)
 
 function multiplication_table(degree::Integer, modulo::Integer)::Matrix
 	polys = list_polys(degree, modulo)
@@ -67,7 +67,7 @@ function list_span(u̲::Vector, v̲::Vector, t̲::Vector, modulo::Integer)::Vect
 	return span
 end
 
-function islinear(C::Vector, modulo::Integer)#::Bool
+function islinear(C::Vector, modulo::Integer)::Bool
 	_allequal_length_(C) || return false # not all codes are of the same length
 	block_length = length(C[1])
 	𝟎 = fill(0, block_length)
@@ -84,6 +84,18 @@ function islinear(C::Vector, modulo::Integer)#::Bool
 				mod.(c̲ + c̲′, modulo) ∈ C || return false # this code isn't closed under addition
 			end
 		end
+	end
+	
+	return true
+end
+
+function isirreducible(f::AbstractPolynomial, modulo::Integer)::Bool
+	deg = length(f.coeffs) - 1
+	f = mod(f, deg)
+	polys = list_polys(deg, modulo)
+
+	for a in polys, b in polys
+		isequal(f, mod(a*b, modulo)) && return false
 	end
 	
 	return true

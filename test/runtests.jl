@@ -23,6 +23,13 @@ using RowEchelon
 	@test t_error_correcting([[1, 0, 1], [0, 1, 1], [1, 0, 0], [1, 1, 1]], 3) == false
 	@test t_error_detecting([[1, 0, 1], [0, 1, 1], [1, 0, 0], [1, 1, 1]], 3) == false
 	
+	@test isirreducible(Polynomial([1, 1, 0, 0, 1]), 2) == true
+	@test isirreducible(Polynomial([1, 1, 1, 0, 1, 1]), 2) == true
+	@test isirreducible(Polynomial([4, 4, 1]), 2) == false
+	@test isirreducible(Polynomial([1, 0, 1]), 2) == false
+	@test isirreducible(Polynomial([-2, 0, 1]), 2) == false
+	@test isirreducible(Polynomial([1, 1]), 2) == false
+	
 	p = Polynomial([1, 1, 2, 0, 1, 2, 1])
 	q = Polynomial([2, 1, 1])
 	a = Polynomial([0, 1, 0, 1, 0, 0, 1])
