@@ -28,5 +28,54 @@ Where Bob uses the *?* symbol when he cannot confidently decode.  So if Alice wi
 If *&Mellintrf; &SubsetEqual; &Sigma;<sup>k</sup>* is the set of messages, then *k* is the **message length**.
 
 
+## Examples
+
+```julia
+julia> hamming_distance("ABC", "BBC") # computes the hamming distance (only supports strings currently)
+1
+
+julia> hamming_distance("ABC", "DEF")
+3
+
+julia> mod(rem(Polynomial([1, 1, 2, 0, 1, 2, 1]), Polynomial([2, 1, 1])), 3) # modulo arithmetic on the remainder of polynomials
+Polynomial(1.0 + 1.0*x)
+
+julia> mod(rem(Polynomial([0, 1, 0, 1, 0, 0, 1]), Polynomial([1, 0, 1])), 2)
+Polynomial(1.0)
+
+julia> julia> multiplication_table(2, 3) # multiplication table of all polynomials of degree less than 3 modulo 2
+9×9 Array{Polynomial,2}:
+ Polynomial(0)  Polynomial(0)        Polynomial(0)        …  Polynomial(0)                Polynomial(0)
+ Polynomial(0)  Polynomial(1)        Polynomial(2)           Polynomial(1 + 2*x)          Polynomial(2 + 2*x)
+ Polynomial(0)  Polynomial(2)        Polynomial(1)           Polynomial(2 + x)            Polynomial(1 + x)
+ Polynomial(0)  Polynomial(x)        Polynomial(2*x)         Polynomial(x + 2*x^2)        Polynomial(2*x + 2*x^2)
+ Polynomial(0)  Polynomial(1 + x)    Polynomial(2 + 2*x)     Polynomial(1 + 2*x^2)        Polynomial(2 + x + 2*x^2)
+ Polynomial(0)  Polynomial(2 + x)    Polynomial(1 + 2*x)  …  Polynomial(2 + 2*x + 2*x^2)  Polynomial(1 + 2*x^2)
+ Polynomial(0)  Polynomial(2*x)      Polynomial(x)           Polynomial(2*x + x^2)        Polynomial(x + x^2)
+ Polynomial(0)  Polynomial(1 + 2*x)  Polynomial(2 + x)       Polynomial(1 + x + x^2)      Polynomial(2 + x^2)
+ Polynomial(0)  Polynomial(2 + 2*x)  Polynomial(1 + x)       Polynomial(2 + x^2)          Polynomial(1 + 2*x + x^2)
+ 
+julia> list_span([2, 1, 1], [1, 1, 1], 3) # list the span of two vectors modulo 3
+9-element Array{Array{T,1} where T,1}:
+ [0, 0, 0]
+ [1, 1, 1]
+ [2, 2, 2]
+ [2, 1, 1]
+ [0, 2, 2]
+ [1, 0, 0]
+ [1, 2, 2]
+ [2, 0, 0]
+ [0, 1, 1]
+
+julia> islinear([[0,0,0],[1,1,1],[1,0,1],[1,1,0]], 2) # checks whether a vector of vectors is linear/a subspace (modulo 2)
+false
+
+julia> islinear([[0,0,0],[1,1,1],[1,0,1],[0,1,0]], 2)
+true
+
+julia> code_distance([[0,0,0,0,0],[1,0,1,0,1],[0,1,0,1,0],[1,1,1,1,1]]) # gets the minimum distance between two vectors in an array of vectors
+2
+```
+
 [code-style-img]: https://img.shields.io/badge/code%20style-blue-4495d1.svg
 [code-style-url]: https://github.com/invenia/BlueStyle
