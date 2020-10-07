@@ -40,6 +40,9 @@ julia> hamming_distance("ABC", "DEF")
 julia> hamming_ball([[1, 0, 1], [0, 1, 1], [1, 0, 0]], [1, 0, 0], 2) # given a list of words, a word, and a distance e (respectively), calculate all the words in the alphabet within distance e of that word
 Array{T,1} where T[[1, 0, 1], [1, 0, 0]]
 
+julia> t_error_detecting([[1, 0, 1], [0, 1, 1], [1, 0, 0]], 3)
+false
+
 julia> mod(rem(Polynomial([1, 1, 2, 0, 1, 2, 1]), Polynomial([2, 1, 1])), 3) # modulo arithmetic on the remainder of polynomials
 Polynomial(1.0 + 1.0*x)
 

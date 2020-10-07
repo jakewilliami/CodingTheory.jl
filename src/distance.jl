@@ -21,7 +21,7 @@ function hamming_distance(s1::Union{AbstractString, AbstractArray}, s2::Union{Ab
     return distance
 end
 
-function hamming_ball(Σⁿ::AbstractArray, w::AbstractArray, e::Integer)
+function hamming_ball(Σⁿ::Array{Array{Int, 1}, 1}, w::Array{Int, 1}, e::Integer)::Array{Array{Int, 1}, 1}
 	e > 0 || throw(error("e (the ball \"radius\") must be a non-negative number."))
 	
 	ball = Vector[]
@@ -45,7 +45,7 @@ function code_distance(C::Array{String,1})::Integer
 	return minimum(distances)
 end
 
-function code_distance(C::Array{Array{Int64, 1}, 1})::Integer
+function code_distance(C::Array{Array{Int, 1}, 1})::Integer
 	string_code = String[]
 	
 	for c in C
@@ -53,4 +53,14 @@ function code_distance(C::Array{Array{Int64, 1}, 1})::Integer
 	end
 	
 	return code_distance(string_code)
+end
+
+function t_error_detecting(C::Array{Array{Int, 1}, 1}, t::Integer)::Bool
+	code_distance(C) ≥ t + 1 && return true
+	return false
+end
+
+function t_error_correcting(C::Array{Array{Int, 1}, 1}, t::Integer)::Bool
+	code_distance(C) ≥ 2*t + 1 && return true
+	return false
 end

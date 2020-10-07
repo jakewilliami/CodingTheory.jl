@@ -19,6 +19,10 @@ using RowEchelon
 	
 	@test rate(3, 5, 4) ≈ 0.3662433802
 	
+	@test t_error_correcting([[0, 0, 0, 0], [2, 2, 2, 2]], 1) == true
+	@test t_error_correcting([[1, 0, 1], [0, 1, 1], [1, 0, 0], [1, 1, 1]], 3) == false
+	@test t_error_detecting([[1, 0, 1], [0, 1, 1], [1, 0, 0], [1, 1, 1]], 3) == false
+	
 	p = Polynomial([1, 1, 2, 0, 1, 2, 1])
 	q = Polynomial([2, 1, 1])
 	a = Polynomial([0, 1, 0, 1, 0, 0, 1])
