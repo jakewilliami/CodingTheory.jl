@@ -8,7 +8,7 @@ module CodingTheory
 
 export Alphabet, Messages, rate
 export list_polys, multiplication_table, list_span, islinear
-export hamming_distance, code_distance
+export hamming_distance, hamming_ball, code_distance, t_error_detecting, t_error_correcting
 export levenshtein, levenshtein!
 
 include(joinpath(dirname(@__FILE__), "messages.jl"))
