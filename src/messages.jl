@@ -3,6 +3,8 @@
     exec julia --project="$(realpath $(dirname $(dirname $0)))" --color=yes --startup-file=no -e "include(popfirst!(ARGS))" \
     "${BASH_SOURCE[0]}" "$@"
     =#
+    
+include(joinpath(dirname(@__FILE__), "utils.jl"))
 
 struct Alphabet
     Σ::Union{AbstractArray, AbstractString}
@@ -34,7 +36,10 @@ struct Messages
     length::Integer
     
     function Messages(ℳ::AbstractArray)
-        length = length(ℳ[1]) # choose arbitrary message in the list of messages
+        message_length_error = "We have fixed the block length of each message.  Please ensure all messages are of equal length."
+        _allequal_length_(ℳ) || throw(error("$(message_length_error)"))
+        
+        length = length(ℳ[rand(1:length(ℳ))]) # choose arbitrary message in the list of messages
         
         new(ℳ, length)
     end # end constructor function
