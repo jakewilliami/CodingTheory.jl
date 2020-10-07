@@ -31,4 +31,11 @@ end # end struct
 
 struct Messages
     ℳ::AbstractArray
+    length::Integer
+    
+    function Messages(ℳ::AbstractArray)
+        length = length(ℳ[1]) # choose arbitrary message in the list of messages
+        
+        new(ℳ, length)
+    end # end constructor function
 end
