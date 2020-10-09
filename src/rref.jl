@@ -3,8 +3,6 @@
     exec julia --project="$(realpath $(dirname $(dirname $0)))" --color=yes --startup-file=no -e "include(popfirst!(ARGS))" \
     "${BASH_SOURCE[0]}" "$@"
     =#
-    
-using LinearAlgebra
 
 findfirstnonzero(row::Vector)::Integer = findfirst(x -> ! iszero(x), row::Vector)
 
