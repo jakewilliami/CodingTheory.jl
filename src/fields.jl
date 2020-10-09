@@ -11,6 +11,8 @@ using Mods
 using LinearAlgebra
 using RowEchelon
 
+struct PolynomialField end
+
 Base.mod(p::Polynomial, n::Integer) = Polynomial(mod.(p.coeffs, n))
 RowEchelon.rref(M::AbstractArray, n::Integer) = mod.(Int.(RowEchelon.rref(M)), n)
 RowEchelon.rref!(M::AbstractArray, n::Integer) = mod.(Int.(RowEchelon.rref!(M)), n)
@@ -41,7 +43,7 @@ function multiplication_table(degree::Integer, modulo::Integer)::Matrix
 	return poly_matrix
 end
 
-function list_span(u̲::Vector, v̲::Vector, modulo::Integer)::Vector
+function list_span(u̲::Vector, v̲::Vector, modulo::Integer)::Array{Array{Int, 1}}
 	span = Vector[]
 	
 	for λ in 0:modulo-1, γ in 0:modulo-1
@@ -54,7 +56,7 @@ function list_span(u̲::Vector, v̲::Vector, modulo::Integer)::Vector
 	return span
 end
 
-function list_span(u̲::Vector, v̲::Vector, t̲::Vector, modulo::Integer)::Vector
+function list_span(u̲::Vector, v̲::Vector, t̲::Vector, modulo::Integer)::Array{Array{Int, 1}}
 	span = Vector[]
 	
 	for λ in 0:modulo-1, γ in 0:modulo-1, α in 0:modulo-1
