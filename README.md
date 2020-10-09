@@ -43,6 +43,12 @@ Array{T,1} where T[[1, 0, 1], [1, 0, 0]]
 julia> t_error_detecting([[1, 0, 1], [0, 1, 1], [1, 0, 0]], 3)
 false
 
+julia> find_error_detection_max([[0, 0, 0, 0], [0, 1, 1, 1], [1, 0, 1, 0], [1, 1, 0, 1]], 2)
+1
+
+julia> find_error_correction_max(list_span([1, 0, 1, 0], [0, 1, 1, 1], 2), 2)
+0
+
 julia> isirreducible(Polynomial([1, 1, 0, 0, 1]), 2) # is 1 + x + x^4 mod 2 irreducible?
 true
 

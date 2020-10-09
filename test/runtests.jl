@@ -16,12 +16,18 @@ using RowEchelon
 	@test hamming_distance("ABC", "DEF") == 3
 	
 	@test hamming_ball([[1, 0, 1], [0, 1, 1], [1, 0, 0]], [1, 0, 0], 2) == [[1, 0, 1], [1, 0, 0]]
+	@test hamming_ball(list_span([2, 2, 2], [1, 2, 0], [0, 2, 1], 3), [1, 0, 0], 3) == [[0, 0, 0], [0, 2, 1], [0, 1, 2], [1, 2, 0], [1, 1, 1], [1, 0, 2], [2, 1, 0], [2, 0, 1], [2, 2, 2]]
 	
 	@test rate(3, 5, 4) ≈ 0.3662433802
 	
 	@test t_error_correcting([[0, 0, 0, 0], [2, 2, 2, 2]], 1) == true
 	@test t_error_correcting([[1, 0, 1], [0, 1, 1], [1, 0, 0], [1, 1, 1]], 3) == false
 	@test t_error_detecting([[1, 0, 1], [0, 1, 1], [1, 0, 0], [1, 1, 1]], 3) == false
+	
+	@test find_error_detection_max([[0, 0, 0, 0], [0, 1, 1, 1], [1, 0, 1, 0], [1, 1, 0, 1]], 2) == 1
+	@test find_error_correction_max([[0, 0, 0, 0], [0, 1, 1, 1], [1, 0, 1, 0], [1, 1, 0, 1]], 2) == 0
+	@test find_error_correction_max(list_span([1, 0, 1, 0], [0, 1, 1, 1], 2), 2) == 0
+	@test find_error_detection_max(list_span([1, 0, 1, 0], [0, 1, 1, 1], 2), 2) == 1
 	
 	@test isirreducible(Polynomial([1, 1, 0, 0, 1]), 2) == true
 	@test isirreducible(Polynomial([1, 1, 1, 0, 1, 1]), 2) == true
