@@ -9,7 +9,6 @@ include(joinpath(dirname(dirname(@__FILE__)), "src", "CodingTheory.jl"))
 using .CodingTheory
 using Test
 using Polynomials
-using RowEchelon
 
 @testset "CodingTheory.jl" begin
 	@test hamming_distance("ABC", "DBC") == 1
@@ -44,10 +43,11 @@ using RowEchelon
 	@test mod(rem(p, q), 3) == Polynomial([1, 1])
 	@test mod(rem(a, b), 2) == Polynomial([1])
 	
-	@test rref([1 0 1 1 1; 1 1 1 0 1; 0 1 1 1 1]) == [1 0 0 -1 0; 0 1 0 -1 0; 0 0 1 2 1]
 	@test rref([1 0 1 1 1; 1 1 1 0 1; 0 1 1 1 1], 2) == [1 0 0 1 0; 0 1 0 1 0; 0 0 1 0 1]
-	# @test rref([1 0 1 0 1 0; 0 1 0 0 1 0; 1 1 1 1 1 1], 2) == [1 0 0 1 0 1; 0 1 0 0 1 0; 0 0 1 1 0 1]
 	@test rref([1 0 1 0 1 0; 0 1 0 0 1 0; 1 1 1 1 1 1], 2) == [1 0 1 0 1 0; 0 1 0 0 1 0; 0 0 0 1 1 1]
+	@test rref([1 1 0 2 3 1; 2 0 1 3 4 1; 1 2 2 1 4 3], 5, colswap=false) == [1 0 3 0 2 2; 0 1 2 0 1 1; 0 0 0 1 0 4]
+	@test rref([1 1 0 2 3 1; 2 0 1 3 4 1; 1 2 2 1 4 3], 5, colswap=true) == [1 0 0 3 2 2; 0 1 0 2 1 1; 0 0 1 0 0 4]
+	@test rref([1 2 0 1 2 1 2;  2 2 2 0 1 1 1; 1 0 1 1 2 1 2; 0 1 0 1 1 2 2], 3) == [1 0 0 0 2 2 2; 0 1 0 0 2 0 1; 0 0 1 0 1 0 2; 0 0 0 1 2 2 1]
 	
 	@test multiplication_table(2, 3) == Polynomial[Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]); Polynomial([0]) Polynomial([1]) Polynomial([2]) Polynomial([0, 1]) Polynomial([1, 1]) Polynomial([2, 1]) Polynomial([0, 2]) Polynomial([1, 2]) Polynomial([2, 2]); Polynomial([0]) Polynomial([2]) Polynomial([1]) Polynomial([0, 2]) Polynomial([2, 2]) Polynomial([1, 2]) Polynomial([0, 1]) Polynomial([2, 1]) Polynomial([1, 1]); Polynomial([0]) Polynomial([0, 1]) Polynomial([0, 2]) Polynomial([0, 0, 1]) Polynomial([0, 1, 1]) Polynomial([0, 2, 1]) Polynomial([0, 0, 2]) Polynomial([0, 1, 2]) Polynomial([0, 2, 2]); Polynomial([0]) Polynomial([1, 1]) Polynomial([2, 2]) Polynomial([0, 1, 1]) Polynomial([1, 2, 1]) Polynomial([2, 0, 1]) Polynomial([0, 2, 2]) Polynomial([1, 0, 2]) Polynomial([2, 1, 2]); Polynomial([0]) Polynomial([2, 1]) Polynomial([1, 2]) Polynomial([0, 2, 1]) Polynomial([2, 0, 1]) Polynomial([1, 1, 1]) Polynomial([0, 1, 2]) Polynomial([2, 2, 2]) Polynomial([1, 0, 2]); Polynomial([0]) Polynomial([0, 2]) Polynomial([0, 1]) Polynomial([0, 0, 2]) Polynomial([0, 2, 2]) Polynomial([0, 1, 2]) Polynomial([0, 0, 1]) Polynomial([0, 2, 1]) Polynomial([0, 1, 1]); Polynomial([0]) Polynomial([1, 2]) Polynomial([2, 1]) Polynomial([0, 1, 2]) Polynomial([1, 0, 2]) Polynomial([2, 2, 2]) Polynomial([0, 2, 1]) Polynomial([1, 1, 1]) Polynomial([2, 0, 1]); Polynomial([0]) Polynomial([2, 2]) Polynomial([1, 1]) Polynomial([0, 2, 2]) Polynomial([2, 1, 2]) Polynomial([1, 0, 2]) Polynomial([0, 1, 1]) Polynomial([2, 0, 1]) Polynomial([1, 2, 1])]
 	
@@ -69,3 +69,17 @@ end # end runtests
 function displaymatrix(M::AbstractArray)
     return show(IOContext(stdout, :limit => true, :compact => true, :short => true), "text/plain", M); print("\n")
 end
+
+
+# A = [1 1 0 2 3 1; 2 0 1 3 4 1; 1 2 2 1 4 3]
+# a = 5
+# B = [1 2 0 1 2 1 2;  2 2 2 0 1 1 1; 1 0 1 1 2 1 2; 0 1 0 1 1 2 2]
+# b = 3
+#
+# # println(rref([1 0 1 0 1 0; 0 1 0 0 1 0; 1 1 1 1 1 1], 2))
+#
+# displaymatrix(B);println()
+# displaymatrix(rref(B, b)); println()
+#
+# displaymatrix(A);println()
+# displaymatrix(rref(A, a))

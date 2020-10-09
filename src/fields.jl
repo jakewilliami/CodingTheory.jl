@@ -9,13 +9,10 @@ include(joinpath(dirname(@__FILE__), "utils.jl"))
 using Polynomials
 using Mods
 using LinearAlgebra
-using RowEchelon
 
 struct PolynomialField end
 
 Base.mod(p::Polynomial, n::Integer) = Polynomial(mod.(p.coeffs, n))
-RowEchelon.rref(M::AbstractArray, n::Integer) = mod.(Int.(RowEchelon.rref(M)), n)
-RowEchelon.rref!(M::AbstractArray, n::Integer) = mod.(Int.(RowEchelon.rref!(M)), n)
 
 @generated function list_polys(::Val{n}, m::Integer)::AbstractArray where {n}
     quote
