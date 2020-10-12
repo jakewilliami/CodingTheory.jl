@@ -51,21 +51,11 @@ n is the word length
 q is the number of symbols in the code
 M is the size/number of elements in the code
 =#
-function rate(q::Integer, M::Integer, n::Integer)
-    return log(q, M) / n
-end
-
-function spheres(q::Integer, n::Integer, r::Integer)
-    return sum([((q - 1)^i) * binomial(n, i) for i in 0:r])
-end
-
-function sphere_covering_bound(q::Integer, n::Integer, d::Integer)
-    return Int(ceil((q^n) / spheres(q, n, d - 1)))
-end
-
-function sphere_packing_bound(q::Integer, n::Integer, d::Integer)
-    return Int(floor((q^n) / spheres(q, n, Int(floor((d - 1) / 2)))))
-end
+rate(q::Integer, M::Integer, n::Integer) = log(q, M) / n
+_spheres(q::Integer, n::Integer, r::Integer) = sum([((q - 1)^i) * binomial(n, i) for i in 0:r])
+_sphere_bound(round_func::Function, q::Integer, n::Integer, d::Integer) = Int(round_func((q^n) / _spheres(q, n, d)))
+sphere_covering_bound(q::Integer, n::Integer, d::Integer) = _sphere_bound(ceil, q, n, d - 1)
+sphere_packing_bound(q::Integer, n::Integer, d::Integer) = _sphere_bound(floor, q, n, Int(floor((d - 1) / 2)))
 
 function construct_ham_matrix(r::Integer, q::Integer)::Matrix
     ncols = Int(floor((q^r - 1) / (q - 1)))

@@ -62,6 +62,21 @@ using Polynomials
 	@test Alphabet("123").Σ == [1, 2, 3]
 	@test Alphabet([1, 2, 3]).Σ == [1, 2, 3]
 	@test Alphabet(["1", "2", "3"]).Σ == [1, 2, 3]
+	
+	@test sphere_covering_bound(5,7,3) == 215
+	@test sphere_packing_bound(5,7,3) == 2693
+	
+	@test construct_ham_matrix(3,2) == [0 0 0 1 1 1 1; 0 1 1 0 0 1 1; 1 0 1 0 1 0 1]
+	@test construct_ham_matrix(3,3) == [0 0 0 0 0 0 0 0 1 1 1 1 1; 0 0 1 1 1 2 2 2 0 0 0 1 1; 1 2 0 1 2 0 1 2 0 1 2 0 1]
+	
+	@test isperfect(11, 6, 5, 3) == true
+	@test isperfect(23, 12, 7, 2) == true
+	@test isperfect(23, 12, 7, 3) == false
+	@test isperfect(11, 6, 5, 4) == false
+	@test isgolayperfect(11, 6, 5, 3) == true
+	@test isgolayperfect(23, 12, 7, 2) == true
+	@test isgolayperfect(23, 12, 7, 3) == false
+	@test isgolayperfect(11, 6, 5, 4) == false
 end # end runtests
 
 
