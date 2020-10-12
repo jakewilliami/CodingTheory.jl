@@ -93,6 +93,33 @@ julia> code_distance([[0,0,0,0,0],[1,0,1,0,1],[0,1,0,1,0],[1,1,1,1,1]]) # gets t
 
 julia> rate(3, 5, 4) # the rate of the code which has 3 symbols, 5 words in the code, and word length of 4 (e.g., Σ = {A, B, C}, C = {ABBA,CABA,BBBB,CAAB,ACBB})
 0.3662433801794817
+
+julia> sphere_covering_bound(5,7,3)
+215
+
+julia> sphere_packing_bound(5,7,3)
+2693
+
+julia> construct_ham_matrix(3,2)
+3×7 Array{Int64,2}:
+ 0  0  0  1  1  1  1
+ 0  1  1  0  0  1  1
+ 1  0  1  0  1  0  1
+
+julia> isperfect(11, 6, 5, 3)
+true
+
+julia> isperfect(11, 6, 5, 4)
+false
+
+julia> isgolayperfect(11, 6, 5, 3)
+true
+
+julia> ishammingperfect(11, 6, 5, 3)
+false
+
+julia> ishammingperfect(3, 2)
+true
 ```
 
 [code-style-img]: https://img.shields.io/badge/code%20style-blue-4495d1.svg

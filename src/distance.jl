@@ -55,6 +55,10 @@ function code_distance(C::AbstractArray{T})::Integer where T <: AbstractArray{In
 	return code_distance(string_code)
 end
 
+function code_distance(C::AbstractArray{Int})::Integer
+	return code_distance(collect(copy.(eachcol(A))))
+end
+
 function t_error_detecting(C::AbstractArray{T}, t::Integer)::Bool where T <: AbstractArray{Int}
 	code_distance(C) ≥ t + 1 && return true
 	return false
