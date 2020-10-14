@@ -4,8 +4,9 @@
     "${BASH_SOURCE[0]}" "$@"
     =#
     
-include(joinpath(dirname(@__FILE__), "distance.jl"))
+# include(joinpath(dirname(@__FILE__), "distance.jl"))
 include(joinpath(dirname(@__FILE__), "utils.jl"))
+include(joinpath(dirname(@__FILE__), "primes.jl"))
 
 struct Alphabet
     Σ::Union{AbstractArray, AbstractString}
@@ -52,10 +53,18 @@ q is the number of symbols in the code
 M is the size/number of elements in the code
 =#
 rate(q::Integer, M::Integer, n::Integer) = log(q, M) / n
-_spheres(q::Integer, n::Integer, r::Integer) = sum([((q - 1)^i) * binomial(n, i) for i in 0:r])
-_sphere_bound(round_func::Function, q::Integer, n::Integer, d::Integer) = Int(round_func((q^n) / _spheres(q, n, d)))
-sphere_covering_bound(q::Integer, n::Integer, d::Integer) = _sphere_bound(ceil, q, n, d - 1)
-sphere_packing_bound(q::Integer, n::Integer, d::Integer) = _sphere_bound(floor, q, n, Int(floor((d - 1) / 2)))
+
+struct Rounding end
+no_round = Rounding()
+
+__spheres(q::Integer, n::Integer, r::Integer) = sum([((big(q) - 1)^i) * binomial(big(n), big(i)) for i in 0:r])
+__sphere_bound(round_func::Function, q::Integer, n::Integer, d::Integer) = round_func((big(q)^n) / __spheres(q, n, d))
+sphere_covering_bound(q::Integer, n::Integer, d::Integer)::Integer = __sphere_bound(ceil, q, n, d - 1)
+sphere_packing_bound(q::Integer, n::Integer, d::Integer)::Integer = __sphere_bound(floor, q, n, Int(floor((d - 1) / 2)))
+sphere_packing_bound(q::Integer, n::Integer, d::Integer, ::Rounding)::Real = __sphere_bound(identity, q, n, Int(floor((d - 1) / 2)))
+hamming_bound(q::Integer, n::Integer, d::Integer)::Integer = sphere_packing_bound(q, n, d)
+hamming_bound(q::Integer, n::Integer, d::Integer, ::Rounding)::Real = sphere_packing_bound(q, n, d, no_round)
+singleton_bound(q::Number, n::Number, d::Number)::Real = float(big(q))^(big(n) - big(d) + 1)
 
 function construct_ham_matrix(r::Integer, q::Integer)::Matrix
     ncols = Int(floor((q^r - 1) / (q - 1)))
@@ -90,13 +99,12 @@ function isperfect(
 end
 
 function ishammingperfect(r::Integer, q::Integer)::Bool
-    
     n = 2^r - 1
     k = n - r
     M = q^k
     d = size(construct_ham_matrix(r, q))[1] # the number of rows of the hamming matrix (which is, by design, linearly independent)
     d = r
-    
+    # r is dim of dueal code; dim of code itself is block length minus r
     println(n)
     println((q^r - 1) / (q - 1))
     
@@ -113,9 +121,11 @@ function ishammingperfect(
     d::Integer,
     q::Integer)::Bool
     
+    isprimepower(q) || return false
+    
     M = q^k
     r = log(ℯ, ((n * log(ℯ, 1)) / (log(ℯ, 2))) + 1) / log(ℯ, 2)
-    
+        
     if isequal(n, (q^(r - 1)) / (q - 1)) && isequal(d, 3) && isequal(M, q^(((q^r - 1) / (q - 1)) - r))
         return true
     end
@@ -140,14 +150,4 @@ function isgolayperfect(
     end
     
     return false
-end
-
-function our_search()
-    for n in 2:30, k in 2:30, d in 3:30
-        if isperfect(n, k, d, 6)
-            return n, k, d, 6
-        end
-    end
-    
-    return nothing
 end
