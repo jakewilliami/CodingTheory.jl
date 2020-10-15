@@ -79,10 +79,10 @@ Check that all elements in a list are less than a given x.
 =#
 @inline function __arelessthan(x::Number, A::AbstractArray)::Bool
     @inbounds for a in A
-        a < x || return false
+        a < x && return true
     end
     
-    return true
+    return false
 end
 
 @inline function __arelessthan(x::Number, a::Number, b::Number)::Bool
