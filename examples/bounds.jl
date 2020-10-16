@@ -32,15 +32,15 @@ function integer_search()::Array{Array{Number, 1}}
     A = []
     upper_bound = 10
     increment_bound = 10
-    stop_at = 1_000
+    stop_at = 10_000
     
     while true
         for q in 1:upper_bound, n in 1:upper_bound, d in 1:upper_bound
 			# skip configurations that have already been processed
 			__arelessthan(upper_bound - increment_bound, q, n, d) && continue
             # note that we actually don't want to filter out non-linear codes
-			# distance shouldn't be larger than the block length; filter trivial distances of one; we filter out combinations when all are equal; filter out codes that are generalised hamming codes
-			if d < n || ! isone(d) || ! __allequal(q, n, d)
+			# distance shouldn't be larger than the block length; filter trivial distances of one; we filter out combinations when all are equal; filter out codes that are generalised hamming codes; filter out even distances
+			if d < n && ! isone(d) && ! __allequal(q, n, d) && ! ishammingbound(q, n, d) && ! iszero(mod(d, 2))
                 hb = hamming_bound(q, n, d, no_round)
                 if isinteger(hb) && ! isone(hb)
                     push!(A, [q, n, d, hb])
@@ -69,7 +69,7 @@ function bound_comparison()::Tuple{Int, Array{Array{Number, 1}}}
     A = Array{AbstractFloat}[]
     upper_bound = 10
     increment_bound = 10
-    stop_at = 2_000_000
+    stop_at = 100_000
     
     while true
         for q in 1:upper_bound, n in 1:upper_bound, d in 1:upper_bound
@@ -79,8 +79,9 @@ function bound_comparison()::Tuple{Int, Array{Array{Number, 1}}}
             if isprimepower(big(q))
                 hb = hamming_bound(q, n, d)
                 sb = singleton_bound(q, n, d)
-				# filter out the more trivial bounds that are one (or if distance is one); filter out distances that are more than or equal to the block length, as they don't make sense in our context
-				if d < n || 1 ∉ (hb, sb, d)
+				# filter out the more trivial bounds that are one (or if distance is one); filter out distances that are more than or equal to the block length, as they don't make sense in our context; filter out even distances
+				# if d < n || 1 ∉ (hb, sb, d)
+				if d < n && ! isone(d) && ! __allequal(q, n, d) && ! ishammingbound(q, n, d) && ! iszero(mod(d, 2))
                     comparison = hb > sb ? 1 : (sb > hb ? -1 : 0)
                     push!(A, [q, n, d, hb, sb, comparison])
                     isequal(length(A), stop_at) && return stop_at, A
@@ -114,13 +115,8 @@ end
 # plot_bound_comparison()
 
 
+# If q is a prime power, and d = 3, and n is equal to q^((q^r-1)/(q-1)) for some positive integer r, then we know that the Hamming bound is integral, and we know that there is a perfect code with those parameters. So this choice of parameters is not terribly interesting.
+#
+# So I would filter as follows:
 
-#=
-For your interest, all of this code that I am writing I have published to GitHub.  Once again, I remind you that I have never studied computer science, so no judgement...but here it is: https://github.com/jakewilliami/CodingTheory.jl/blob/master/examples/bounds.jl
-
-
-I'll see you tomorrow.  All the best!
-
-
-Jake.
-=#
+# This function tells us whether the Hamming bound we get for (n,d,q) is exactly the bound of a Hamming code. So if it returns true, then I would omit that triple (n,d,q) from the output.

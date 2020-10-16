@@ -4,7 +4,7 @@
     "${BASH_SOURCE[0]}" "$@"
     =#
     
-# include(joinpath(dirname(@__FILE__), "distance.jl"))
+include(joinpath(dirname(@__FILE__), "distance.jl"))
 include(joinpath(dirname(@__FILE__), "utils.jl"))
 include(joinpath(dirname(@__FILE__), "primes.jl"))
 
@@ -88,6 +88,8 @@ function isperfect(
     k::Integer,
     d::Integer,
     q::Integer)::Bool
+	
+	isprimepower(q) || throw(error("Cannot check if the code is perfect with q not a prime power."))
     
     M = q^k
     
@@ -133,6 +135,18 @@ function ishammingperfect(
     return false
 end
 
+function ishammingbound(q::Integer, n::Integer, d::Integer)::Bool
+	! isprimepower(q) && return false
+	d ≠ 3 && return false
+	
+	r = 1
+	while ((q^r - 1) / (q - 1)) < n
+		r = r + 1
+	end
+	
+	return isequal(((q^r - 1) / (q - 1)), n) ? true : false
+end
+
 function isgolayperfect(
     n::Integer,
     k::Integer,
@@ -151,3 +165,61 @@ function isgolayperfect(
     
     return false
 end
+
+#=
+Get a list of messages with q letters in the alphabet, and word size of n
+
+E.g., if (q, n, d) = (3, 2, 1), get_alphabet returns:
+9-element Array{String,1}:
+ "11"
+ "21"
+ "31"
+ "12"
+ "22"
+ "32"
+ "13"
+ "23"
+ "33"
+And expands to
+
+=#
+@generated function get_alphabet(q::Integer, ::Val{n}, d::Integer) where {n}
+	quote
+		ℳ = String[]
+		Σ = string.(1:q) # faux letters in our alphabet Σ
+		
+		Base.Cartesian.@nloops $n i d -> Σ begin
+			d > n && continue
+			wᵢ = string((Base.Cartesian.@ntuple $n i)...)
+			
+			if isempty(ℳ) || code_distance(wᵢ, ℳ) ≥ d
+				push!(ℳ, wᵢ)
+			end
+		end
+		
+		return ℳ
+	end
+end
+
+get_alphabet(q::Integer, n::Integer, d::Integer) = get_alphabet(q, Val(n), d::Integer)
+
+
+function nloops_gen(a::Type{Array{T,N}}) where {T,N}
+	vars = Symbol[]
+	inner = :(println("a["))
+	outer = inner
+	for dim in 1:N
+		var = Symbol("i$dim")
+		push!(vars, var)
+		push!(inner.args, var, ",")
+		outer = :(
+			for $var in 1:size(a,$dim)
+				$outer
+			end
+		)
+	end
+	push!(inner.args, "] = ", :(a[$(vars...)]))
+	return outer
+end
+
+@generated nloops(a::Array{T,N}) where {T,N} = nloops_gen(a)
