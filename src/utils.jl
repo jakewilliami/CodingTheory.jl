@@ -17,13 +17,8 @@ Check that all elements in a list are of equal length.
     return true
 end
 
-@inline function __allequal_length_(a, b)::Bool
-    A = [a, b]
-    return __allequal_length_(A)
-end
-
-@inline function __allequal_length_(a, b, c...)::Bool
-    A = [a, b, c...]
+@inline function __allequal_length_(a...)::Bool
+    A = [a...]
     return __allequal_length_(A)
 end
 
@@ -40,13 +35,8 @@ Check that all elements in a list are equal to each other.
     return true
 end
 
-@inline function __allequal(a, b)::Bool
-    A = [a, b]
-    return __allequal(A)
-end
-
-@inline function __allequal(a, b, c...)::Bool
-    A = [a, b, c...]
+@inline function __allequal(a...)::Bool
+    A = [a...]
     return __allequal(A)
 end
 
@@ -64,13 +54,8 @@ Check that all elements in a list are distinct from every other element in the l
     return true
 end
 
-@inline function __aredistinct(a, b)::Bool
-    A = [a, b]
-    return __aredistinct(A)
-end
-
-@inline function __aredistinct(a, b, c...)::Bool
-    A = [a, b, c...]
+@inline function __aredistinct(a...)::Bool
+    A = [a...]
     return __aredistinct(A)
 end
 
@@ -79,18 +64,13 @@ Check that all elements in a list are less than a given x.
 =#
 @inline function __arelessthan(x::Number, A::AbstractArray)::Bool
     @inbounds for a in A
-        a < x || return false
+        a < x && return true
     end
     
-    return true
+    return false
 end
 
-@inline function __arelessthan(x::Number, a::Number, b::Number)::Bool
-    A = [a, b]
-    return __arelessthan(x, A)
-end
-
-@inline function __arelessthan(x::Number, a::Number, b::Number, c::Number...)::Bool
-    A = [a, b, c...]
+@inline function __arelessthan(x::Number, a::Number...)::Bool
+    A = [a...]
     return __arelessthan(x, A)
 end
