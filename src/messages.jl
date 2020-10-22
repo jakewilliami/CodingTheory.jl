@@ -205,5 +205,28 @@ And expands to
 	end
 end
 
-get_codewords(Σ::AbstractArray, q::Integer, n::Integer, d::Integer) = get_codewords(Σ, q, Val(n), d::Integer)
-get_codewords(q::Integer, n::Integer, d::Integer) = get_codewords(Symbol[gensym() for _ in 1:q], q, n, d)
+get_codewords(Σ::AbstractArray, q::Integer, n::Integer, d::Integer) = get_codewords(Σ, q, Val(n), d)
+get_codewords(Σ::AbstractArray, n::Integer, d::Integer) = get_codewords(Σ, length(Σ), n, d) # if alphabet is given, then q is the length of that alphabet
+get_codewords(q::Integer, n::Integer, d::Integer) = get_codewords(Symbol[gensym() for _ in 1:q], q, n, d) # generate symbols if no alphabet is given
+
+@generated function get_all_words(Σ::AbstractArray, q::Integer, ::Val{n})::Array{NTuple{Symbol, N}, 1} where n
+	quote
+		C = Tuple[]
+		
+		if eltype(Σ) isa Symbol
+		else
+			Σ = __deepsym(Σ)
+		end
+			
+		Base.Cartesian.@nloops $n i d -> Σ begin
+			wᵢ = Base.Cartesian.@ntuple $n i
+			push!(C, wᵢ)
+		end
+		
+		return C
+	end
+end
+
+get_all_words(Σ::AbstractArray, q::Integer, n::Integer) = get_all_words(Σ, q, Val(n))
+get_all_words(Σ::AbstractArray, n::Integer) = get_all_words(Σ, length(Σ), n) # if alphabet is given, then q is the length of that alphabet
+get_all_words(q::Integer, n::Integer) = get_all_words(Symbol[gensym() for _ in 1:q], q, n) # generate symbols if no alphabet is given
