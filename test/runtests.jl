@@ -79,6 +79,12 @@ using Polynomials
 	@test isgolayperfect(23, 12, 7, 2) == true
 	@test isgolayperfect(23, 12, 7, 3) == false
 	@test isgolayperfect(11, 6, 5, 4) == false
+	
+	@test length(get_codewords(5, 5, 3)) ∈ [74:74...]
+	@test length(get_codewords(4, 7, 3; m = 1)) ∈ [256:301...]
+	@test length(get_codewords_greedy(5, 5, 3)) == 74
+	randq, randn = rand(1:8, 2)
+	@test length(get_all_words(randq, randn)) == big(randq)^randn
 end # end runtests
 
 
@@ -86,17 +92,3 @@ end # end runtests
 function displaymatrix(M::AbstractArray)
     return show(IOContext(stdout, :limit => true, :compact => true, :short => true), "text/plain", M); print("\n")
 end
-
-
-# A = [1 1 0 2 3 1; 2 0 1 3 4 1; 1 2 2 1 4 3]
-# a = 5
-# B = [1 2 0 1 2 1 2;  2 2 2 0 1 1 1; 1 0 1 1 2 1 2; 0 1 0 1 1 2 2]
-# b = 3
-#
-# # println(rref([1 0 1 0 1 0; 0 1 0 0 1 0; 1 1 1 1 1 1], 2))
-#
-# displaymatrix(B);println()
-# displaymatrix(rref(B, b)); println()
-#
-# displaymatrix(A);println()
-# displaymatrix(rref(A, a))

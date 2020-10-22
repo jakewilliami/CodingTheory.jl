@@ -10,7 +10,10 @@ Convert inner-most elements into symbols
 =#
 __deepsym(a) = Symbol.(a)
 __deepsym(a::AbstractArray) = __deepsym.(a)
-
+__deepeltype(a) = __deepeltype(typeof(a))
+(__deepeltype(::Type{T}) where T <: AbstractArray) = __deepeltype(eltype(T))
+__deepeltype(::Type{T}) where T = T
+__ensure_symbolic(Σ::AbstractArray) = __deepeltype(Σ) isa Symbol ? Σ : __deepsym(Σ)
 __lessthanorequal(x, y)::Bool = isequal(x, y) || isless(x, y)
 
 function hamming_distance(w₁, w₂)::Integer
@@ -35,11 +38,7 @@ Get the codewords of radius e of a ball centered at w
 function __hamming_space(relation::Function, Σⁿ::AbstractArray{T}, w::AbstractArray, e::Integer) where T# <: AbstractArray
 	e < 0 && throw(error("e (the ball \"radius\") must be a non-negative number."))
 	
-	if eltype(w) isa Symbol
-	else
-		w = __deepsym(w)
-	end
-	
+	w = __ensure_symbolic(w)
 	ball = []
 	
 	for v in __deepsym(Σⁿ)
@@ -69,6 +68,8 @@ end
 Find the minimum hamming distance in the code for all unique letters
 =#
 function code_distance(C::AbstractArray{T})::Integer where T
+	isempty(C) && return nothing
+	
 	distances = []
 	
 	for c in C, c′ in C
