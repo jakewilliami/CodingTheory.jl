@@ -20,6 +20,6 @@ function hamming_sphere(M::AbstractArray{T}, w::AbstractArray, e::Integer) where
 	return sphere # return said list of words
 end
 
-println(get_codewords(["a", "b", "c"], 3, 3, 2))
+println(get_codewords(["a", "b", "c"], 3, 3, 1))
 println()
-println(hamming_sphere(get_codewords(["a", "b", "c"], 3, 3, 2), ["a", "b", "c"], 2))
+println(hamming_sphere(get_codewords(["a", "b", "c"], 3, 3, 1), ["a", "b", "c"], 2))

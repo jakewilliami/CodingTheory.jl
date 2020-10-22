@@ -11,6 +11,8 @@ Convert inner-most elements into symbols
 __deepsym(a) = Symbol.(a)
 __deepsym(a::AbstractArray) = __deepsym.(a)
 
+__lessthanorequal(x, y)::Bool = isequal(x, y) || isless(x, y)
+
 function hamming_distance(w₁, w₂)::Integer
     if ! isequal(length(w₁), length(w₂))
         throw(error("Cannot compute Hamming Distance on strings of unequal length."))
@@ -30,7 +32,7 @@ end
 #=
 Get the codewords of radius e of a ball centered at w
 =#
-function hamming_ball(Σⁿ::AbstractArray{T}, w::AbstractArray, e::Integer) where T# <: AbstractArray
+function __hamming_space(relation::Function, Σⁿ::AbstractArray{T}, w::AbstractArray, e::Integer) where T# <: AbstractArray
 	e < 0 && throw(error("e (the ball \"radius\") must be a non-negative number."))
 	
 	if eltype(w) isa Symbol
@@ -41,11 +43,16 @@ function hamming_ball(Σⁿ::AbstractArray{T}, w::AbstractArray, e::Integer) whe
 	ball = []
 	
 	for v in __deepsym(Σⁿ)
-		hamming_distance(w, v) ≤ e && push!(ball, v)
+		relation(hamming_distance(w, v), e) && push!(ball, v)
 	end
 	
 	return ball
 end
+
+hamming_ball(Σⁿ::AbstractArray{T}, w::AbstractArray, e::Integer) where T =
+	__hamming_space(__lessthanorequal, Σⁿ, w, e)
+hamming_sphere(Σⁿ::AbstractArray{T}, w::AbstractArray, e::Integer) where T =
+	__hamming_space(isequal, Σⁿ, w, e)
 
 #=
 Convert contents of nested arrays into symbols
