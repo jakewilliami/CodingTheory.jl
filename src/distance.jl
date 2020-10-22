@@ -30,7 +30,7 @@ end
 #=
 Get the codewords of radius e of a ball centered at w
 =#
-function hamming_ball(Σⁿ::AbstractArray{T}, w::AbstractArray, e::Integer)::Array{Array{Symbol, 1}} where T <: AbstractArray
+function hamming_ball(Σⁿ::AbstractArray{T}, w::AbstractArray, e::Integer)::Array{Array{Symbol, 1}} where T# <: AbstractArray
 	e < 0 && throw(error("e (the ball \"radius\") must be a non-negative number."))
 	
 	if eltype(w) isa Symbol
