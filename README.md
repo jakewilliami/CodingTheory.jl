@@ -122,5 +122,9 @@ julia> ishammingperfect(3, 2)
 true
 ```
 
+## A note on the number of codewords in a code
+
+We have some algorithms brute-force searching for the codewords in a [q, n, d]-code.  These algorithms are brute-force as they do not assume that q is a prime power.  Therefore, they go through all possible codewords of a [q, n]-code, and narrow down the code based on d.  There algorithms are namely `get_codewords_greedy` and `get_codewords_random`, both of which using `get_all_codewords`.  The `get_codewords` function iterates through possibilities of `get_codeword_random` and chooses the maximum of those iterations or the `get_codeword_greedy` length.  Despite the name, `get_codewords` is only a **probably** candidate.  Increate the keyword argument `m` to decrease the likelihood that there is a code with more codewords while maintaining the bound of the distance.
+
 [code-style-img]: https://img.shields.io/badge/code%20style-blue-4495d1.svg
 [code-style-url]: https://github.com/invenia/BlueStyle

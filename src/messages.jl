@@ -167,56 +167,30 @@ function isgolayperfect(
 end
 
 #=
-Get a list of messages with q letters in the alphabet, and word size of n
-
-E.g., if (q, n, d) = (3, 2, 1), get_alphabet returns:
-9-element Array{String,1}:
- "11"
- "21"
- "31"
- "12"
- "22"
- "32"
- "13"
- "23"
- "33"
-And expands to
-
+Takes in an array and a word.  As long as the word does not mean that the distance is smaller than d, we add w to the array
 =#
-@generated function get_codewords(Σ::AbstractArray, q::Integer, ::Val{n}, d::Integer)::Array{NTuple{Symbol, N}, 1} where n
-	quote
-		C = Tuple[]
-		
-		if eltype(Σ) isa Symbol
-		else
-			Σ = __deepsym(Σ)
+function __push_if_allowed!(C::AbstractArray{T}, w::T, d::Integer) where T
+	isempty(C) && push!(C, w)
+	
+	for c in C
+		if hamming_distance(c, w) < d
+			return nothing
 		end
-			
-		Base.Cartesian.@nloops $n i d -> Σ begin
-			d > n && continue
-			wᵢ = Base.Cartesian.@ntuple $n i
-			
-			if isempty(C) || code_distance(C, wᵢ) ≥ d
-				push!(C, wᵢ)
-			end
-		end
-		
-		return C
 	end
+	
+	return push!(C, w)
 end
 
-get_codewords(Σ::AbstractArray, q::Integer, n::Integer, d::Integer) = get_codewords(Σ, q, Val(n), d)
-get_codewords(Σ::AbstractArray, n::Integer, d::Integer) = get_codewords(Σ, length(Σ), n, d) # if alphabet is given, then q is the length of that alphabet
-get_codewords(q::Integer, n::Integer, d::Integer) = get_codewords(Symbol[gensym() for _ in 1:q], q, n, d) # generate symbols if no alphabet is given
+__push_if_allowed(C::AbstractArray{T}, w::T, d::Integer) where T = __push_if_allowed!(copy(C), w, d)
 
-@generated function get_all_words(Σ::AbstractArray, q::Integer, ::Val{n})::Array{NTuple{Symbol, N}, 1} where n
+#=
+Finds all possible combinations of words of length n using q symbols from alphabet Σ
+=#
+@generated function get_all_words(Σ::AbstractArray, q::Integer, ::Val{n}) where n
 	quote
 		C = Tuple[]
-		
-		if eltype(Σ) isa Symbol
-		else
-			Σ = __deepsym(Σ)
-		end
+		Σ = __ensure_symbolic(Σ)
+		Σ = unique(Σ)
 			
 		Base.Cartesian.@nloops $n i d -> Σ begin
 			wᵢ = Base.Cartesian.@ntuple $n i
@@ -228,5 +202,88 @@ get_codewords(q::Integer, n::Integer, d::Integer) = get_codewords(Symbol[gensym(
 end
 
 get_all_words(Σ::AbstractArray, q::Integer, n::Integer) = get_all_words(Σ, q, Val(n))
-get_all_words(Σ::AbstractArray, n::Integer) = get_all_words(Σ, length(Σ), n) # if alphabet is given, then q is the length of that alphabet
+get_all_words(Σ::AbstractArray, n::Integer) = get_all_words(Σ, length(unique(Σ)), n) # if alphabet is given, then q is the length of that alphabet
 get_all_words(q::Integer, n::Integer) = get_all_words(Symbol[gensym() for _ in 1:q], q, n) # generate symbols if no alphabet is given
+
+#=
+Get a list of messages with q letters in the alphabet, and word size of n
+=#
+function get_codewords_greedy(Σ::AbstractArray, q::Integer, n::Integer, d::Integer)
+	C = Tuple[]
+	Σ = __ensure_symbolic(Σ)
+	Σ = unique(Σ)
+	all_codewords = get_all_words(Σ, q, n)
+	
+	for wᵢ in all_codewords
+		__push_if_allowed!()
+	end
+	
+	return C
+end
+@generated function get_codewords_greedy(Σ::AbstractArray, q::Integer, ::Val{n}, d::Integer) where n
+	quote
+		C = Tuple[]
+		Σ = __ensure_symbolic(Σ)
+		Σ = unique(Σ)
+			
+		Base.Cartesian.@nloops $n i d -> Σ begin
+			d > n && continue
+			wᵢ = Base.Cartesian.@ntuple $n i
+			
+			__push_if_allowed!(C, wᵢ, d)
+		end
+		
+		return C
+	end
+end
+
+get_codewords_greedy(Σ::AbstractArray, q::Integer, n::Integer, d::Integer) = get_codewords_greedy(Σ, q, Val(n), d)
+get_codewords_greedy(Σ::AbstractArray, n::Integer, d::Integer) = get_codewords_greedy(Σ, length(unique(Σ)), n, d) # if alphabet is given, then q is the length of that alphabet
+get_codewords_greedy(q::Integer, n::Integer, d::Integer) = get_codewords_greedy(Symbol[gensym() for _ in 1:q], q, n, d) # generate symbols if no alphabet is given
+
+function get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer)
+	C = Tuple[]
+	Σ = __ensure_symbolic(Σ)
+	Σ = unique(Σ)
+	all_codewords = get_all_words(Σ, n)
+	
+	while ! isempty(all_codewords)
+		wᵢ = rand(all_codewords)
+		
+		__push_if_allowed!(C, wᵢ, d)
+		deleteat!(all_codewords, findall(x -> isequal(x, wᵢ), all_codewords))
+	end
+	
+	return C
+end
+
+get_codewords_random(Σ::AbstractArray, n::Integer, d::Integer) = get_codewords_random(Σ, length(unique(Σ)), n, d) # if alphabet is given, then q is the length of that alphabet
+get_codewords_random(q::Integer, n::Integer, d::Integer) = get_codewords_random(Symbol[gensym() for _ in 1:q], q, n, d) # generate symbols if no alphabet is given
+
+function get_codewords(Σ::AbstractArray, q::Integer, n::Integer, d::Integer; m::Integer=10)
+	size = 0
+	C = Tuple[]
+	Σ = __ensure_symbolic(Σ)
+	Σ = unique(Σ)
+		
+	for _ in 1:m
+		random_code = get_codewords_random(Σ, q, n, d)
+		random_size = length(random_code)
+		if random_size > size
+			size = random_size
+			C = random_code
+		end
+	end
+	
+	greedy_code = get_codewords_greedy(Σ, q, n, d)
+	greedy_size = length(greedy_code)
+	if greedy_size > size
+		size = greedy_size
+		C = greedy_code
+	end
+	
+	return C
+end
+
+get_codewords(Σ::AbstractArray, n::Integer,  d::Integer; m::Integer=10) = get_codewords(Σ, length(unique(Σ)), n, d, m=m) # if alphabet is given, then q is the length of that alphabet
+get_codewords(q::Integer, n::Integer,  d::Integer; m::Integer=10) = get_codewords(Symbol[gensym() for _ in 1:q], q, n, d, m=m) # generate symbols if no alphabet is given
