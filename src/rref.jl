@@ -74,4 +74,5 @@ end
 rref(A::Matrix{Int},
     n::Integer;
     colswap::Bool=false,
-    verbose::Bool=false) = rref!(copy(A), n::Integer; colswap=colswap, verbose=verbose)
+    verbose::Bool=false
+    )::Matrix{Int} = rref!(copy(A), n::Integer; colswap=colswap, verbose=verbose)
