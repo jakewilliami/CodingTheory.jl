@@ -183,43 +183,23 @@ E.g., if (q, n, d) = (3, 2, 1), get_alphabet returns:
 And expands to
 
 =#
-@generated function get_alphabet(q::Integer, ::Val{n}, d::Integer) where {n}
+@generated function get_alphabet(q::Integer, ::Val{n}, d::Integer) where n
 	quote
-		ℳ = String[]
-		Σ = string.(1:q) # faux letters in our alphabet Σ
-		
+		# ℳ = []
+		C = []
+		Σ = Symbol[gensym() for _ in 1:q]
+			
 		Base.Cartesian.@nloops $n i d -> Σ begin
 			d > n && continue
-			wᵢ = string((Base.Cartesian.@ntuple $n i)...)
+			wᵢ = Base.Cartesian.@ntuple $n i
 			
-			if isempty(ℳ) || code_distance(wᵢ, ℳ) ≥ d
-				push!(ℳ, wᵢ)
+			if isempty(C) || code_distance(C, wᵢ) ≥ d
+				push!(C, wᵢ)
 			end
 		end
 		
-		return ℳ
+		return C
 	end
 end
 
 get_alphabet(q::Integer, n::Integer, d::Integer) = get_alphabet(q, Val(n), d::Integer)
-
-
-function nloops_gen(a::Type{Array{T,N}}) where {T,N}
-	vars = Symbol[]
-	inner = :(println("a["))
-	outer = inner
-	for dim in 1:N
-		var = Symbol("i$dim")
-		push!(vars, var)
-		push!(inner.args, var, ",")
-		outer = :(
-			for $var in 1:size(a,$dim)
-				$outer
-			end
-		)
-	end
-	push!(inner.args, "] = ", :(a[$(vars...)]))
-	return outer
-end
-
-@generated nloops(a::Array{T,N}) where {T,N} = nloops_gen(a)

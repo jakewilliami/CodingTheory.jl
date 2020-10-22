@@ -5,15 +5,21 @@
     "${BASH_SOURCE[0]}" "$@"
     =#
 
-function hamming_distance(s1::Union{AbstractString, AbstractArray}, s2::Union{AbstractString, AbstractArray})::Integer
-    if ! isequal(length(s1), length(s2))
+#=
+Convert inner-most elements into symbols
+=#
+__deepsym(a) = Symbol(a)
+__deepsym(a::AbstractArray) = __deepsym.(a)
+
+function hamming_distance(w₁::T, w₂::T)::Integer where T
+    if ! isequal(length(w₁), length(w₂))
         throw(error("Cannot compute Hamming Distance on strings of unequal length."))
     end
     
     distance = 0
         
-    for i in 1:length(s1)
-        if s1[i] ≠ s2[i]
+    for i in 1:length(w₁)
+        if w₁[i] ≠ w₂[i]
             distance += 1
         end
     end
@@ -21,20 +27,42 @@ function hamming_distance(s1::Union{AbstractString, AbstractArray}, s2::Union{Ab
     return distance
 end
 
-function hamming_ball(Σⁿ::AbstractArray{T}, w::Array{Int, 1}, e::Integer)::Array{Array{Int, 1}} where T <: AbstractArray{Int}
-	e > 0 || throw(error("e (the ball \"radius\") must be a non-negative number."))
+#=
+Get the codewords of radius e of a ball centered at w
+=#
+function hamming_ball(Σⁿ::AbstractArray{T}, w::AbstractArray, e::Integer)::Array{Array{Symbol, 1}} where T <: AbstractArray
+	e < 0 && throw(error("e (the ball \"radius\") must be a non-negative number."))
 	
-	ball = Vector[]
+	if eltype(w) isa Symbol
+	else
+		w = __deepsym(w)
+	end
 	
-	for v in Σⁿ
+	ball = []
+	
+	for v in __deepsym(Σⁿ)
 		hamming_distance(w, v) ≤ e && push!(ball, v)
 	end
 	
 	return ball
 end
 
-function code_distance(C::AbstractArray{String})::Integer
-	distances = Integer[]
+#=
+Convert contents of nested arrays into symbols
+=#
+function code_distance(C::AbstractArray{T})::Integer where T <: AbstractArray{Any}
+	return code_distance(__deepsym(C))
+end
+
+# function code_distance(C::AbstractArray{Int})::Integer
+# 	return code_distance(collect(copy.(eachcol(A))))
+# end
+
+#=
+Find the minimum hamming distance in the code for all unique letters
+=#
+function code_distance(C::AbstractArray{T})::Integer where T
+	distances = []
 	
 	for c in C, c′ in C
 		if c ≠ c′
@@ -45,26 +73,16 @@ function code_distance(C::AbstractArray{String})::Integer
 	return minimum(distances)
 end
 
-function code_distance(C::AbstractArray{T})::Integer where T <: AbstractArray{Int}
-	string_code = String[]
+#=
+A wrapper to get the code distance after pushing a word to the code.
+=#
+function code_distance!(C::AbstractArray{T}, w::T)::Integer where T
+	push!(C, w)
 	
-	for c in C
-		push!(string_code, join(c))
-	end
-	
-	return code_distance(string_code)
-end
-
-function code_distance(C::AbstractArray{Int})::Integer
-	return code_distance(collect(copy.(eachcol(A))))
-end
-
-function code_distance!(s1::AbstractString, C::AbstractArray{String})::Integer
-	push!(C, s1)
 	return code_distance(C)
 end
 
-code_distance(s1::AbstractString, C::AbstractArray{String})::Integer = code_distance!(s1, copy(C))
+(code_distance(C::AbstractArray{T}, w::T)::Integer) where T = code_distance!(copy(C), w)
 
 function t_error_detecting(C::AbstractArray{T}, t::Integer)::Bool where T <: AbstractArray{Int}
 	code_distance(C) ≥ t + 1 && return true
