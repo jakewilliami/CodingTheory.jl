@@ -183,9 +183,9 @@ E.g., if (q, n, d) = (3, 2, 1), get_alphabet returns:
 And expands to
 
 =#
-@generated function get_codewords(Σ::AbstractArray, q::Integer, ::Val{n}, d::Integer) where n
+@generated function get_codewords(Σ::AbstractArray, q::Integer, ::Val{n}, d::Integer)::Array{NTuple{Symbol, N}, 1} where n
 	quote
-		C = []
+		C = Tuple[]
 		
 		if eltype(Σ) isa Symbol
 		else
