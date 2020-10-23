@@ -260,19 +260,23 @@ get_codewords(q::Integer, n::Integer,  d::Integer; m::Integer=10) = get_codeword
 #=
 Get codewords by computing all linear combinations of the rows of the matrix, under modulo
 =#
-@generated function get_codewords(G::AbstractArray, ::Val{n}, m::Integer) where n
-    quote
-		codewords = []
-        Base.Cartesian.@nloops $n i d -> 0:m-1 begin
-			α = vec([(Base.Cartesian.@ntuple $n i)...])
-			word = zeros(Integer, size(G, 2))
-			for j in 1:$n
-				word = mod.(word .+ α[j] .* G[j,:], m)
-			end
-			push!(codewords, word)
-        end
+function get_codewords(G::AbstractArray, m::Integer)
+	codewords = Vector()
+	rows = Vector(undef, size(G, 2))
+	
+	for i in 1:size(G, 1)
+		rows[i] = [G[i, j] for j in 1:size(G, 2)]
+	end
+	
+	for c in Base.Iterators.product([0:m-1 for i in 1:size(G, 1)]...)
+		word = Ref(c[1]) .* rows[1]
 		
-		return codewords
-    end
+		for i in 2:size(G, 1)
+			word = mod.(word .+ (Ref(c[i]) .* rows[i]), m)
+		end
+		
+		push!(codewords, word)
+	end
+	
+	return codewords
 end
-get_codewords(G::AbstractArray, m::Integer) = get_codewords(G, Val(size(G, 1)), m)

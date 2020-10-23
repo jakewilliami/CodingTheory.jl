@@ -14,19 +14,9 @@ struct PolynomialField end
 
 Base.mod(p::Polynomial, n::Integer) = Polynomial(mod.(p.coeffs, n))
 
-@generated function list_polys(::Val{n}, m::Integer)::AbstractArray where {n}
-    quote
-		polys = Polynomial[]
-		
-        Base.Cartesian.@nloops $n i d -> 0:m-1 begin
-			push!(polys, Polynomial([(Base.Cartesian.@ntuple $n i)...]))
-        end
-		
-		return polys
-    end
+function list_polys(n::Integer, m::Integer)::AbstractArray
+	return collect(Polynomial(collect(t)) for t in Iterators.product([0:(m-1) for i in 1:n]...))
 end
-
-list_polys(deg::Integer, modulo::Integer)::AbstractArray = list_polys(Val(deg), modulo)
 
 function multiplication_table(degree::Integer, modulo::Integer)::Matrix
 	polys = list_polys(degree, modulo)
