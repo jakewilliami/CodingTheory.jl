@@ -3,6 +3,8 @@
     exec julia --project="$(realpath $(dirname $(dirname $0)))" --color=yes --startup-file=no -e "include(popfirst!(ARGS))" \
     "${BASH_SOURCE[0]}" "$@"
     =#
+	
+using LinearAlgebra: I
 
 #=
 Check that all elements in a list are of equal length.
@@ -74,3 +76,42 @@ end
     A = [a...]
     return __arelessthan(x, A)
 end
+
+#=
+Takes in an array and a word.  As long as the word does not mean that the distance is smaller than d, we add w to the array
+=#
+function __push_if_allowed!(C::AbstractArray{T}, w::T, d::Integer) where T
+	isempty(C) && push!(C, w)
+	
+	for c in C
+		if hamming_distance(c, w) < d
+			return nothing
+		end
+	end
+	
+	return push!(C, w)
+end
+
+__push_if_allowed(C::AbstractArray{T}, w::T, d::Integer) where T = __push_if_allowed!(copy(C), w, d)
+
+#=
+Convert inner-most elements into symbols
+=#
+__deepsym(a) = Symbol.(a)
+__deepsym(a::AbstractArray) = __deepsym.(a)
+
+__deepeltype(a) = __deepeltype(typeof(a))
+(__deepeltype(::Type{T}) where T <: AbstractArray) = __deepeltype(eltype(T))
+__deepeltype(::Type{T}) where T = T
+
+__ensure_symbolic(Σ::AbstractArray) = __deepeltype(Σ) isa Symbol ? Σ : __deepsym(Σ)
+
+__lessthanorequal(x, y)::Bool = isequal(x, y) || isless(x, y)
+
+__findfirstnonzero(row::Vector)::Integer = findfirst(x -> ! iszero(x), row::Vector)
+
+#=
+Checks if a matrix has an identity in it.
+e.g., [1 0 0 2 3 0; 0 1 0 1 2 2; 0 0 1 4 3 0] does
+=#
+__has_identity(M::Matrix)::Bool = isequal(M[:, 1:size(M, 1)], I(size(M, 1))) ? true : false

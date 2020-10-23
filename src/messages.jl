@@ -7,6 +7,9 @@
 include(joinpath(dirname(@__FILE__), "distance.jl"))
 include(joinpath(dirname(@__FILE__), "utils.jl"))
 include(joinpath(dirname(@__FILE__), "primes.jl"))
+include(joinpath(dirname(@__FILE__), "rref.jl"))
+
+using LinearAlgebra: I
 
 struct Alphabet
     Σ::Union{AbstractArray, AbstractString}
@@ -68,7 +71,7 @@ singleton_bound(q::Number, n::Number, d::Number)::Real = float(big(q))^(big(n) -
 
 function construct_ham_matrix(r::Integer, q::Integer)::Matrix
     ncols = Int(floor((q^r - 1) / (q - 1)))
-    M = Matrix{Int}(undef, r, ncols)
+    M = Matrix{Integer}(undef, r, ncols)
     
     for i in 1:ncols
         M[:,i] = reverse(digits(parse(Int, string(i, base = q)), pad = r), dims = 1)
@@ -165,23 +168,6 @@ function isgolayperfect(
     
     return false
 end
-
-#=
-Takes in an array and a word.  As long as the word does not mean that the distance is smaller than d, we add w to the array
-=#
-function __push_if_allowed!(C::AbstractArray{T}, w::T, d::Integer) where T
-	isempty(C) && push!(C, w)
-	
-	for c in C
-		if hamming_distance(c, w) < d
-			return nothing
-		end
-	end
-	
-	return push!(C, w)
-end
-
-__push_if_allowed(C::AbstractArray{T}, w::T, d::Integer) where T = __push_if_allowed!(copy(C), w, d)
 
 #=
 Finds all possible combinations of words of length n using q symbols from alphabet Σ
