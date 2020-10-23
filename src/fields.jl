@@ -56,21 +56,36 @@ function list_span(u̲::Vector, v̲::Vector, t̲::Vector, modulo::Integer)::Arra
 	return span
 end
 
-function islinear(C::Vector, modulo::Integer)::Bool
+function islinear(C::Vector, modulo::Integer; verbose::Bool=false)::Bool
 	__allequal_length_(C) || return false # not all codes are of the same length
 	block_length = length(C[1])
 	𝟎 = fill(0, block_length)
 		
-	𝟎 ∈ C || return false # the zero vector is not in the code
+	if 𝟎 ∉ C
+		if verbose
+			println("The zero vector 0̲ is not in C.")
+		end
+		return false # the zero vector is not in the code
+	end
 	
 	for c̲ ∈ C
 		for λ in 0:modulo-1
-			mod.(λ*c̲, modulo) ∈ C || return false # this code isn't closed under scalar multiplication
+			if mod.(λ*c̲, modulo) ∉ C
+				if verbose
+					println(λ, " ⋅ ", c̲, " = ", mod.(λ*c̲, modulo), " ∉ C")
+				end
+				return false # this code isn't closed under scalar multiplication
+			end
 		end
 		
 		for c̲ ∈ C, c̲′ ∈ C
 			if c̲ ≠ c̲′
-				mod.(c̲ + c̲′, modulo) ∈ C || return false # this code isn't closed under addition
+				if mod.(c̲ + c̲′, modulo) ∉ C
+					if verbose
+						println(c̲, " + ", c̲′, " = ", mod.(c̲ + c̲′, modulo), " ∉ C")
+					end
+					return false # this code isn't closed under addition
+				end
 			end
 		end
 	end
