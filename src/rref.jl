@@ -6,6 +6,10 @@
     
 include(joinpath(dirname(@__FILE__), "utils.jl"))
 
+#=
+Gauss-Jordan elimination over finite fields, modulo n
+=#
+
 function rref!(A::Matrix{Int},
     n::Integer;
     colswap::Bool=false,
@@ -16,15 +20,19 @@ function rref!(A::Matrix{Int},
     
     while i ≤ nrows && j ≤ ncols
         # Ignore zero rows.
-        if isnothing(__findfirstnonzero(A[i, :])) i += 1 end
+        if isnothing(__findfirstnonzero(A[i, :]))
+            i += 1
+            continue
+        end
         
         # Rule 1: Swap with the row above if out of order.
         if i > 1
             if isnothing(__findfirstnonzero(A[i - 1, :]))
-                A[i,:], A[j,:] = A[j,:], A[i,:]
+                A[i,:], A[i - 1,:] = A[i - 1,:], A[i,:]
                 if verbose
-                    println("r$(i) ⟷ r$(j)")
+                    println("r$(i) ⟷ r$(i - 1)")
                 end
+                continue
             end
         end
         
@@ -33,7 +41,9 @@ function rref!(A::Matrix{Int},
         α = invmod(A[i, s], n)
         A[i,:] .= mod.(A[i,:] * α, n)
         if verbose
-            isone(α) || println("r$(i) × $(α)")
+            if ! iszero(α)
+                isone(α) || println("r$(i) × $(α)")
+            end
         end
         
         # Rule 3: Subtract it from the others
@@ -43,14 +53,17 @@ function rref!(A::Matrix{Int},
                 β = A[k, s]
                 A[k,:] .= mod.(A[k,:] - β * A[i,:], n)
                 if verbose
-                    if isone(β)
-                        println("r$(k) - r$(i)")
-                    else
-                        println("r$(k) - $(β)r$(i)")
+                    if ! iszero(β)
+                        if isone(β)
+                            println("r$(k) - r$(i)")
+                        else
+                            println("r$(k) - $(β)r$(i)")
+                        end
                     end
                 end
             end
         end
+        i += 1
         
         # Rule 4: Swap columns if needed (and allowed)
         if colswap
@@ -66,6 +79,10 @@ function rref!(A::Matrix{Int},
         # increment counters
         i += 1
         j += 1
+    end
+    
+    if verbose
+        println()
     end
 
     return A

@@ -108,7 +108,7 @@ __ensure_symbolic(Σ::AbstractArray) = __deepeltype(Σ) isa Symbol ? Σ : __deep
 
 __lessthanorequal(x, y)::Bool = isequal(x, y) || isless(x, y)
 
-__findfirstnonzero(row::Vector)::Integer = findfirst(x -> ! iszero(x), row::Vector)
+__findfirstnonzero(row::Vector)::Union{Integer, Nothing} = findfirst(x -> ! iszero(x), row::Vector)
 
 #=
 Checks if a matrix has an identity in it.
