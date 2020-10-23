@@ -175,7 +175,7 @@ Finds all possible combinations of words of length n using q symbols from alphab
 @generated function get_all_words(Σ::AbstractArray, q::Integer, ::Val{n}) where n
 	quote
 		C = Tuple[]
-		Σ = __ensure_symbolic(Σ)
+		Σ = ensure_symbolic(Σ)
 		Σ = unique(Σ)
 			
 		Base.Cartesian.@nloops $n i d -> Σ begin
@@ -196,12 +196,12 @@ Get a list of messages with q letters in the alphabet, and word size of n
 =#
 function get_codewords_greedy(Σ::AbstractArray, q::Integer, n::Integer, d::Integer)
 	C = Tuple[]
-	Σ = __ensure_symbolic(Σ)
+	Σ = ensure_symbolic(Σ)
 	Σ = unique(Σ)
 	all_codewords = get_all_words(Σ, q, n)
 	
 	for wᵢ in all_codewords
-		__push_if_allowed!(C, wᵢ, d)
+		push_if_allowed!(C, wᵢ, d)
 	end
 	
 	return C
@@ -212,14 +212,14 @@ get_codewords_greedy(q::Integer, n::Integer, d::Integer) = get_codewords_greedy(
 
 function get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer)
 	C = Tuple[]
-	Σ = __ensure_symbolic(Σ)
+	Σ = ensure_symbolic(Σ)
 	Σ = unique(Σ)
 	all_codewords = get_all_words(Σ, n)
 	
 	while ! isempty(all_codewords)
 		wᵢ = rand(all_codewords)
 		
-		__push_if_allowed!(C, wᵢ, d)
+		push_if_allowed!(C, wᵢ, d)
 		deleteat!(all_codewords, findall(x -> isequal(x, wᵢ), all_codewords))
 	end
 	
@@ -232,7 +232,7 @@ get_codewords_random(q::Integer, n::Integer, d::Integer) = get_codewords_random(
 function get_codewords(Σ::AbstractArray, q::Integer, n::Integer, d::Integer; m::Integer=10)
 	size = 0
 	C = Tuple[]
-	Σ = __ensure_symbolic(Σ)
+	Σ = ensure_symbolic(Σ)
 	Σ = unique(Σ)
 		
 	for _ in 1:m

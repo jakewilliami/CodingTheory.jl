@@ -57,7 +57,7 @@ function list_span(u̲::Vector, v̲::Vector, t̲::Vector, modulo::Integer)::Arra
 end
 
 function islinear(C::Vector, modulo::Integer; verbose::Bool=false)::Bool
-	__allequal_length_(C) || return false # not all codes are of the same length
+	allequal_length(C) || return false # not all codes are of the same length
 	block_length = length(C[1])
 	𝟎 = fill(0, block_length)
 		

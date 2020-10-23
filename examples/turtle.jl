@@ -21,7 +21,7 @@ function integer_search(stop_at::Integer)::Array{Array{Number, 1}}
     while true
         for q in 1:upper_bound, n in 1:upper_bound, d in 1:upper_bound
 			# skip configurations that have already been processed
-			# __arelessthan(upper_bound - increment_bound, q, n, d) && continue
+			# arelessthan(upper_bound - increment_bound, q, n, d) && continue
 			(q, n, d) ∈ processed && continue
             hb = hamming_bound(q, n, d, no_round)
 			push!(processed, (q, n, d))
@@ -69,7 +69,7 @@ function draw_turtle(stop_at::Integer; specific::Bool=false)
 	# distance shouldn't be larger than the block length; filter trivial distances of one; we filter out combinations when all are equal; filter out codes that are generalised hamming codes; filter out even distances
 	for row in eachrow(df)
 		if specific
-			if row.d < row.n && ! isone(row.d) && ! __allequal(row.q, row.n, row.d) && ! iszero(mod(row.d, 2)) && ! isone(row.hamming_bound) && ! ishammingbound(BigInt(row.q), BigInt(row.n), BigInt(row.d))
+			if row.d < row.n && ! isone(row.d) && ! allequal(row.q, row.n, row.d) && ! iszero(mod(row.d, 2)) && ! isone(row.hamming_bound) && ! ishammingbound(BigInt(row.q), BigInt(row.n), BigInt(row.d))
 				continue
 			end
 		else
