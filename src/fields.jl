@@ -63,7 +63,7 @@ function islinear(C::Vector, modulo::Integer; verbose::Bool=false)::Bool
 		
 	if 𝟎 ∉ C
 		if verbose
-			println("The zero vector 0̲ is not in C.")
+			println("The zero vector 0̲ is not in C.\n")
 		end
 		return false # the zero vector is not in the code
 	end
@@ -72,7 +72,7 @@ function islinear(C::Vector, modulo::Integer; verbose::Bool=false)::Bool
 		for λ in 0:modulo-1
 			if mod.(λ*c̲, modulo) ∉ C
 				if verbose
-					println(λ, " ⋅ ", c̲, " = ", mod.(λ*c̲, modulo), " ∉ C")
+					println(λ, " ⋅ ", c̲, " = ", mod.(λ*c̲, modulo), " ∉ C\n")
 				end
 				return false # this code isn't closed under scalar multiplication
 			end
@@ -82,12 +82,16 @@ function islinear(C::Vector, modulo::Integer; verbose::Bool=false)::Bool
 			if c̲ ≠ c̲′
 				if mod.(c̲ + c̲′, modulo) ∉ C
 					if verbose
-						println(c̲, " + ", c̲′, " = ", mod.(c̲ + c̲′, modulo), " ∉ C")
+						println(c̲, " + ", c̲′, " = ", mod.(c̲ + c̲′, modulo), " ∉ C\n")
 					end
 					return false # this code isn't closed under addition
 				end
 			end
 		end
+	end
+	
+	if verbose
+		println()
 	end
 	
 	return true
