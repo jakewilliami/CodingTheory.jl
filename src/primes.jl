@@ -4,7 +4,7 @@
     "${BASH_SOURCE[0]}" "$@"
     =#
     
-using Primes
+using Primes: primes, isprime
 
 #=
 You find the smallest pair (a,n) (small with respect to n) such that a^n is your target number. Then you need to check if a is prime.
