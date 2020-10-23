@@ -6,6 +6,10 @@
 	
 using LinearAlgebra: I
 
+function displaymatrix(M::AbstractArray)
+    return show(IOContext(stdout, :limit => true, :compact => true, :short => true), "text/plain", M); print("\n")
+end
+
 #=
 Check that all elements in a list are of equal length.
 =#
@@ -107,8 +111,6 @@ __deepeltype(::Type{T}) where T = T
 __ensure_symbolic(Σ::AbstractArray) = __deepeltype(Σ) isa Symbol ? Σ : __deepsym(Σ)
 
 __lessthanorequal(x, y)::Bool = isequal(x, y) || isless(x, y)
-
-__findfirstnonzero(row::Vector)::Union{Integer, Nothing} = findfirst(x -> ! iszero(x), row::Vector)
 
 #=
 Checks if a matrix has an identity in it.
