@@ -201,29 +201,12 @@ function get_codewords_greedy(Σ::AbstractArray, q::Integer, n::Integer, d::Inte
 	all_codewords = get_all_words(Σ, q, n)
 	
 	for wᵢ in all_codewords
-		__push_if_allowed!()
+		__push_if_allowed!(C, wᵢ, d)
 	end
 	
 	return C
 end
-@generated function get_codewords_greedy(Σ::AbstractArray, q::Integer, ::Val{n}, d::Integer) where n
-	quote
-		C = Tuple[]
-		Σ = __ensure_symbolic(Σ)
-		Σ = unique(Σ)
-			
-		Base.Cartesian.@nloops $n i d -> Σ begin
-			d > n && continue
-			wᵢ = Base.Cartesian.@ntuple $n i
-			
-			__push_if_allowed!(C, wᵢ, d)
-		end
-		
-		return C
-	end
-end
 
-get_codewords_greedy(Σ::AbstractArray, q::Integer, n::Integer, d::Integer) = get_codewords_greedy(Σ, q, Val(n), d)
 get_codewords_greedy(Σ::AbstractArray, n::Integer, d::Integer) = get_codewords_greedy(Σ, length(unique(Σ)), n, d) # if alphabet is given, then q is the length of that alphabet
 get_codewords_greedy(q::Integer, n::Integer, d::Integer) = get_codewords_greedy(Symbol[gensym() for _ in 1:q], q, n, d) # generate symbols if no alphabet is given
 
@@ -273,3 +256,23 @@ end
 
 get_codewords(Σ::AbstractArray, n::Integer,  d::Integer; m::Integer=10) = get_codewords(Σ, length(unique(Σ)), n, d, m=m) # if alphabet is given, then q is the length of that alphabet
 get_codewords(q::Integer, n::Integer,  d::Integer; m::Integer=10) = get_codewords(Symbol[gensym() for _ in 1:q], q, n, d, m=m) # generate symbols if no alphabet is given
+
+#=
+Get codewords by computing all linear combinations of the rows of the matrix, under modulo
+=#
+@generated function get_codewords(G::AbstractArray, ::Val{n}, m::Integer) where n
+    quote
+		codewords = []
+        Base.Cartesian.@nloops $n i d -> 0:m-1 begin
+			α = vec([(Base.Cartesian.@ntuple $n i)...])
+			word = zeros(Integer, size(G, 2))
+			for j in 1:$n
+				word = mod.(word .+ α[j] .* G[j,:], m)
+			end
+			push!(codewords, word)
+        end
+		
+		return codewords
+    end
+end
+get_codewords(G::AbstractArray, m::Integer) = get_codewords(G, Val(size(G, 1)), m)
