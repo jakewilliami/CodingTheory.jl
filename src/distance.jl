@@ -5,16 +5,7 @@
     "${BASH_SOURCE[0]}" "$@"
     =#
 
-#=
-Convert inner-most elements into symbols
-=#
-__deepsym(a) = Symbol.(a)
-__deepsym(a::AbstractArray) = __deepsym.(a)
-__deepeltype(a) = __deepeltype(typeof(a))
-(__deepeltype(::Type{T}) where T <: AbstractArray) = __deepeltype(eltype(T))
-__deepeltype(::Type{T}) where T = T
-__ensure_symbolic(Σ::AbstractArray) = __deepeltype(Σ) isa Symbol ? Σ : __deepsym(Σ)
-__lessthanorequal(x, y)::Bool = isequal(x, y) || isless(x, y)
+include(joinpath(dirname(@__FILE__), "utils.jl"))
 
 function hamming_distance(w₁, w₂)::Integer
     if ! isequal(length(w₁), length(w₂))

@@ -85,6 +85,14 @@ using Polynomials
 	@test length(get_codewords_greedy(5, 5, 3)) == 74
 	randq, randn = rand(1:8, 2)
 	@test length(get_all_words(randq, randn)) == big(randq)^randn
+	
+	@test syndrome([0, 2, 1, 2, 0, 1, 0], transpose(parity_check([1 0 0 0 2 2 2; 0 1 0 0 2 0 1; 0 0 1 0 1 0 2; 0 0 0 1 2 2 1], 3)), 3) == [0 0 0]
+	@test parity_check([1 0 0 0 2 2 2; 0 1 0 0 2 0 1; 0 0 1 0 1 0 2; 0 0 0 1 2 2 1], 3) == [1 1 2 1 1 0 0; 1 0 0 1 0 1 0; 1 2 1 2 0 0 1]
+	@test normal_form([1 2 0 1 2 1 2; 2 2 2 0 1 1 1; 1 0 1 1 2 1 2; 0 1 0 1 1 2 2], 3) == [1 0 0 0 2 2 2; 0 1 0 0 2 0 1; 0 0 1 0 1 0 2; 0 0 0 1 2 2 1]
+	@test equivalent_code([1 2 0 1 2 1 2; 2 2 2 0 1 1 1; 1 0 1 1 2 1 2; 0 1 0 1 1 2 2], 3) == [1 0 0 0 2 2 2; 0 1 0 0 2 0 1; 0 0 1 0 1 0 2; 0 0 0 1 2 2 1]
+	@test parity_check(normal_form([1 2 0 1 2 1 2; 2 2 2 0 1 1 1; 1 0 1 1 2 1 2; 0 1 0 1 1 2 2], 3), 3) == [1 1 2 1 1 0 0; 1 0 0 1 0 1 0; 1 2 1 2 0 0 1]
+	@test isincode([0, 2, 1, 2, 0, 1, 0], transpose(parity_check([1 0 0 0 2 2 2; 0 1 0 0 2 0 1; 0 0 1 0 1 0 2; 0 0 0 1 2 2 1], 3)), 3) == true
+	@test isincode([1, 0, 2, 2, 1, 2, 1], transpose(parity_check([1 0 0 0 2 2 2; 0 1 0 0 2 0 1; 0 0 1 0 1 0 2; 0 0 0 1 2 2 1], 3)), 3) == false
 end # end runtests
 
 

@@ -14,11 +14,14 @@ export list_polys, multiplication_table, list_span, islinear, isirreducible
 export hamming_distance, hamming_ball, code_distance, t_error_detecting,
         t_error_correcting, find_error_detection_max, find_error_correction_max
 export levenshtein, levenshtein!
+export normal_form!, normal_form, equivalent_code!, equivalent_code, generator!,
+        generator, parity_check, syndrome, isincode
 export rref, rref!
 
 include(joinpath(dirname(@__FILE__), "messages.jl"))
 include(joinpath(dirname(@__FILE__), "distance.jl"))
 include(joinpath(dirname(@__FILE__), "fields.jl"))
+include(joinpath(dirname(@__FILE__), "algebra.jl"))
 include(joinpath(dirname(@__FILE__), "rref.jl"))
 
 end # end module
