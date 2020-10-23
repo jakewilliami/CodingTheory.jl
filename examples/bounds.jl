@@ -38,11 +38,11 @@ function integer_search(stop_at::Integer)::Array{Array{Number, 1}}
     while true
         for q in 1:upper_bound, n in 1:upper_bound, d in 1:upper_bound
 			# skip configurations that have already been processed
-			# __arelessthan(upper_bound - increment_bound, q, n, d) && continue
+			# arelessthan(upper_bound - increment_bound, q, n, d) && continue
 			(q, n, d) ∈ processed && continue
             # note that we actually don't want to filter out non-linear codes
 			# distance shouldn't be larger than the block length; filter trivial distances of one; we filter out combinations when all are equal; filter out codes that are generalised hamming codes; filter out even distances
-			if d < n && ! isone(d) && ! __allequal(q, n, d) && ! ishammingbound(q, n, d) && ! iszero(mod(d, 2))
+			if d < n && ! isone(d) && ! allequal(q, n, d) && ! ishammingbound(q, n, d) && ! iszero(mod(d, 2))
                 hb = hamming_bound(q, n, d, no_round)
                 if isinteger(hb) && ! isone(hb)
 					push!(processed, (q, n, d))
@@ -82,7 +82,7 @@ function bound_comparison(stop_at::Integer)::Tuple{Int, Array{Array{Number, 1}}}
     while true
         for q in 1:upper_bound, n in 1:upper_bound, d in 1:upper_bound
 			# skip configurations that have already been processed
-			# __arelessthan(upper_bound - increment_bound, q, n, d) && continue
+			# arelessthan(upper_bound - increment_bound, q, n, d) && continue
 			(q, n, d) ∈ processed && continue
 			# remove q non prime powers
             if isprimepower(big(q))
@@ -90,7 +90,7 @@ function bound_comparison(stop_at::Integer)::Tuple{Int, Array{Array{Number, 1}}}
                 sb = singleton_bound(q, n, d)
 				# filter out the more trivial bounds that are one (or if distance is one); filter out distances that are more than or equal to the block length, as they don't make sense in our context; filter out even distances
 				# if d < n || 1 ∉ (hb, sb, d)
-				if d < n && ! isone(d) && ! __allequal(q, n, d) && ! iszero(mod(d, 2))
+				if d < n && ! isone(d) && ! allequal(q, n, d) && ! iszero(mod(d, 2))
 					push!(processed, (q, n, d))
 					# i += 1; println("$i:\t$q, $n, $d")
                     comparison = hb > sb ? 1 : (sb > hb ? -1 : 0)

@@ -7,7 +7,7 @@
 include(joinpath(dirname(dirname(@__FILE__)), "src", "CodingTheory.jl"))
 
 using .CodingTheory
-import .CodingTheory.__deepsym
+import .CodingTheory.deepsym
 
 using Test
 using Polynomials
@@ -16,8 +16,8 @@ using Polynomials
 	@test hamming_distance("ABC", "DBC") == 1
 	@test hamming_distance("ABC", "DEF") == 3
 	
-	@test hamming_ball([[1, 0, 1], [0, 1, 1], [1, 0, 0]], [1, 0, 0], 2) == __deepsym([[1, 0, 1], [1, 0, 0]])
-	@test hamming_ball(list_span([2, 2, 2], [1, 2, 0], [0, 2, 1], 3), [1, 0, 0], 3) == __deepsym([[0, 0, 0], [0, 2, 1], [0, 1, 2], [1, 2, 0], [1, 1, 1], [1, 0, 2], [2, 1, 0], [2, 0, 1], [2, 2, 2]])
+	@test hamming_ball([[1, 0, 1], [0, 1, 1], [1, 0, 0]], [1, 0, 0], 2) == deepsym([[1, 0, 1], [1, 0, 0]])
+	@test hamming_ball(list_span([2, 2, 2], [1, 2, 0], [0, 2, 1], 3), [1, 0, 0], 3) == deepsym([[0, 0, 0], [0, 2, 1], [0, 1, 2], [1, 2, 0], [1, 1, 1], [1, 0, 2], [2, 1, 0], [2, 0, 1], [2, 2, 2]])
 	
 	@test rate(3, 5, 4) ≈ 0.3662433802
 	
@@ -50,6 +50,8 @@ using Polynomials
 	@test rref([1 1 0 2 3 1; 2 0 1 3 4 1; 1 2 2 1 4 3], 5, colswap=false) == [1 0 3 0 2 2; 0 1 2 0 1 1; 0 0 0 1 0 4]
 	@test rref([1 1 0 2 3 1; 2 0 1 3 4 1; 1 2 2 1 4 3], 5, colswap=true) == [1 0 0 3 2 2; 0 1 0 2 1 1; 0 0 1 0 0 4]
 	@test rref([1 2 0 1 2 1 2;  2 2 2 0 1 1 1; 1 0 1 1 2 1 2; 0 1 0 1 1 2 2], 3) == [1 0 0 0 2 2 2; 0 1 0 0 2 0 1; 0 0 1 0 1 0 2; 0 0 0 1 2 2 1]
+	@test rref([0 0 0 0 0; 1 0 1 0 1; 0 1 0 1 1; 1 1 1 1 0], 2) == [1 0 1 0 1; 0 1 0 1 1; 0 0 0 0 0; 0 0 0 0 0]
+	@test rref([1 1 1 0; 1 1 0 1; 0 0 1 1], 2) == [1 1 0 1; 0 0 1 1; 0 0 0 0]
 	
 	@test multiplication_table(2, 3) == Polynomial[Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]) Polynomial([0]); Polynomial([0]) Polynomial([1]) Polynomial([2]) Polynomial([0, 1]) Polynomial([1, 1]) Polynomial([2, 1]) Polynomial([0, 2]) Polynomial([1, 2]) Polynomial([2, 2]); Polynomial([0]) Polynomial([2]) Polynomial([1]) Polynomial([0, 2]) Polynomial([2, 2]) Polynomial([1, 2]) Polynomial([0, 1]) Polynomial([2, 1]) Polynomial([1, 1]); Polynomial([0]) Polynomial([0, 1]) Polynomial([0, 2]) Polynomial([0, 0, 1]) Polynomial([0, 1, 1]) Polynomial([0, 2, 1]) Polynomial([0, 0, 2]) Polynomial([0, 1, 2]) Polynomial([0, 2, 2]); Polynomial([0]) Polynomial([1, 1]) Polynomial([2, 2]) Polynomial([0, 1, 1]) Polynomial([1, 2, 1]) Polynomial([2, 0, 1]) Polynomial([0, 2, 2]) Polynomial([1, 0, 2]) Polynomial([2, 1, 2]); Polynomial([0]) Polynomial([2, 1]) Polynomial([1, 2]) Polynomial([0, 2, 1]) Polynomial([2, 0, 1]) Polynomial([1, 1, 1]) Polynomial([0, 1, 2]) Polynomial([2, 2, 2]) Polynomial([1, 0, 2]); Polynomial([0]) Polynomial([0, 2]) Polynomial([0, 1]) Polynomial([0, 0, 2]) Polynomial([0, 2, 2]) Polynomial([0, 1, 2]) Polynomial([0, 0, 1]) Polynomial([0, 2, 1]) Polynomial([0, 1, 1]); Polynomial([0]) Polynomial([1, 2]) Polynomial([2, 1]) Polynomial([0, 1, 2]) Polynomial([1, 0, 2]) Polynomial([2, 2, 2]) Polynomial([0, 2, 1]) Polynomial([1, 1, 1]) Polynomial([2, 0, 1]); Polynomial([0]) Polynomial([2, 2]) Polynomial([1, 1]) Polynomial([0, 2, 2]) Polynomial([2, 1, 2]) Polynomial([1, 0, 2]) Polynomial([0, 1, 1]) Polynomial([2, 0, 1]) Polynomial([1, 2, 1])]
 	

@@ -35,7 +35,7 @@ end
 	)::Matrix{T}) where T <: Integer = generator!(copy(M), n, colswap=colswap)
 	
 function parity_check(M::AbstractArray{T}, n::Integer)::Matrix{T} where T <: Integer
-	if ! __has_identity(M)
+	if ! has_identity(M)
 		throw(error("This matrix is not in normal form.  Use normal_form or equivalent_code."))
 	end
 	

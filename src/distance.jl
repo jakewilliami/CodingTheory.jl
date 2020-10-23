@@ -29,10 +29,10 @@ Get the codewords of radius e of a ball centered at w
 function __hamming_space(relation::Function, Σⁿ::AbstractArray{T}, w::AbstractArray, e::Integer) where T# <: AbstractArray
 	e < 0 && throw(error("e (the ball \"radius\") must be a non-negative number."))
 	
-	w = __ensure_symbolic(w)
+	w = ensure_symbolic(w)
 	ball = []
 	
-	for v in __deepsym(Σⁿ)
+	for v in deepsym(Σⁿ)
 		relation(hamming_distance(w, v), e) && push!(ball, v)
 	end
 	
@@ -40,7 +40,7 @@ function __hamming_space(relation::Function, Σⁿ::AbstractArray{T}, w::Abstrac
 end
 
 hamming_ball(Σⁿ::AbstractArray{T}, w::AbstractArray, e::Integer) where T =
-	__hamming_space(__lessthanorequal, Σⁿ, w, e)
+	__hamming_space(lessthanorequal, Σⁿ, w, e)
 hamming_sphere(Σⁿ::AbstractArray{T}, w::AbstractArray, e::Integer) where T =
 	__hamming_space(isequal, Σⁿ, w, e)
 
@@ -48,7 +48,7 @@ hamming_sphere(Σⁿ::AbstractArray{T}, w::AbstractArray, e::Integer) where T =
 Convert contents of nested arrays into symbols
 =#
 function code_distance(C::AbstractArray{T})::Integer where T <: AbstractArray{Any}
-	return code_distance(__deepsym(C))
+	return code_distance(deepsym(C))
 end
 
 # function code_distance(C::AbstractArray{Int})::Integer
