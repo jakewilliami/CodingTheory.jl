@@ -4,15 +4,25 @@
     "${BASH_SOURCE[0]}" "$@"
     =#
 	
+include(joinpath(dirname(@__FILE__), "abstract_types.jl"))
 include(joinpath(dirname(@__FILE__), "utils.jl"))
 
 using Polynomials
 using Mods
 using LinearAlgebra
 
-struct PolynomialField end
+struct FinitePolynomial <: FiniteField
+	p::AbstractPolynomial
+	n::Integer
+	
+	function FinitePolynomial(p::AbstractPolynomial, n::Integer)
+		p = Polynomial(mod.(p.coeffs, n))
+		new(p, n)
+	end
+end
 
-Base.mod(p::Polynomial, n::Integer) = Polynomial(mod.(p.coeffs, n))
+Base.mod(p::Polynomial, n::Integer) = FinitePolynomial(p, n).p
+Polynomial(A::Union{Tuple, AbstractArray}, n::Integer) = mod(Polynomial(A), n)
 
 function list_polys(n::Integer, m::Integer)::AbstractArray
 	return collect(Polynomial(collect(t)) for t in Iterators.product([0:(m-1) for i in 1:n]...))
