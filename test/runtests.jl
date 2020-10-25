@@ -12,7 +12,7 @@ import .CodingTheory.deepsym
 using Test
 using Polynomials
 
-@testset "CodingTheory.jl" begin
+@time @testset "CodingTheory.jl" begin
 	@test hamming_distance("ABC", "DBC") == 1
 	@test hamming_distance("ABC", "DEF") == 3
 	
@@ -29,6 +29,8 @@ using Polynomials
 	@test find_error_correction_max([[0, 0, 0, 0], [0, 1, 1, 1], [1, 0, 1, 0], [1, 1, 0, 1]], 2) == 0
 	@test find_error_correction_max(list_span([1, 0, 1, 0], [0, 1, 1, 1], 2), 2) == 0
 	@test find_error_detection_max(list_span([1, 0, 1, 0], [0, 1, 1, 1], 2), 2) == 1
+	
+	@test Polynomial([1, 2, 3, 4, 5, 6, 7, 8, 9], 3) == Polynomial([1, 2, 0, 1, 2, 0, 1, 2])
 	
 	@test isirreducible(Polynomial([1, 1, 0, 0, 1]), 2) == true
 	@test isirreducible(Polynomial([1, 1, 1, 0, 1, 1]), 2) == true
