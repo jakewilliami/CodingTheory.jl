@@ -21,7 +21,7 @@ We assume that Alice and Bob communicate by sending sequences of symbols from a 
 Similarly, Bob has a decoding function
 <p align="center">
     D : &Sigma;<sup>n</sup> &longrightarrow; C &cup; {?},
-</p> 
+</p>
 
 Where Bob uses the *?* symbol when he cannot confidently decode.  So if Alice wishes to communicate a message, she transmits a code word *w = E(M)*.  *w* may be corrupted to *w' &ne; w*.  Then Bob can decode *w'* as *E<sup>-1</sup>(D(w))*.  If Bob is not certain how to decode, then *D(w')* may be '*?*', which means that Bob can tell an error has occurred but is not certain what that error is.
 
@@ -31,14 +31,15 @@ If *&Mellintrf; &SubsetEqual; &Sigma;<sup>k</sup>* is the set of messages, then 
 ## Examples
 
 ```julia
-julia> hamming_distance("ABC", "BBC") # computes the hamming distance (only supports strings currently)
+julia> using CodingTheory
+
+julia> hamming_distance("ABC", "BBC") # computes the hamming distance
 1
 
-julia> hamming_distance("ABC", "DEF")
-3
-
-julia> hamming_ball([[1, 0, 1], [0, 1, 1], [1, 0, 0]], [1, 0, 0], 2) # given a list of words, a word, and a distance e (respectively), calculate all the words in the alphabet within distance e of that word
-Array{T,1} where T[[1, 0, 1], [1, 0, 0]]
+julia> hamming_ball([[1, 0, 1], [0, 1, 1], [1, 0, 0]], [1, 0, 0], 2) # given a list of words, a word, and a distance e (respectively), calculate all the words in the alphabet within distance e of that word.  Converts to symbols in order to keep unique lengths
+2-element Array{Any,1}:
+ [Symbol("1"), Symbol("0"), Symbol("1")]
+ [Symbol("1"), Symbol("0"), Symbol("0")]
 
 julia> t_error_detecting([[1, 0, 1], [0, 1, 1], [1, 0, 0]], 3)
 false
@@ -46,17 +47,8 @@ false
 julia> find_error_detection_max([[0, 0, 0, 0], [0, 1, 1, 1], [1, 0, 1, 0], [1, 1, 0, 1]], 2)
 1
 
-julia> find_error_correction_max(list_span([1, 0, 1, 0], [0, 1, 1, 1], 2), 2)
-0
-
 julia> isirreducible(Polynomial([1, 1, 0, 0, 1]), 2) # is 1 + x + x^4 mod 2 irreducible?
 true
-
-julia> mod(rem(Polynomial([1, 1, 2, 0, 1, 2, 1]), Polynomial([2, 1, 1])), 3) # modulo arithmetic on the remainder of polynomials
-Polynomial(1.0 + 1.0*x)
-
-julia> mod(rem(Polynomial([0, 1, 0, 1, 0, 0, 1]), Polynomial([1, 0, 1])), 2)
-Polynomial(1.0)
 
 julia> julia> multiplication_table(2, 3) # multiplication table of all polynomials of degree less than 3 modulo 2
 9×9 Array{Polynomial,2}:
@@ -85,9 +77,6 @@ julia> list_span([2, 1, 1], [1, 1, 1], 3) # list the span of two vectors modulo 
 julia> islinear([[0,0,0],[1,1,1],[1,0,1],[1,1,0]], 2) # checks whether a vector of vectors is linear/a subspace (modulo 2)
 false
 
-julia> islinear([[0,0,0],[1,1,1],[1,0,1],[0,1,0]], 2)
-true
-
 julia> code_distance([[0,0,0,0,0],[1,0,1,0,1],[0,1,0,1,0],[1,1,1,1,1]]) # gets the minimum distance between two vectors in an array of vectors
 2
 
@@ -109,16 +98,56 @@ julia> construct_ham_matrix(3,2)
 julia> isperfect(11, 6, 5, 3)
 true
 
-julia> isperfect(11, 6, 5, 4)
-false
-
 julia> isgolayperfect(11, 6, 5, 3)
 true
 
 julia> ishammingperfect(11, 6, 5, 3)
 false
 
-julia> ishammingperfect(3, 2)
+julia> rref([1 1 0 2 3 1; 2 0 1 3 4 1; 1 2 2 1 4 3], 5, colswap=true) # gauss-jordan elimitation modulo 5 with column swapping
+3×6 Array{Int64,2}:
+ 1  0  0  3  2  2
+ 0  1  0  2  1  1
+ 0  0  1  0  0  4
+
+julia> get_codewords(["a", "b", "c"], 3, 2) # get codewords of block length 3 with distance 2.  Once again, are symbols for uniqueness
+9-element Array{Tuple,1}:
+ (:c, :b, :b)
+ (:b, :c, :b)
+ (:b, :b, :c)
+ (:c, :c, :a)
+ (:c, :a, :c)
+ (:a, :c, :c)
+ (:a, :b, :a)
+ (:b, :a, :a)
+ (:a, :a, :b)
+
+julia> get_all_words(2, 2) # all words of block length 2 using 2 unique symbols
+4-element Array{Tuple,1}:
+(Symbol("##258"), Symbol("##258"))
+(Symbol("##259"), Symbol("##258"))
+(Symbol("##258"), Symbol("##259"))
+(Symbol("##259"), Symbol("##259"))
+
+julia> syndrome([0, 2, 1, 2, 0, 1, 0], transpose(parity_check([1 0 0 0 2 2 2; 0 1 0 0 2 0 1; 0 0 1 0 1 0 2; 0 0 0 1 2 2 1], 3)), 3)
+1×3 Array{Int64,2}:
+ 0  0  0
+
+julia> normal_form([1 2 0 1 2 1 2; 2 2 2 0 1 1 1; 1 0 1 1 2 1 2; 0 1 0 1 1 2 2], 3) # computes rref colswap = false
+4×7 Array{Int64,2}:
+1  0  0  0  2  2  2
+0  1  0  0  2  0  1
+0  0  1  0  1  0  2
+0  0  0  1  2  2  1
+
+julia> equivalent_code([1 2 0 1 2 1 2; 2 2 2 0 1 1 1; 1 0 1 1 2 1 2; 0 1 0 1 1 2 2], 3) # computes rref colswap = true
+4×7 Array{Int64,2}:
+1  0  0  0  2  2  2
+0  1  0  0  2  0  1
+0  0  1  0  1  0  2
+0  0  0  1  2  2  1
+
+julia> isincode([0, 2, 1, 2, 0, 1, 0], transpose(parity_check([1 0 0 0 2 2 2; 0 1 0 0 2 0 1; 0 0 1 0 1 0 2; 0 0 0 1 2 2 1], 3)), 3) # tests if the syndrome is equal to the zero vector, and is thus in the code
 true
 ```
 
