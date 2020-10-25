@@ -12,7 +12,7 @@ import .CodingTheory.deepsym
 using Test
 using Polynomials
 
-@testset "CodingTheory.jl" begin
+@time @testset "CodingTheory.jl" begin
 	@test hamming_distance("ABC", "DBC") == 1
 	@test hamming_distance("ABC", "DEF") == 3
 	
