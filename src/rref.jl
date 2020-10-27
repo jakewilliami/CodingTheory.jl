@@ -67,7 +67,7 @@ function rref!(A::Matrix{Int},
         for k in 1:nrows
             if i ≠ k
                 β = A[k, s]
-                A[k, :] .= mod.(A[k, :] - β .* A[i, :], n)
+                A[k, :] .= mod.(A[k, :] .- β .* A[i, :], n)
                 if verbose
                     if ! iszero(β)
                         if isone(β)
