@@ -6,11 +6,6 @@ os:
   - osx
   - windows
 
-arch:
-  - amd64
-  - x86
-  - arm64
-
 julia:
   - 1.5
   - nightly
