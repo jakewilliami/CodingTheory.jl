@@ -85,7 +85,7 @@ using Polynomials
 	@test isgolayperfect(11, 6, 5, 4) == false
 	
 	@test length(get_codewords(5, 5, 3)) ∈ [74:74...]
-	@test length(get_codewords(4, 7, 3; m = 1)) ∈ [256:301...]
+	@test length(get_codewords(4, 7, 3; m = 1)) ∈ [256:303...]
 	@test length(get_codewords_greedy(5, 5, 3)) == 74
 	randq, randn = rand(1:8, 2)
 	@test length(get_all_words(randq, randn)) == big(randq)^randn
