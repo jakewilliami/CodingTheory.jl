@@ -85,7 +85,7 @@ end
 Takes in an array and a word.  As long as the word does not mean that the distance is smaller than d, we add w to the array
 =#
 function push_if_allowed!(C::AbstractArray{T}, w::T, d::Integer) where T
-	isempty(C) && push!(C, w)
+	isempty(C) && return push!(C, w)
 	
 	for c in C
 		if hamming_distance(c, w) < d
