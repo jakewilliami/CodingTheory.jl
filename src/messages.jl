@@ -179,7 +179,7 @@ function get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Inte
 		wᵢ = rand(all_codewords)
 		
 		push_if_allowed!(C, wᵢ, d)
-		deleteat!(all_codewords, findall(x -> isequal(x, wᵢ), all_codewords))
+		deleteat!(all_codewords, findfirst(x -> isequal(x, wᵢ), all_codewords))
 	end
 	
 	return C
