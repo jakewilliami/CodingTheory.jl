@@ -6,6 +6,26 @@
 
 # Adapted from Levenshtein.jl
 
+"""
+    levenshtein(source::AbstractString, target::AbstractString) -> Integer
+    levenshtein(source::AbstractString, target::AbstractString, cost::Real) -> Integer
+    levenshtein(
+        source::AbstractString,
+        target::AbstractString,
+        deletion_cost::R,
+        insertion_cost::S,
+        substitution_cost::T) -> Integer
+    levenshtein!(
+        source::AbstractString,
+        target::AbstractString,
+        deletion_cost::R,
+        insertion_cost::S,
+        substitution_cost::T,
+        costs::Matrix = Array{promote_type(R, S, T)}(undef, 2, length(target) + 1)
+    ) -> Integer
+    
+Computes the Levenshtein distance.  *These methods are adapted from Levenshtein.jl, by Roger Tu.*
+"""
 function levenshtein(source::AbstractString, target::AbstractString)
     return levenshtein(source, target, 1)
 end
@@ -19,7 +39,8 @@ function levenshtein(
     target::AbstractString,
     deletion_cost::R,
     insertion_cost::S,
-    substitution_cost::T) where {R<:Real,S<:Real,T<:Real}
+    substitution_cost::T) where {R <: Real, S <: Real, T <: Real}
+    
     return levenshtein!(target, source, insertion_cost, deletion_cost, substitution_cost)
 end
 
@@ -30,13 +51,15 @@ function levenshtein!(
     insertion_cost::S,
     substitution_cost::T,
     costs::Matrix = Array{promote_type(R, S, T)}(undef, 2, length(target) + 1)
-) where {R<:Real,S<:Real,T<:Real}
+) where {R <: Real, S <: Real, T <: Real}
+
     cost_type = promote_type(R,S,T)
+    
     if length(source) < length(target)
         # Space complexity of function = O(length(target))
         return levenshtein!(target, source, insertion_cost, deletion_cost, substitution_cost, costs)
     else
-        if length(target) == 0
+        if iszero(length(target))
             return length(source) * deletion_cost
         else
             old_cost_index = 1
@@ -61,7 +84,7 @@ function levenshtein!(
                     deletion = costs[old_cost_index, j + 1] + deletion_cost
                     insertion = costs[new_cost_index, j] + insertion_cost
                     substitution = costs[old_cost_index, j]
-                    if r != c
+                    if r ≠ c
                         substitution += substitution_cost
                     end
 
@@ -72,6 +95,7 @@ function levenshtein!(
             end
 
             new_cost_index = old_cost_index
+            
             return costs[new_cost_index, length(target) + 1]
         end
     end

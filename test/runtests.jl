@@ -7,7 +7,7 @@
 include(joinpath(dirname(dirname(@__FILE__)), "src", "CodingTheory.jl"))
 
 using .CodingTheory
-import .CodingTheory.deepsym
+import .CodingTheory.deepsym, .CodingTheory.displaymatrix
 
 using Test
 using Polynomials
@@ -100,9 +100,3 @@ using Polynomials
 	@test isincode([0, 2, 1, 2, 0, 1, 0], transpose(parity_check([1 0 0 0 2 2 2; 0 1 0 0 2 0 1; 0 0 1 0 1 0 2; 0 0 0 1 2 2 1], 3)), 3) == true
 	@test isincode([1, 0, 2, 2, 1, 2, 1], transpose(parity_check([1 0 0 0 2 2 2; 0 1 0 0 2 0 1; 0 0 1 0 1 0 2; 0 0 0 1 2 2 1], 3)), 3) == false
 end # end runtests
-
-
-# helper function
-function displaymatrix(M::AbstractArray)
-    return show(IOContext(stdout, :limit => true, :compact => true, :short => true), "text/plain", M); print("\n")
-end

@@ -5,8 +5,6 @@
     "${BASH_SOURCE[0]}" "$@"
     =#
 
-include(joinpath(dirname(@__FILE__), "utils.jl"))
-
 """
 	hamming_distance(w₁, w₂) -> Integer
 
@@ -62,7 +60,7 @@ Returns:
   - AbstractArray: The list of words in Σⁿ whose distance from w is less than or equal to e.  Returns an array of array of symbols.
 """
 hamming_ball(Σⁿ::AbstractArray{T}, w::AbstractArray, e::Integer) where T =
-	__hamming_space(lessthanorequal, Σⁿ, w, e)
+	__hamming_space(≤, Σⁿ, w, e)
 
 """
 	hamming_sphere(Σⁿ::AbstractArray, w::AbstractArray, e::Integer) -> Vector{Vector}

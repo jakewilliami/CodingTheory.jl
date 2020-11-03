@@ -4,11 +4,8 @@
     "${BASH_SOURCE[0]}" "$@"
     =#
 
-include(joinpath(dirname(@__FILE__), "abstract_types.jl"))
-include(joinpath(dirname(@__FILE__), "distance.jl"))
-include(joinpath(dirname(@__FILE__), "utils.jl"))
-include(joinpath(dirname(@__FILE__), "primes.jl"))
-include(joinpath(dirname(@__FILE__), "rref.jl"))
+include("distance.jl")
+include("primes.jl")
 
 """
 	rate(q::Integer, M::Integer, n::Integer) -> Real
