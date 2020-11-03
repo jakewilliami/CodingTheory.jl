@@ -10,24 +10,86 @@ include(joinpath(dirname(@__FILE__), "utils.jl"))
 include(joinpath(dirname(@__FILE__), "primes.jl"))
 include(joinpath(dirname(@__FILE__), "rref.jl"))
 
-using LinearAlgebra: I
+"""
+	rate(q::Integer, M::Integer, n::Integer) -> Real
+	
+Calculate the rate of a code.  That is, how efficient the code is.
 
-#=
-n is the word length
-q is the number of symbols in the code
-M is the size/number of elements in the code
-=#
+Parameters:
+  - q::Integer: the number of symbols in the code.
+  - M::Integer: the size/number of elements in the code.
+  - n::Integer: The word length.
+
+Returns:
+  - Real: Rate of the code.
+"""
 rate(q::Integer, M::Integer, n::Integer) = log(q, M) / n
 
 __spheres(q::Integer, n::Integer, r::Integer) = sum([((big(q) - 1)^i) * binomial(big(n), big(i)) for i in 0:r])
 __sphere_bound(round_func::Function, q::Integer, n::Integer, d::Integer) = round_func((big(q)^n) / __spheres(q, n, d))
-sphere_covering_bound(q::Integer, n::Integer, d::Integer)::Integer = __sphere_bound(ceil, q, n, d - 1)
-sphere_packing_bound(q::Integer, n::Integer, d::Integer)::Integer = __sphere_bound(floor, q, n, Int(floor((d - 1) / 2)))
-sphere_packing_bound(q::Integer, n::Integer, d::Integer, ::Rounding)::Real = __sphere_bound(identity, q, n, Int(floor((d - 1) / 2)))
-hamming_bound(q::Integer, n::Integer, d::Integer)::Integer = sphere_packing_bound(q, n, d)
-hamming_bound(q::Integer, n::Integer, d::Integer, ::Rounding)::Real = sphere_packing_bound(q, n, d, no_round)
-singleton_bound(q::Number, n::Number, d::Number)::Real = float(big(q))^(big(n) - big(d) + 1)
 
+"""
+	sphere_covering_bound(q::Integer, n::Integer, d::Integer) -> Integer
+	
+Computes the sphere covering bound of a [n, d]q-code.
+
+Parameters:
+  - q::Integer: the number of symbols in the code.
+  - n::Integer: the word length.
+  - d::Integer: the distance of the code.
+  
+Returns:
+  - Integer: the sphere covering bound.
+"""
+sphere_covering_bound(q::Integer, n::Integer, d::Integer) = __sphere_bound(ceil, q, n, d - 1)
+
+"""
+	sphere_packing_bound(q::Integer, n::Integer, d::Integer) -> Integer
+	sphere_packing_bound(q::Integer, n::Integer, d::Integer, ::Rounding) -> Real
+	
+Computes the sphere packing bound of a [n, d]q-code.  The sphere packing bound is also known as the hamming bound.  You can use `hamming_bound` to compute the same thing.
+
+Parameters:
+  - q::Integer: the number of symbols in the code.
+  - n::Integer: the word length.
+  - d::Integer: the distance of the code.
+  - ::Rounding: use the argument `no_round` in this position to preserve the rounding of the code &mdash; which usually by default rounds down.
+  
+Returns:
+  - Integer: the sphere packing bound.
+"""
+sphere_packing_bound(q::Integer, n::Integer, d::Integer) = __sphere_bound(floor, q, n, Int(floor((d - 1) / 2)))
+sphere_packing_bound(q::Integer, n::Integer, d::Integer, ::Rounding) = __sphere_bound(identity, q, n, Int(floor((d - 1) / 2)))
+hamming_bound(q::Integer, n::Integer, d::Integer) = sphere_packing_bound(q, n, d)
+hamming_bound(q::Integer, n::Integer, d::Integer, ::Rounding) = sphere_packing_bound(q, n, d, no_round)
+
+"""
+	sphere_packing_bound(q::Integer, n::Integer, d::Integer) -> Real
+	
+Computes the Singleton bound of a [n, d]q-code.
+
+Parameters:
+  - q::Integer: the number of symbols in the code.
+  - n::Integer: the word length.
+  - d::Integer: the distance of the code.
+  
+Returns:
+  - Real: the Singleton bound.  Can round down, as it is an equivalent to the Hamming bound in that it is an upper bound.
+"""
+singleton_bound(q::Number, n::Number, d::Number) = float(big(q))^(big(n) - big(d) + 1)
+
+"""
+	construct_ham_matrix(r::Integer, q::Integer) -> Matrix
+	
+Construct a Hamming parity-check matrix.
+
+Parameters:
+  - r::Integer: number of rows of a parity check matrix.
+  - q:::Integer: The size of the alphabet of the code.
+  
+Returns:
+  - Matrix: The Hamming matrix, denoted as Ham(r, q)
+"""
 function construct_ham_matrix(r::Integer, q::Integer)::Matrix
     ncols = Int(floor((q^r - 1) / (q - 1)))
     M = Matrix{Integer}(undef, r, ncols)
@@ -39,12 +101,20 @@ function construct_ham_matrix(r::Integer, q::Integer)::Matrix
     return M
 end
 
-#=
-n is the word length
-k is the dimension of the code (i.e., )
-d is the distance of the code
-If C ⊆ 𝔽_q^n, then C is over the field modulo q
-=#
+"""
+	isperfect(n::Integer, k::Integer, d::Integer, q::Integer) -> Bool
+	
+Checks if a code is perfect.  That is, checks if the number of words in the code is exactly the "Hamming bound", or the "Sphere Packing Bound".
+	
+Parameters:
+  - q:::Integer: The size of the alphabet of the code.
+  - n::Integer: The length of the words in the code (block length).
+  - d::Integer: The distance of the code.
+  - k::Integer: The dimension of the code.
+  
+Returns:
+  - Bool: true or false
+"""
 function isperfect(
     n::Integer,
     k::Integer,
@@ -62,6 +132,18 @@ function isperfect(
     end
 end
 
+"""
+	ishammingbound(r::Integer, q::Integer) -> Bool
+	
+Checks if the code is a perfect code that is of the form of a generalised Hamming code.
+	
+Parameters:
+  - r::Integer: number of rows of a parity check matrix.
+  - q:::Integer: The size of the alphabet of the code.
+  
+Returns:
+  - Bool: true or false
+"""
 function ishammingperfect(r::Integer, q::Integer)::Bool
     n = 2^r - 1
     k = n - r
@@ -79,13 +161,28 @@ function ishammingperfect(r::Integer, q::Integer)::Bool
     return false
 end
 
+"""
+	ishammingperfect(n::Integer, k::Integer, d::Integer, q::Integer) -> Bool
+	ishammingperfect(q::Integer, n::Integer, d::Integer) -> Bool
+	
+Checks if the code is a perfect code that is of the form of a generalised Hamming code.
+	
+Parameters:
+  - q:::Integer: The size of the alphabet of the code.
+  - n::Integer: The length of the words in the code (block length).
+  - d::Integer: The distance of the code.
+  - k::Integer: The dimension of the code.
+  
+Returns:
+  - Bool: true or false
+"""
 function ishammingperfect(
     n::Integer,
     k::Integer,
     d::Integer,
-    q::Integer)::Bool
+    q::Integer)
     
-    isprimepower(q) || return false
+    ! isprimepower(q) && return false
     
     M = q^k
     r = log(ℯ, ((n * log(ℯ, 1)) / (log(ℯ, 2))) + 1) / log(ℯ, 2)
@@ -97,8 +194,8 @@ function ishammingperfect(
     return false
 end
 
-function ishammingbound(q::Integer, n::Integer, d::Integer)::Bool
-	! isprimepower(q) && return false
+function ishammingperfect(q::Integer, n::Integer, d::Integer)
+	! isprimepower(q) && return false # we are working in finite fields, so q must be a prime power
 	d ≠ 3 && return false
 	
 	r = 1
@@ -109,28 +206,51 @@ function ishammingbound(q::Integer, n::Integer, d::Integer)::Bool
 	return isequal(((q^r - 1) / (q - 1)), n) ? true : false
 end
 
+"""
+	isgolayperfect(n::Integer, k::Integer, d::Integer, q::Integer) -> Bool
+	
+Golay found two perfect codes.  `isgolayperfect` checks if a code of block length n, distance d, alphabet size q, and dimension k, is a perfect code as described by Golay.
+
+Parameters:
+  - n::Integer: The block length of words in the code (e.g., word "abc" has block length 3).
+  - k::Integer: The dimension of the code.
+  - d::Integer: The distance of the code (i.e., the minimum distance between codewords in the code).
+  - q::Integer: An integer that is a prime power.  The modulus of the finite field.
+  
+Returns:
+  - Bool: true or false.
+"""
 function isgolayperfect(
     n::Integer,
     k::Integer,
     d::Integer,
-    q::Integer)::Bool
+    q::Integer)
     
+	! isprimepower(q) &&  false # we are working in finite fields, so q must be a prime power
     M = q^k
-    
-    if isequal(q, 2) && isequal(n, 23) && isequal(d, 7) && isequal(M, 2^12)
-        return true
-    end
-    
-    if isequal(q, 3) && isequal(n, 11) && isequal(d, 5) && isequal(M, 3^6)
-        return true
-    end
-    
+    (isequal(q, 2) && isequal(n, 23) && isequal(d, 7) && isequal(M, 2^12)) && return true
+    (isequal(q, 3) && isequal(n, 11) && isequal(d, 5) && isequal(M, 3^6)) && return true
     return false
 end
 
-#=
-Finds all possible combinations of words of length n using q symbols from alphabet Σ
-=#
+"""
+	get_all_words(Σ::AbstractArray, q::Integer, ::Val{n}) 	-> Array{Tuple{Symbol}, 1}
+	get_all_words(Σ::AbstractArray, q::Integer, n::Integer) -> Array{Tuple{Symbol}, 1}
+	get_all_words(Σ::AbstractArray, n::Integer)				-> Array{Tuple{Symbol}, 1}
+	get_all_words(q::Integer, n::Integer)					-> Array{Tuple{Symbol}, 1}
+	
+Get the universe of all codewords of a given alphabet.  The alphabet will be uniquely generated if none is given.
+	
+Parameters:
+  - Σ::AbstractArray: The alphabet allowed.
+  - q::Integer: The size of the alphabet.
+  - n::Integer: The (fixed) length of the words in the code.
+  - d::Integer: The minimum distance between words in the code.
+  - 𝒰::AbstractArray: The universe of all codewords of q many letters of block length n.
+  
+Returns:
+  - Array{Tuple{Symbol}, 1}: An array of codewords.  Each codewords is a tuple, and each character in said word is a symbol.
+"""
 @generated function get_all_words(Σ::AbstractArray, q::Integer, ::Val{n}) where n
 	quote
 		C = Tuple[]
@@ -150,9 +270,26 @@ get_all_words(Σ::AbstractArray, q::Integer, n::Integer) = get_all_words(Σ, q, 
 get_all_words(Σ::AbstractArray, n::Integer) = get_all_words(Σ, length(unique(Σ)), n) # if alphabet is given, then q is the length of that alphabet
 get_all_words(q::Integer, n::Integer) = get_all_words(Symbol[gensym() for _ in 1:q], q, n) # generate symbols if no alphabet is given
 
-#=
-Get a list of messages with q letters in the alphabet, and word size of n
-=#
+"""
+	get_codewords_greedy(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray) -> Array{Tuple{Symbol}, 1}
+	get_codewords_greedy(Σ::AbstractArray, n::Integer, d::Integer, 𝒰::AbstractArray) -> Array{Tuple{Symbol}, 1}
+	get_codewords_greedy(q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray)	-> Array{Tuple{Symbol}, 1}
+	get_codewords_greedy(Σ::AbstractArray, q::Integer, n::Integer, d::Integer) -> Array{Tuple{Symbol}, 1}
+	get_codewords_greedy(Σ::AbstractArray, n::Integer, d::Integer) -> Array{Tuple{Symbol}, 1}
+	get_codewords_greedy(q::Integer, n::Integer, d::Integer) -> Array{Tuple{Symbol}, 1}
+	
+Search through the universe of all codewords and find a code of block length n and distance d, using the alphabet Σ.  The alphabet will be uniquely generated if none is given.
+	
+Parameters:
+  - Σ::AbstractArray: The alphabet allowed.
+  - q::Integer: The size of the alphabet.
+  - n::Integer: The (fixed) length of the words in the code.
+  - d::Integer: The minimum distance between words in the code.
+  - 𝒰::AbstractArray: The universe of all codewords of q many letters of block length n.
+  
+Returns:
+  - Array{Tuple{Symbol}, 1}: An array of codewords.  Each codewords is a tuple, and each character in said word is a symbol.
+"""
 function get_codewords_greedy(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray)
 	C = Tuple[]
 	Σ = ensure_symbolic(Σ)
@@ -181,6 +318,26 @@ get_codewords_greedy(Σ::AbstractArray, n::Integer, d::Integer) =
 get_codewords_greedy(q::Integer, n::Integer, d::Integer) =
 	get_codewords_greedy(Symbol[gensym() for _ in 1:q], q, n, d, get_all_words(q, n))
 
+"""
+	get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray) -> Array{Tuple{Symbol}, 1}
+	get_codewords_random(Σ::AbstractArray, n::Integer, d::Integer, 𝒰::AbstractArray) -> Array{Tuple{Symbol}, 1}
+	get_codewords_random(q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray)	-> Array{Tuple{Symbol}, 1}
+	get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer) -> Array{Tuple{Symbol}, 1}
+	get_codewords_random(Σ::AbstractArray, n::Integer, d::Integer) -> Array{Tuple{Symbol}, 1}
+	get_codewords_random(q::Integer, n::Integer, d::Integer) -> Array{Tuple{Symbol}, 1}
+	
+Search through the universe of all codewords at random and find a code of block length n and distance d, using the alphabet Σ.  The alphabet will be uniquely generated if none is given.
+	
+Parameters:
+  - Σ::AbstractArray: The alphabet allowed.
+  - q::Integer: The size of the alphabet.
+  - n::Integer: The (fixed) length of the words in the code.
+  - d::Integer: The minimum distance between words in the code.
+  - 𝒰::AbstractArray: The universe of all codewords of q many letters of block length n.
+  
+Returns:
+  - Array{Tuple{Symbol}, 1}: An array of codewords.  Each codewords is a tuple, and each character in said word is a symbol.
+"""
 function get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray)
 	C = Tuple[]
 	Σ = ensure_symbolic(Σ)
@@ -213,6 +370,27 @@ get_codewords_random(Σ::AbstractArray, n::Integer, d::Integer) =
 get_codewords_random(q::Integer, n::Integer, d::Integer) =
 	get_codewords_random(Symbol[gensym() for _ in 1:q], q, n, d, get_all_words(q, n))
 
+"""
+	get_codewords(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray; m::Integer=10) -> Array{Tuple{Symbol}, 1}
+	get_codewords(Σ::AbstractArray, n::Integer, d::Integer, 𝒰::AbstractArray; m::Integer=10) -> Array{Tuple{Symbol}, 1}
+	get_codewords(q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray; m::Integer=10) -> Array{Tuple{Symbol}, 1}
+	get_codewords(Σ::AbstractArray, q::Integer, n::Integer, d::Integer; m::Integer=10) -> Array{Tuple{Symbol}, 1}
+	get_codewords(Σ::AbstractArray, n::Integer, d::Integer; m::Integer=10) -> Array{Tuple{Symbol}, 1}
+	get_codewords(q::Integer, n::Integer, d::Integer; m::Integer=10) -> Array{Tuple{Symbol}, 1}
+
+Use function `get_codewords_random` m many times, and `get_codewords_greedy`.  Return the code with the greatest number of words.  The alphabet will be uniquely generated if none is given.  You can omit Σ and 𝒰.  You can omit q if Σ is given.
+	
+Parameters:
+  - Σ::AbstractArray: The alphabet allowed.
+  - q::Integer: The size of the alphabet.
+  - n::Integer: The (fixed) length of the words in the code.
+  - d::Integer: The minimum distance between words in the code.
+  - 𝒰::AbstractArray: The universe of all codewords of q many letters of block length n.
+  - m::Integer (kwarg): Try a random code m many times.
+  
+Returns:
+  - Array{Tuple{Symbol}, 1}: An array of codewords.  Each codewords is a tuple, and each character in said word is a symbol.
+"""
 function get_codewords(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray; m::Integer=10)
 	code_size = 0
 	C = Tuple[]
@@ -255,9 +433,18 @@ get_codewords(Σ::AbstractArray, n::Integer, d::Integer; m::Integer=10) =
 get_codewords(q::Integer, n::Integer, d::Integer; m::Integer=10) =
 	get_codewords(Symbol[gensym() for _ in 1:q], q, n, d, get_all_words(q, n), m = m)
 
-#=
-Get codewords by computing all linear combinations of the rows of the matrix, under modulo
-=#
+"""
+	get_codewords(G::AbstractArray, m::Integer) -> Array{Tuple{Symbol}, 1}
+
+Get codewords of a code from the generating matrix under a finite field of modulo m.  Precisely, computes all linear combinations of the rows of the generating matrix.
+	
+Parameters:
+  - G::AbstractArray: A matrix of integers which generates the code.
+  - m::Integer: The bounds of the finite field (i.e., the molulus you wish to work in).
+  
+Returns:
+  - Array{Tuple{Symbol}, 1}: An array of codewords.  Each codewords is a tuple, and each character in said word is a symbol.
+"""
 function get_codewords(G::AbstractArray, m::Integer)
 	codewords = Vector()
 	rows = Vector(undef, size(G, 2))
