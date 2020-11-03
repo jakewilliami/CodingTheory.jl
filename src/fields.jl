@@ -15,20 +15,21 @@ using LinearAlgebra
 	struct FinitePolynomial <: FiniteField
 		
 Has parameters `p`, which is an abstract polynomial, and `n` which is the modulus of the field under which the molynomial is defined.
-"""
-struct FinitePolynomial <: FiniteField
-	p::AbstractPolynomial
-	n::Integer
-end
 
-"""
+---
+
 	FinitePolynomial(p::AbstractPolynomial, n::Integer)
 
 A constructor method for `FinitePolynomial`.  Takes in a polynomial `p` and a number `n`, and constructs a polynomial under modulo n.
 """
-function FinitePolynomial(p::AbstractPolynomial, n::Integer)
-	p = Polynomial(mod.(p.coeffs, n))
-	new(p, n)
+struct FinitePolynomial <: FiniteField
+	p::AbstractPolynomial
+	n::Integer
+	
+	function FinitePolynomial(p::AbstractPolynomial, n::Integer)
+		p = Polynomial(mod.(p.coeffs, n))
+		new(p, n)
+	end
 end
 
 """
@@ -112,7 +113,7 @@ Parameters:
 Returns:
   - Array: All vectors in the span of u̲ and v̲, under modulo.
 """
-function list_span(u̲::Vector, v̲::Vector, modulo::Integer)
+function list_span(u̲::Vector, v̲::Vector, modulo::Integer)::Array{Array{Int, 1}}
 	span = Vector[]
 	
 	for λ in 0:modulo-1, γ in 0:modulo-1
@@ -125,7 +126,7 @@ function list_span(u̲::Vector, v̲::Vector, modulo::Integer)
 	return span
 end
 
-function list_span(u̲::Vector, v̲::Vector, t̲::Vector, modulo::Integer)
+function list_span(u̲::Vector, v̲::Vector, t̲::Vector, modulo::Integer)::Array{Array{Int, 1}}
 	span = Vector[]
 	
 	for λ in 0:modulo-1, γ in 0:modulo-1, α in 0:modulo-1

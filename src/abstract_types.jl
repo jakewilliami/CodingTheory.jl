@@ -18,44 +18,45 @@ abstract type AbstractCode end
     struct Alphabet <: AbstractCode
         
 Has the parameter Σ, which is the alphabet; a collection of strings, characters, symbols, or integers.
+
+---
+
+    Alphabet(Σ::AbstractArray)
+
+A constructor method for the struct Alphabet.  Takes an array of letters in the alphabet, and attempts to parse them as 64-bit integers.
+    
+---
+
+    Alphabet(Σ::AbstractArray)
+
+A constructor method for the struct Alphabet.  Takes in a symbols and splits it into constituent characters.  Those symbols are the letters in the alphabet.  Will attempt to parse these as 64-bit integers.
 """
 struct Alphabet <: AbstractCode
     Σ::Union{AbstractString, AbstractChar, Symbol, Integer, AbstractArray{T}} where T
+    
+    function Alphabet(Σ::AbstractArray)
+        Σ = unique(Σ)
+        
+        try
+            Σ = parse.(Int, Σ)
+        catch
+        end
+        
+        new(Σ)
+    end # end constructor function
+
+    function Alphabet(Σ::AbstractString)
+        Σ = collect(unique(Σ))
+        
+        try
+            Σ = parse.(Int, Σ)
+        catch
+            Σ = Symbol.(Σ)
+        end
+        
+        new(Σ)
+    end # end constructor function
 end # end struct
-
-# constructor methods for Alphabet
-"""
-    Alphabet(Σ::AbstractArray)
-    
-A constructor method for the struct Alphabet.  Takes an array of letters in the alphabet, and attempts to parse them as 64-bit integers.
-"""
-function Alphabet(Σ::AbstractArray)
-    Σ = unique(Σ)
-    
-    try
-        Σ = parse.(Int, Σ)
-    catch
-    end
-    
-    new(Σ)
-end # end constructor function
-
-"""
-    Alphabet(Σ::AbstractArray)
-    
-A constructor method for the struct Alphabet.  Takes in a symbols and splits it into constituent characters.  Those symbols are the letters in the alphabet.  Will attempt to parse these as 64-bit integers.
-"""
-function Alphabet(Σ::AbstractString)
-    Σ = collect(unique(Σ))
-    
-    try
-        Σ = parse.(Int, Σ)
-    catch
-        Σ = Symbol.(Σ)
-    end
-    
-    new(Σ)
-end # end constructor function
 
 """
     struct Messages <: AbstractCode
