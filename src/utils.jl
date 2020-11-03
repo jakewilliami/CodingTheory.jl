@@ -3,8 +3,6 @@
     exec julia --project="$(realpath $(dirname $(dirname $0)))" --color=yes --startup-file=no -e "include(popfirst!(ARGS))" \
     "${BASH_SOURCE[0]}" "$@"
     =#
-	
-using LinearAlgebra: I
 
 """
 	displaymatrix(M::AbstractArray)
@@ -146,7 +144,7 @@ ensure_symbolic!(Σ::AbstractArray) = deepeltype(Σ) isa Symbol ? Σ : deepsym(�
 
 Ensures that the inner-most elements of a nested array structure are of the type `Symbol`.
 """
-ensure_symbolic(Σ::AbstractArray) = ensure_symbolic(copy(Σ))
+ensure_symbolic(Σ::AbstractArray) = ensure_symbolic!(copy(Σ))
 
 """
 	has_identity(M::Matrix) -> Bool

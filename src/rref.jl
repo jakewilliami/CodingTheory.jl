@@ -3,8 +3,6 @@
     exec julia --project="$(realpath $(dirname $(dirname $0)))" --color=yes --startup-file=no -e "include(popfirst!(ARGS))" \
     "${BASH_SOURCE[0]}" "$@"
     =#
-    
-include(joinpath(dirname(@__FILE__), "utils.jl"))
 
 #=
 Gauss-Jordan elimination over finite fields, modulo n

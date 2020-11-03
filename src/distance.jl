@@ -5,8 +5,6 @@
     "${BASH_SOURCE[0]}" "$@"
     =#
 
-include(joinpath(dirname(@__FILE__), "utils.jl"))
-
 """
 	hamming_distance(w₁, w₂) -> Integer
 

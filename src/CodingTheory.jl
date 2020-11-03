@@ -6,25 +6,37 @@
     
 module CodingTheory
 
+using Primes: isprime, primes
+using LinearAlgebra: I
+using Polynomials
+
+include("utils.jl")
+
+# Abstract types
 export FinitePolynomial, AbstractCode, Alphabet, Messages, no_round
-export Alphabet, Messages, rate, sphere_covering_bound, sphere_packing_bound,
+
+# RREF
+export rref, rref!
+
+# Messages, Distance, and Primes
+export rate, sphere_covering_bound, sphere_packing_bound,
         construct_ham_matrix, isperfect, ishammingperfect, isgolayperfect,
         get_codewords_greedy, get_codewords_random, get_all_words,
         get_codewords
-export FinitePolynomial, list_polys, multiplication_table, list_span, islinear,
-        isirreducible
 export hamming_distance, hamming_ball, code_distance, t_error_detecting,
         t_error_correcting, find_error_detection_max, find_error_correction_max
-export levenshtein, levenshtein!
-export normal_form!, normal_form, equivalent_code!, equivalent_code, generator!,
-        generator, parity_check, syndrome, isincode
-export rref, rref!
+export isprimepower
 
-include(joinpath(dirname(@__FILE__), "abstract_types.jl"))
-include(joinpath(dirname(@__FILE__), "messages.jl"))
-include(joinpath(dirname(@__FILE__), "distance.jl"))
-include(joinpath(dirname(@__FILE__), "fields.jl"))
-include(joinpath(dirname(@__FILE__), "algebra.jl"))
-include(joinpath(dirname(@__FILE__), "rref.jl"))
+# Algebra
+export FinitePolynomial, list_polys, multiplication_table, list_span, islinear, isirreducible, normal_form!, normal_form, equivalent_code!, equivalent_code, generator!, generator, parity_check, syndrome, isincode
+
+# Levenshtein
+export levenshtein, levenshtein!
+
+include("abstract_types.jl")
+include("rref.jl")
+include("messages.jl") # implicitly exports distance.jl and primes.jl
+include("algebra.jl")
+include("levenshtein.jl")
 
 end # end module
