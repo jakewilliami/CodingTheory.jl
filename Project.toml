@@ -1,7 +1,7 @@
 name = "CodingTheory"
 uuid = "89c41d41-0018-4667-9435-0b7cbc9fb764"
 authors = ["Jake W. Ireland <jakewilliami@icloud.com> and contributors"]
-version = "0.2.0"
+version = "0.2.1"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
