@@ -197,39 +197,36 @@ Examples:
 """
 has_identity(M::Matrix) = isequal(M[:, 1:size(M, 1)], I(size(M, 1))) ? true : false
 
-function Base.iterate(iter::UniverseIterator) 
-	if (iter.n == 0 || iter.q == 0) 
+function Base.iterate(iter::UniverseParameters)
+	if iszero(iter.n) || iszero(iter.q)
 		return nothing
 	end
-	element = ntuple(x->iter.alphabet[1], iter.n) # TODO Integer Indexing of universe?
+	
+	element = ntuple(_ -> first(iter.Σ.Σ), iter.n)
+	
 	return element, element
 end
 
-function Base.iterate(iter::UniverseIterator, state)
-	# if (areequalto(iter.alphabet[end], state)) 
-	#     return nothing
-	# end
+function Base.iterate(iter::UniverseParameters, state)
 	word = [i for i in state]
 	i = 1
-	while word[i] == iter.alphabet[end]
-		word[i] = iter.alphabet[1]
-		if i == length(word)
+	
+	while isequal(word[i], last(iter.Σ.Σ))
+		word[i] = first(iter.Σ.Σ)
+		
+		if isequal(i, length(word))
 			return nothing
 		end
+		
 		i += 1
 	end
 
-	alphabet_index = findfirst(isequal(word[i]), iter.alphabet)
-	word[i] = iter.alphabet[alphabet_index + 1]
-
-	# alphabet_index = findfirst(isequal(word[next]), iter.alphabet)
-	# print(alphabet_index)
-	# word[next] = iter.alphabet[alphabet_index + 1]
-
+	alphabet_index = findfirst(isequal(word[i]), iter.Σ.Σ)
+	word[i] = iter.Σ.Σ[alphabet_index + 1]
 	element = ntuple(x -> word[x], iter.n)
+	
 	return element, element
 end
 
-Base.length(iter::UniverseIterator) = iter.q ^ iter.n
-
-Base.eltype(iter::UniverseIterator) = Tuple{Symbol}
+Base.length(iter::UniverseParameters) = iter.q^iter.n
+Base.eltype(iter::UniverseParameters) = Tuple{Symbol}

@@ -35,50 +35,79 @@ struct Alphabet <: AbstractCode
     Σ::Union{AbstractString, AbstractChar, Symbol, Integer, AbstractArray{T}} where T
     
     function Alphabet(Σ::AbstractArray)
-        Σ = unique(Σ)
-        
-        try
-            Σ = parse.(Int, Σ)
-        catch
-        end
+        Σ = unique(deepsym(Σ))
         
         new(Σ)
     end # end constructor function
 
     function Alphabet(Σ::AbstractString)
-        Σ = collect(unique(Σ))
-        
-        try
-            Σ = parse.(Int, Σ)
-        catch
-            Σ = Symbol.(Σ)
-        end
+        Σ = deepsym(collect(unique(Σ)))
         
         new(Σ)
     end # end constructor function
 end # end struct
 
 """
-    struct Messages <: AbstractCode
+    struct CodeUniverse <: AbstractCode
     
-Defines a structure for the messages in the code.  Parameters are the abstract array of messages `ℳ`, and the length of the messages `block_length`.
+Defines a structure for the messages in the code.  Parameters are the abstract array of messages `C`, and the length of the messages `n`.
 
-    Messages(ℳ::AbstractArray)
+    CodeUniverse(C::AbstractArray, Σ::Alphabet)
     
-An inner constructor function on the structure `Messages`.  Ensures the messages are all of equal length.
+An inner constructor function on the structure `CodeUniverse`.
 """
-struct Messages <: AbstractCode
-    ℳ::AbstractArray
-    block_length::Integer
+struct CodeUniverse <: AbstractCode
+    C::AbstractArray
+    Σ::Alphabet
+    q::Integer
+    n::Integer # block length
     
-    function Messages(ℳ::AbstractArray)
+    
+    function CodeUniverse(C::AbstractArray, Σ::Alphabet)
         message_length_error = "We have fixed the block length of each message.  Please ensure all messages are of equal length."
-        _allequal_length_(ℳ) || throw(error("$(message_length_error)"))
+        _allequal_length_(C) || throw(error("$(message_length_error)"))
         
-        block_length = length(rand(ℳ)) # choose arbitrary message in the list of messages
+        q = length(Σ)
+        n = length(rand(C)) # choose arbitrary message in the list of messages
         
-        new(ℳ, block_length)
+        new(C, Σ, q, n)
     end # end constructor function
+end
+
+"""
+    struct UniverseParameters <: AbstractCode
+    
+Defines a structure for the messages in the code.  Parameters are the alphabet `Σ`, size of alphabet `q`, and block length `n`
+
+    UniverseParameters(Σ::Alphabet, n::Integer)
+    UniverseParameters(Σ::AbstractArray, n::Integer)
+    UniverseParameters(q::Integer, n::Integer)
+    
+An inner constructor function on the structure `UniverseParameters`.
+"""
+struct UniverseParameters <: AbstractCode
+    Σ::Alphabet
+    q::Integer
+    n::Integer # block length
+    
+    function UniverseParameters(Σ::Alphabet, n::Integer)
+        q = length(Σ.Σ)
+        
+        new(Σ, q, n)
+    end
+    
+    function UniverseParameters(Σ::AbstractArray, n::Integer)
+        Σ = Alphabet(Σ)
+        q = length(Σ.Σ)
+        
+        new(Σ, q, n)
+    end
+    
+    function UniverseParameters(q::Integer, n::Integer)
+        Σ = Alphabet([gensym() for i in 1:q])
+        
+        new(Σ, q, n)
+    end
 end
 
 """
