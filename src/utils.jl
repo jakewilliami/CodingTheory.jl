@@ -121,25 +121,6 @@ end
 end
 
 """
-	push_if_allowed!(C::AbstractArray{T}, w::T, d::Integer)
-
-Takes in an array and a word.  As long as the word does not mean that the distance is smaller than d, we add w to the array.  *This is a mutating function.  Use `push_if_allowed` for a non-mutating version of this function.*
-"""
-function push_if_allowed!(C::AbstractArray{T}, w::T, d::Integer) where T
-	isempty(C) && return push!(C, w)
-	
-	for c in C
-		if hamming_distance(c, w) < d
-			return nothing
-		end
-	end
-	
-	return push!(C, w)
-end
-
-push_if_allowed(C::AbstractArray{T}, w::T, d::Integer) where T = push_if_allowed!(copy(C), w, d)
-
-"""
 	deepsym(a::AbstractArray)
 
 Convert inner-most elements into symbols

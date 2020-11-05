@@ -10,6 +10,8 @@ using Primes: isprime, primes
 using LinearAlgebra: I
 using Polynomials
 
+include("utils.jl")
+
 # Abstract types
 export FinitePolynomial, AbstractCode, Alphabet, Messages, no_round, CodeUniverse, UniverseParameters
 
@@ -32,7 +34,6 @@ export FinitePolynomial, list_polys, multiplication_table, list_span, islinear, 
 export levenshtein, levenshtein!
 
 include("abstract_types.jl")
-include("utils.jl")
 include("rref.jl")
 include("messages.jl") # implicitly exports distance.jl and primes.jl
 include("algebra.jl")

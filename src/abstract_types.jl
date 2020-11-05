@@ -28,11 +28,12 @@ A constructor method for the struct Alphabet.  Takes an array of letters in the 
 ---
 
     Alphabet(Σ::AbstractArray)
+	Alphabet(Σ::AbstractString)
 
 A constructor method for the struct Alphabet.  Takes in a symbols and splits it into constituent characters.  Those symbols are the letters in the alphabet.  Will attempt to parse these as 64-bit integers.
 """
 struct Alphabet <: AbstractVector{Symbol}
-    values::AbstractArray{Symbol}
+    Σ::AbstractVector{Symbol}
     
     function Alphabet(Σ::AbstractArray)
         Σ = ensure_symbolic(unique(Σ))
@@ -48,17 +49,16 @@ struct Alphabet <: AbstractVector{Symbol}
 end # end struct
 
 # Indexing Interface
-
-Base.getindex(A::Alphabet, i) = A.values[i]
-Base.setindex!(A::Alphabet, v, i) = (A.values[i] = v)
-Base.firstindex(A::Alphabet) = firstindex(A.values)
-Base.lastindex(A::Alphabet) = lastindex(A.values)
+Base.getindex(A::Alphabet, i::Integer) = getindex(A.Σ, i)
+Base.setindex!(A::Alphabet, v, i::Integer) = setindex!(A.Σ, v, i)
+Base.firstindex(A::Alphabet) = firstindex(A.Σ)
+Base.lastindex(A::Alphabet) = lastindex(A.Σ)
 
 # Abstract Array Interface
-
-Base.size(A::Alphabet) = size(A.values)
-Base.getindex(A::Alphabet, i::Int) = getindex(A.values, i)
-Base.setindex!(A::Alphabet, v, i::Int) = setindex(A.values, v, i)
+Base.size(A::Alphabet) = size(A.Σ)
+Base.getindex(A::Alphabet, i::Integer) = getindex(A.Σ, i)
+Base.setindex!(A::Alphabet, v, i::Integer) = setindex(A.Σ, v, i)
+Base.rand(A::Alphabet) = rand(A.Σ)
 
 """
     struct CodeUniverse <: AbstractCode
@@ -123,28 +123,41 @@ struct UniverseParameters <: AbstractCode
     end
 end
 
+# Base case iterate method
 function Base.iterate(iter::UniverseParameters)
-	if iszero(iter.n) || iszero(iter.q)
-		return nothing
-	end
-	
-	element = ntuple(_ -> first(iter.Σ), iter.n)
-	
-	return element, BigInt(0)
+	(iszero(iter.n) || iszero(iter.q)) && return nothing
+    # the first iteration gets an ntuple of all the same letters
+	return ntuple(_ -> first(iter.Σ), iter.n), ones(Int, iter.n) # element, state
 end
 
 # "Induction" iterate method
-function Base.iterate(iter::UniverseParameters, state::BigInt)
-    state += 1
-    if state >= iter.q ^ iter.n
-        return nothing
+function Base.iterate(iter::UniverseParameters, state)
+	i = 1
+	while isequal(state[i], iter.q)
+		state[i] = 1
+		isequal(i, iter.n) && return nothing
+		i += 1
     end
-    word = ntuple(i -> iter.Σ[BigInt(floor(state / iter.q^(i-1))) % iter.q + 1], iter.n);
-	return word, state
+    
+    state[i] += 1
+	return ntuple(i -> iter.Σ[state[i]], iter.n), state
 end
 
+# Iteration inteface functions
 Base.length(iter::UniverseParameters) = iter.q^iter.n
 Base.eltype(iter::UniverseParameters) = Tuple{Symbol}
+Base.rand(𝒰::UniverseParameters) = rand(𝒰.Σ)
+
+# Other Base interface functions for UniverseParameters
+"""
+	rand(𝒰::UniverseParameters, C::AbstractArray) -> Tuple
+
+Given universe parameters 𝒰 and a code C, return a tuple including
+  - A random word in C;
+  - A random letter in the alphabet; and
+  - A random index in the block length.
+"""
+Base.rand(𝒰::UniverseParameters, C::AbstractArray) = rand.((C, 𝒰.Σ, 1:𝒰.n))
 
 """
     struct Rounding end
