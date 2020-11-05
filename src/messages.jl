@@ -231,7 +231,7 @@ function isgolayperfect(
 end
 
 """
-	get_all_words(Σ::AbstractArray, q::Integer, ::Val{n}) 	-> Array{Tuple{Symbol}, 1}
+	get_all_words(Σ::Alphabet, q::Integer, ::Val{n}) 		-> Array{Tuple{Symbol}, 1}
 	get_all_words(Σ::AbstractArray, q::Integer, n::Integer) -> Array{Tuple{Symbol}, 1}
 	get_all_words(Σ::AbstractArray, n::Integer)				-> Array{Tuple{Symbol}, 1}
 	get_all_words(q::Integer, n::Integer)					-> Array{Tuple{Symbol}, 1}
@@ -248,13 +248,11 @@ Parameters:
 Returns:
   - Array{Tuple{Symbol}, 1}: An array of codewords.  Each codewords is a tuple, and each character in said word is a symbol.
 """
-@generated function get_all_words(Σ::AbstractArray, q::Integer, ::Val{n}) where n
+@generated function get_all_words(Σ::Alphabet, q::Integer, ::Val{n}) where n
 	quote
 		C = Tuple[]
-		Σ = ensure_symbolic(Σ)
-		Σ = unique(Σ)
 			
-		Base.Cartesian.@nloops $n i d -> Σ begin
+		Base.Cartesian.@nloops $n i d -> Σ.Σ begin
 			wᵢ = Base.Cartesian.@ntuple $n i
 			push!(C, wᵢ)
 		end
@@ -263,9 +261,11 @@ Returns:
 	end
 end
 
-get_all_words(Σ::AbstractArray, q::Integer, n::Integer) = get_all_words(Σ, q, Val(n))
-get_all_words(Σ::AbstractArray, n::Integer) = get_all_words(Σ, length(unique(Σ)), n) # if alphabet is given, then q is the length of that alphabet
-get_all_words(q::Integer, n::Integer) = get_all_words(Symbol[gensym() for _ in 1:q], q, n) # generate symbols if no alphabet is given
+get_all_words(Σ::Alphabet, q::Integer, n::Integer) = get_all_words(Σ, q, Val(n))
+get_all_words(Σ::Alphabet, n::Integer) = get_all_words(Σ, length(unique(Σ)), n) # if alphabet is given, then q is the length of that alphabet
+get_all_words(Σ::AbstractArray, q::Integer, n::Integer) = get_all_words(Alphabet(Σ), q, Val(n))
+get_all_words(Σ::AbstractArray, n::Integer) = get_all_words(Alphabet(Σ), length(unique(Σ)), n) # if alphabet is given, then q is the length of that alphabet
+get_all_words(q::Integer, n::Integer) = get_all_words(Alphabet(Symbol[gensym() for _ in 1:q]), q, n) # generate symbols if no alphabet is given
 
 """
 	get_codewords_greedy(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray) -> Array{Tuple{Symbol}, 1}
@@ -287,10 +287,8 @@ Parameters:
 Returns:
   - Array{Tuple{Symbol}, 1}: An array of codewords.  Each codewords is a tuple, and each character in said word is a symbol.
 """
-function get_codewords_greedy(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray)
+function get_codewords_greedy(Σ::Alphabet, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray)
 	C = Tuple[]
-	Σ = ensure_symbolic(Σ)
-	Σ = unique(Σ)
 	
 	for wᵢ in 𝒰
 		push_if_allowed!(C, wᵢ, d)
@@ -299,21 +297,61 @@ function get_codewords_greedy(Σ::AbstractArray, q::Integer, n::Integer, d::Inte
 	return C
 end
 
-# if alphabet is given, then q is the length of that alphabet
-get_codewords_greedy(Σ::AbstractArray, n::Integer, d::Integer, 𝒰::AbstractArray) =
-	get_codewords_greedy(Σ, length(unique(Σ)), n, d, 𝒰)
-# generate symbols if no alphabet is given
-get_codewords_greedy(q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray) =
-	get_codewords_greedy(Symbol[gensym() for _ in 1:q], q, n, d, 𝒰)
-# if the universe of all possible codewords is not given, find it
-get_codewords_greedy(Σ::AbstractArray, q::Integer, n::Integer, d::Integer) =
-	get_codewords_greedy(Σ, q, n, d, get_all_words(Σ, q, n))
-# if the universe of all possible codewords is not given, find it and the size of the alphabet
-get_codewords_greedy(Σ::AbstractArray, n::Integer, d::Integer) =
-	get_codewords_greedy(Σ, length(unique(Σ)), n, d, get_all_words(Σ, n))
-# if only alphabet size, block length, and distance are given.
+function get_codewords_greedy(𝒰::UniverseParameters, d::Integer)
+	C = Tuple[]
+	
+	for wᵢ in 𝒰
+		push_if_allowed!(C, wᵢ, d)
+	end
+	
+	return C
+end
+
+get_codewords_greedy(Σ::Alphabet, q::Integer, n::Integer, d::Integer) =
+	get_codewords_greedy(UniverseParameters(Σ, q, n), d)
+
+get_codewords_greedy(Σ::Alphabet, n::Integer, d::Integer) =
+	get_codewords_greedy(UniverseParameters(Σ, n), d)
+
 get_codewords_greedy(q::Integer, n::Integer, d::Integer) =
-	get_codewords_greedy(Symbol[gensym() for _ in 1:q], q, n, d, get_all_words(q, n))
+	get_codewords_greedy(UniverseParameters(q, n), d)
+
+get_codewords_greedy(Σ::AbstractArray, q::Integer, n::Integer, d::Integer) =
+	get_codewords_greedy(Alphabet(Σ), q, n, d)
+	
+get_codewords_greedy(Σ::AbstractArray, n::Integer, d::Integer) =
+	get_codewords_greedy(UniverseParameters(Σ, n), d)
+	
+get_codewords_greedy(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray) =
+	get_codewords_greedy(Alphabet(Σ), q, n, d, 𝒰)
+
+# if alphabet is given, then q is the length of that alphabet
+# get_codewords_greedy(Σ::Alphabet, n::Integer, d::Integer, 𝒰::AbstractArray) =
+# 	get_codewords_greedy(Σ, length(unique(Σ)), n, d, 𝒰)
+# if the universe of all possible codewords is not given, find it
+# get_codewords_greedy(Σ::Alphabet, q::Integer, n::Integer, d::Integer) =
+# 	get_codewords_greedy(Σ, q, n, d, get_all_words(Σ, q, n))
+# if the universe of all possible codewords is not given, find it and the size of the alphabet
+# get_codewords_greedy(Σ::Alphabet, n::Integer, d::Integer) =
+# 	get_codewords_greedy(Σ, length(unique(Σ)), n, d, get_all_words(Σ, n))
+# if only alphabet size, block length, and distance are given.
+# get_codewords_greedy(q::Integer, n::Integer, d::Integer) =
+# 	get_codewords_greedy(Alphabet(Symbol[gensym() for _ in 1:q]), q, n, d, get_all_words(q, n))
+# if alphabet is given, then q is the length of that alphabet
+# get_codewords_greedy(Σ::AbstractArray, n::Integer, d::Integer, 𝒰::AbstractArray) =
+# 	get_codewords_greedy(Alphabet(Σ), length(unique(Σ)), n, d, 𝒰)
+# generate symbols if no alphabet is given
+# get_codewords_greedy(q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray) =
+# 	get_codewords_greedy(Alphabet(Symbol[gensym() for _ in 1:q]), q, n, d, 𝒰)
+# if the universe of all possible codewords is not given, find it
+# get_codewords_greedy(Σ::AbstractArray, q::Integer, n::Integer, d::Integer) =
+# 	get_codewords_greedy(Alphabet(Σ), q, n, d, get_all_words(Σ, q, n))
+# if the universe of all possible codewords is not given, find it and the size of the alphabet
+# get_codewords_greedy(Σ::AbstractArray, n::Integer, d::Integer) =
+# 	get_codewords_greedy(Alphabet(Σ), length(unique(Σ)), n, d, get_all_words(Σ, n))
+# if only alphabet size, block length, and distance are given.
+# get_codewords_greedy(q::Integer, n::Integer, d::Integer) =
+# 	get_codewords_greedy(Symbol[gensym() for _ in 1:q], q, n, d, get_all_words(q, n))
 
 """
 	get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray) -> Array{Tuple{Symbol}, 1}

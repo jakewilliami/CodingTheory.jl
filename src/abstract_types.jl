@@ -35,13 +35,13 @@ struct Alphabet <: AbstractCode
     Σ::Union{AbstractString, AbstractChar, Symbol, Integer, AbstractArray{T}} where T
     
     function Alphabet(Σ::AbstractArray)
-        Σ = unique(deepsym(Σ))
+        Σ = ensure_symbolic(unique(Σ))
         
         new(Σ)
     end # end constructor function
 
     function Alphabet(Σ::AbstractString)
-        Σ = deepsym(collect(unique(Σ)))
+        Σ = ensure_symbolic(collect(unique(Σ)))
         
         new(Σ)
     end # end constructor function
