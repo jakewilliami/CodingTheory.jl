@@ -65,9 +65,9 @@ using Polynomials
 	@test code_distance([[0,0,0,0,0],[1,0,1,0,1],[0,1,0,1,0],[1,1,1,1,1]]) == 2
 	@test code_distance([[0,0,0,0,0],[1,1,1,0,0],[0,0,0,1,1],[1,1,1,1,1],[1,0,0,1,1],[0,1,1,0,0]]) == 1
 	
-	@test Alphabet("123").Σ == deepsym([1, 2, 3])
-	@test Alphabet([1, 2, 3]).Σ == deepsym([1, 2, 3])
-	@test Alphabet(["1", "2", "3"]).Σ == deepsym([1, 2, 3])
+	@test Alphabet("123") == deepsym([1, 2, 3])
+	@test Alphabet([1, 2, 3]) == deepsym([1, 2, 3])
+	@test Alphabet(["1", "2", "3"]) == deepsym([1, 2, 3])
 	# TODO: write test for CodeUniverse struct
 	@test [i for i in UniverseParameters(["a", "b", "c"], 3)] == get_all_words(["a", "b", "c"], 3) # implicitly tests UniverseParameters _and_ Base.iterate extension
 	

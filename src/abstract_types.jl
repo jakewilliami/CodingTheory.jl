@@ -31,8 +31,8 @@ A constructor method for the struct Alphabet.  Takes an array of letters in the 
 
 A constructor method for the struct Alphabet.  Takes in a symbols and splits it into constituent characters.  Those symbols are the letters in the alphabet.  Will attempt to parse these as 64-bit integers.
 """
-struct Alphabet <: AbstractCode
-    Σ::Union{AbstractString, AbstractChar, Symbol, Integer, AbstractArray{T}} where T
+struct Alphabet <: AbstractVector{Symbol}
+    values::AbstractArray{Symbol}
     
     function Alphabet(Σ::AbstractArray)
         Σ = ensure_symbolic(unique(Σ))
@@ -46,6 +46,19 @@ struct Alphabet <: AbstractCode
         new(Σ)
     end # end constructor function
 end # end struct
+
+# Indexing Interface
+
+Base.getindex(A::Alphabet, i) = A.values[i]
+Base.setindex!(A::Alphabet, v, i) = (A.values[i] = v)
+Base.firstindex(A::Alphabet) = firstindex(A.values)
+Base.lastindex(A::Alphabet) = lastindex(A.values)
+
+# Abstract Array Interface
+
+Base.size(A::Alphabet) = size(A.values)
+Base.getindex(A::Alphabet, i::Int) = getindex(A.values, i)
+Base.setindex!(A::Alphabet, v, i::Int) = setindex(A.values, v, i)
 
 """
     struct CodeUniverse <: AbstractCode
@@ -91,14 +104,14 @@ struct UniverseParameters <: AbstractCode
     n::Integer # block length
     
     function UniverseParameters(Σ::Alphabet, n::Integer)
-        q = length(Σ.Σ)
+        q = length(Σ)
         
         new(Σ, q, n)
     end
     
     function UniverseParameters(Σ::AbstractArray, n::Integer)
         Σ = Alphabet(Σ)
-        q = length(Σ.Σ)
+        q = length(Σ)
         
         new(Σ, q, n)
     end
@@ -115,7 +128,7 @@ function Base.iterate(iter::UniverseParameters)
 		return nothing
 	end
 	
-	element = ntuple(_ -> first(iter.Σ.Σ), iter.n)
+	element = ntuple(_ -> first(iter.Σ), iter.n)
 	
 	return element, element
 end
@@ -124,8 +137,8 @@ function Base.iterate(iter::UniverseParameters, state)
 	word = [i for i in state]
 	i = 1
 	
-	while isequal(word[i], last(iter.Σ.Σ))
-		word[i] = first(iter.Σ.Σ)
+	while isequal(word[i], last(iter.Σ))
+		word[i] = first(iter.Σ)
 		
 		if isequal(i, length(word))
 			return nothing
@@ -134,8 +147,8 @@ function Base.iterate(iter::UniverseParameters, state)
 		i += 1
 	end
 
-	alphabet_index = findfirst(isequal(word[i]), iter.Σ.Σ)
-	word[i] = iter.Σ.Σ[alphabet_index + 1]
+	alphabet_index = findfirst(isequal(word[i]), iter.Σ)
+	word[i] = iter.Σ[alphabet_index + 1]
 	element = ntuple(x -> word[x], iter.n)
 	
 	return element, element
