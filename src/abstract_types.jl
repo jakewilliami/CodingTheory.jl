@@ -153,7 +153,7 @@ end
 
 # Iteration inteface functions
 Base.length(iter::UniverseParameters) = iter.q^iter.n
-Base.eltype(iter::UniverseParameters) = Tuple{Symbol}
+Base.eltype(iter::UniverseParameters) = NTuple{iter.n, Symbol}
 Base.rand(𝒰::UniverseParameters) = rand(𝒰.Σ)
 
 # Other Base interface functions for UniverseParameters
