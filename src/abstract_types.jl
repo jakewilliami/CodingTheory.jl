@@ -130,28 +130,17 @@ function Base.iterate(iter::UniverseParameters)
 	
 	element = ntuple(_ -> first(iter.Σ), iter.n)
 	
-	return element, element
+	return element, BigInt(0)
 end
 
-function Base.iterate(iter::UniverseParameters, state)
-	word = [i for i in state]
-	i = 1
-	
-	while isequal(word[i], last(iter.Σ))
-		word[i] = first(iter.Σ)
-		
-		if isequal(i, length(word))
-			return nothing
-		end
-		
-		i += 1
-	end
-
-	alphabet_index = findfirst(isequal(word[i]), iter.Σ)
-	word[i] = iter.Σ[alphabet_index + 1]
-	element = ntuple(x -> word[x], iter.n)
-	
-	return element, element
+# "Induction" iterate method
+function Base.iterate(iter::UniverseParameters, state::BigInt)
+    state += 1
+    if state >= iter.q ^ iter.n
+        return nothing
+    end
+    word = ntuple(i -> iter.Σ[BigInt(floor(state / iter.q^(i-1))) % iter.q + 1], iter.n);
+	return word, state
 end
 
 Base.length(iter::UniverseParameters) = iter.q^iter.n
