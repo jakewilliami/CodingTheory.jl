@@ -252,7 +252,7 @@ Returns:
 	quote
 		C = Tuple[]
 			
-		Base.Cartesian.@nloops $n i d -> Σ.Σ begin
+		Base.Cartesian.@nloops $n i d -> Σ begin
 			wᵢ = Base.Cartesian.@ntuple $n i
 			push!(C, wᵢ)
 		end
