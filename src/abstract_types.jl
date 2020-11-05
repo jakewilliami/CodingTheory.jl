@@ -110,6 +110,40 @@ struct UniverseParameters <: AbstractCode
     end
 end
 
+function Base.iterate(iter::UniverseParameters)
+	if iszero(iter.n) || iszero(iter.q)
+		return nothing
+	end
+	
+	element = ntuple(_ -> first(iter.Σ.Σ), iter.n)
+	
+	return element, element
+end
+
+function Base.iterate(iter::UniverseParameters, state)
+	word = [i for i in state]
+	i = 1
+	
+	while isequal(word[i], last(iter.Σ.Σ))
+		word[i] = first(iter.Σ.Σ)
+		
+		if isequal(i, length(word))
+			return nothing
+		end
+		
+		i += 1
+	end
+
+	alphabet_index = findfirst(isequal(word[i]), iter.Σ.Σ)
+	word[i] = iter.Σ.Σ[alphabet_index + 1]
+	element = ntuple(x -> word[x], iter.n)
+	
+	return element, element
+end
+
+Base.length(iter::UniverseParameters) = iter.q^iter.n
+Base.eltype(iter::UniverseParameters) = Tuple{Symbol}
+
 """
     struct Rounding end
 
