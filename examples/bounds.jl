@@ -4,12 +4,12 @@
     "${BASH_SOURCE[0]}" "$@"
     =#
 
-using CSV, DataFrames, StatsPlots
+using CSV, DataFrames, StatsPlots, ProgressMeter
 
-include(joinpath(dirname(dirname(@__FILE__)), "src", "messages.jl"))
-include(joinpath(dirname(dirname(@__FILE__)), "src", "distance.jl"))
-include(joinpath(dirname(dirname(@__FILE__)), "src", "utils.jl"))
-include(joinpath(dirname(dirname(@__FILE__)), "src", "primes.jl"))
+include(joinpath(dirname(dirname(@__FILE__)), "src", "CodingTheory.jl"))
+using .CodingTheory
+
+stop_at = parse(BigInt, ARGS[1])
 
 function perfect_search()
     q = 6 # a non prime power
@@ -36,14 +36,14 @@ function integer_search(stop_at::Integer)::Array{Array{Number, 1}}
 	i = 0
     
     while true
-        for q in 1:upper_bound, n in 1:upper_bound, d in 1:upper_bound
+        @showprogress for q in 1:upper_bound, n in 1:upper_bound, d in 1:upper_bound
 			# skip configurations that have already been processed
 			# arelessthan(upper_bound - increment_bound, q, n, d) && continue
 			(q, n, d) ∈ processed && continue
             # note that we actually don't want to filter out non-linear codes
 			# distance shouldn't be larger than the block length; filter trivial distances of one; we filter out combinations when all are equal; filter out codes that are generalised hamming codes; filter out even distances
-			if d < n && ! isone(d) && ! allequal(q, n, d) && ! ishammingbound(q, n, d) && ! iszero(mod(d, 2))
-                hb = hamming_bound(q, n, d, no_round)
+			if d < n && ! isone(d) && ! CodingTheory.allequal(q, n, d) && ! ishammingperfect(q, n, d) && ! iszero(mod(d, 2))
+                hb = CodingTheory.hamming_bound(q, n, d, no_round)
                 if isinteger(hb) && ! isone(hb)
 					push!(processed, (q, n, d))
 					# i += 1; println("$i:\t$q, $n, $d")
@@ -90,7 +90,7 @@ function bound_comparison(stop_at::Integer)::Tuple{Int, Array{Array{Number, 1}}}
                 sb = singleton_bound(q, n, d)
 				# filter out the more trivial bounds that are one (or if distance is one); filter out distances that are more than or equal to the block length, as they don't make sense in our context; filter out even distances
 				# if d < n || 1 ∉ (hb, sb, d)
-				if d < n && ! isone(d) && ! allequal(q, n, d) && ! iszero(mod(d, 2))
+				if d < n && ! isone(d) && ! CodingTheory.allequal(q, n, d) && ! iszero(mod(d, 2))
 					push!(processed, (q, n, d))
 					# i += 1; println("$i:\t$q, $n, $d")
                     comparison = hb > sb ? 1 : (sb > hb ? -1 : 0)
@@ -115,8 +115,8 @@ function plot_bound_comparison(stop_at::Integer)
 	data_file_other = joinpath(dirname(dirname(@__FILE__)), "other", "bound_comparison_$(stop_at).csv")
 
 	CSV.write(data_file_desktop, D)
-	println("Data written to $(data_file_desktop)")
 	CSV.write(data_file_other, D)
+	println("Data written to $(data_file_desktop) and $(data_file_other)")
 	
 	`Rscript --vanilla "~"/projects/CodingTheory.jl/other/regression-tree.R $data_file_other $stop_at`
 	println("Regression tree saved at $(joinpath(dirname(dirname(@__FILE__)), "other", "Rplots_$(stop_at).pdf"))")
@@ -127,14 +127,7 @@ end
 
 
 # make_integer_csv constructs a csv file which looks for hamming bounds (given certain conditions) that are integers before rounding
-make_integer_csv(1_000)
+make_integer_csv(stop_at) # takes a command line argument
 
 # plot_bound_comparison constructs a dataframe which compares the hamming bound to the singleton bound and plots a regression tree using r
-# plot_bound_comparison(5_000)
-
-
-# If q is a prime power, and d = 3, and n is equal to q^((q^r-1)/(q-1)) for some positive integer r, then we know that the Hamming bound is integral, and we know that there is a perfect code with those parameters. So this choice of parameters is not terribly interesting.
-#
-# So I would filter as follows:
-
-# This function tells us whether the Hamming bound we get for (n,d,q) is exactly the bound of a Hamming code. So if it returns true, then I would omit that triple (n,d,q) from the output.
+# plot_bound_comparison(stop_at) # takes a command line argument
