@@ -56,6 +56,7 @@ Base.lastindex(A::Alphabet) = lastindex(A.Σ)
 
 # Abstract Array Interface
 Base.size(A::Alphabet) = size(A.Σ)
+Base.length(A::Alphabet) = length(A.Σ)
 Base.getindex(A::Alphabet, i::Integer) = getindex(A.Σ, i)
 Base.setindex!(A::Alphabet, v, i::Integer) = setindex(A.Σ, v, i)
 Base.rand(A::Alphabet) = rand(A.Σ)
