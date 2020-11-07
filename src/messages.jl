@@ -233,18 +233,19 @@ end
 """
 	push_if_allowed!(C::AbstractArray{T}, w::T, d::Integer)
 
-Takes in an array and a word.  As long as the word does not mean that the distance is smaller than d, we add w to the array.  *This is a mutating function.  Use `push_if_allowed` for a non-mutating version of this function.*
+Takes in an array and a word.  As long as the word does not mean that the distance is smaller than d, we add w to the array.  If we are successful in doing this, return true.  Otherwise, return false.  *This is a mutating function.  Use `push_if_allowed` for a non-mutating version of this function.*
 """
 function push_if_allowed!(C::AbstractArray{T}, w::T, d::Integer) where T
-	isempty(C) && return push!(C, w)
+	isempty(C) && (push!(C, w); return true)
 	
 	for c in C
 		if hamming_distance(c, w) < d
-			return nothing
+			return false
 		end
 	end
 	
-	return push!(C, w)
+	push!(C, w)
+	return true
 end
 
 push_if_allowed(C::AbstractArray{T}, w::T, d::Integer) where T =
@@ -419,72 +420,17 @@ end
 using IterTools
 
 function get_codewords_random(𝒰::UniverseParameters, d::Integer)
-	# ### TAKE ONE
-	#
-	C = get_codewords_greedy(𝒰, d)
-	m=10
-	for _ in 1:length(C)
-		# set/reset counter
-		j = 0
-		# try to mutate the code so that the new word fits (try up to m times)
-		for _ in 1:m
-			# choose a random word, letter, and position in the word
-			w, a, i = rand(𝒰, C)
-			# mutate a copy of the word
-			w′ = mutate_codeword(w, 𝒰.n, i, a)
-			# try to alter the code
-			replace_if_allowed!(C, d, w, w′) && break
-			# increment counter
-			j += 1
-			# if no viable option is found for a mutation, remove the word from the code.
-			isequal(j, m) && filter!(e -> e ≠ w, C)
-		end
-	end
-	#
-	# return C
-	#
-	# ### TAKE TWO
-	# # choose random starting point
-	# init_arr = rand(𝒰.Σ, 𝒰.n)
-	# init_word = ntuple(j -> init_arr[j], length(init_arr))
-	# # initialise array with random word
-	# C = [init_word]
-	# # iterate through words
-	# for w in 𝒰
-	# 	C′ = copy(C)
-	# 	for w′ in 𝒰
-	# 		push_if_allowed!(C′, w′, d)
-	# 	end
-	# 	next_w = rand(𝒰.Σ, 𝒰.n)
-	# 	C′ = nothing
-	#
-	# 	push!(C, next_w)
-	# end
-	#
-	# return C
-	#
-	# ### TAKE THREE
-	# # a
-	# # choose random starting point
-	# init_arr = rand(𝒰.Σ, 𝒰.n)
-	# init_word = ntuple(j -> init_arr[j], length(init_arr))
-	# # initialise array with random word
-	# C = [init_word]
-	# # iterate through words
-	# for w in 𝒰
-	# 	push_if_allowed!(C′, w′, d)
-	# end
-	#
-	# return C
-	
-	### TAKE FOUR
-	# C = Tuple[]
+	C = Tuple[]
+	N = [1:length(𝒰)...]
+	while ! isempty(N)
 	# for _ in 1:length(𝒰)
-	# 	# https://github.com/JuliaCollections/IterTools.jl/blob/master/src/IterTools.jl#L610-L689
-	# 	push_if_allowed!(C, nth(𝒰, rand(1:length(𝒰))), d)
-	# end
-	#
-	# return C
+		# https://github.com/JuliaCollections/IterTools.jl/blob/master/src/IterTools.jl#L610-L689
+		m = rand(N)
+		push_if_allowed!(C, nth(CodeUniverseIterator(𝒰), m), d)
+		deleteat!(N, findfirst(x -> isequal(x, m), N))
+	end
+	
+	return C
 end
 
 get_codewords_random(Σ::AbstractArray, n::Integer, d::Integer) = get_codewords_random(UniverseParameters(Alphabet(Σ), n), d)
@@ -585,4 +531,12 @@ function get_codewords(G::AbstractArray, m::Integer)
 	end
 	
 	return codewords
+end
+
+function obtain_maximal_code(𝒰::UniverseParameters, d::Integer)
+	adj_matrix = Matrix{Int8}(undef, length(𝒰), length(𝒰))
+	
+	for u in CodeUniverseIterator(𝒰), u′ in CodeUniverseIterator(𝒰)
+		distance = hamming_distance(u, u′)
+	end
 end
