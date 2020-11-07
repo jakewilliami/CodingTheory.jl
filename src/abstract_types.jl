@@ -61,39 +61,14 @@ Base.setindex!(A::Alphabet, v, i::Integer) = setindex(A.Σ, v, i)
 Base.rand(A::Alphabet) = rand(A.Σ)
 
 """
-    struct CodeUniverse <: AbstractCode
-    
-Defines a structure for the messages in the code.  Parameters are the abstract array of messages `C`, and the length of the messages `n`.
-
-    CodeUniverse(C::AbstractArray, Σ::Alphabet)
-    
-An inner constructor function on the structure `CodeUniverse`.
-"""
-struct CodeUniverse <: AbstractCode
-    C::AbstractArray
-    Σ::Alphabet
-    q::Integer
-    n::Integer # block length
-    
-    
-    function CodeUniverse(C::AbstractArray, Σ::Alphabet)
-        message_length_error = "We have fixed the block length of each message.  Please ensure all messages are of equal length."
-        _allequal_length_(C) || throw(error("$(message_length_error)"))
-        
-        q = length(Σ)
-        n = length(rand(C)) # choose arbitrary message in the list of messages
-        
-        new(C, Σ, q, n)
-    end # end constructor function
-end
-
-"""
     struct UniverseParameters <: AbstractCode
     
 Defines a structure for the messages in the code.  Parameters are the alphabet `Σ`, size of alphabet `q`, and block length `n`
 
     UniverseParameters(Σ::Alphabet, n::Integer)
     UniverseParameters(Σ::AbstractArray, n::Integer)
+    UniverseParameters(Σ::Alphabet, q::Integer, n::Integer)
+    UniverseParameters(Σ::AbstractArray, q::Integer, n::Integer)
     UniverseParameters(q::Integer, n::Integer)
     
 An inner constructor function on the structure `UniverseParameters`.
@@ -109,12 +84,16 @@ struct UniverseParameters <: AbstractCode
         new(Σ, q, n)
     end
     
+    UniverseParameters(Σ::Alphabet, q::Integer, n::Integer) = new(Σ, q, n)
+    
     function UniverseParameters(Σ::AbstractArray, n::Integer)
         Σ = Alphabet(Σ)
         q = length(Σ)
         
         new(Σ, q, n)
     end
+    
+    UniverseParameters(Σ::AbstractArray, q::Integer, n::Integer) = new(Σ, q, n)
     
     function UniverseParameters(q::Integer, n::Integer)
         Σ = Alphabet([gensym() for i in 1:q])
@@ -123,40 +102,13 @@ struct UniverseParameters <: AbstractCode
     end
 end
 
-# Base case iterate method
-function Base.iterate(iter::UniverseParameters)
-	(iszero(iter.n) || iszero(iter.q)) && return nothing
-	
-	# the first iteration gets an ntuple of all the same letters
-	element = ntuple(_ -> first(iter.Σ), iter.n)
-	
-	return element, element
-end
-
-# "Induction" iterate method
-function Base.iterate(iter::UniverseParameters, state)
-	word = collect(state)
-	i = 1
-	
-	while isequal(word[i], last(iter.Σ))
-		word[i] = first(iter.Σ)
-		isequal(i, length(word)) && return nothing
-		i += 1
-	end
-
-	alphabet_index = findfirst(isequal(word[i]), iter.Σ)
-	word[i] = iter.Σ[alphabet_index + 1]
-	element = ntuple(j -> word[j], iter.n)
-	
-	return element, element
-end
-
 # Iteration inteface functions
 Base.length(iter::UniverseParameters) = iter.q^iter.n
 Base.eltype(iter::UniverseParameters) = NTuple{iter.n, Symbol}
-Base.rand(𝒰::UniverseParameters) = rand(𝒰.Σ)
 
 # Other Base interface functions for UniverseParameters
+Base.rand(𝒰::UniverseParameters) = rand(𝒰.Σ)
+
 """
 	rand(𝒰::UniverseParameters, C::AbstractArray) -> Tuple
 
@@ -166,6 +118,68 @@ Given universe parameters 𝒰 and a code C, return a tuple including
   - A random index in the block length.
 """
 Base.rand(𝒰::UniverseParameters, C::AbstractArray) = rand.((C, 𝒰.Σ, 1:𝒰.n))
+
+"""
+    struct CodeUniverseIterator <: AbstractCode
+
+A structure used to iterate through a code universe, with specified universe parameters.  E.g.,
+
+    for c in CodeUniverseIterator(["a", "b", "c"], 3)
+        println(c)
+    end
+
+Fields:
+  - 𝒰::UniverseParameters
+
+Methods:
+
+    CodeUniverseIterator(𝒰::UniverseParameters)
+    CodeUniverseIterator(Σ::Union{Alphabet, AbstractArray}, q::Integer, n::Integer)
+    CodeUniverseIterator(Σ::Union{Alphabet, AbstractArray}, n::Integer)
+    CodeUniverseIterator(q::Integer, n::Integer)
+
+"""
+struct CodeUniverseIterator <: AbstractCode
+    𝒰::UniverseParameters
+
+    function CodeUniverseIterator(𝒰::UniverseParameters)
+        return reshape(collect(Iterators.product([𝒰.Σ for _ in 1:𝒰.n]...)), :)
+    end
+
+    CodeUniverseIterator(Σ::Union{Alphabet, AbstractArray}, q::Integer, n::Integer) =
+        CodeUniverseIterator(UniverseParameters(Σ, q, n))
+    CodeUniverseIterator(Σ::Union{Alphabet, AbstractArray}, n::Integer) =
+        CodeUniverseIterator(UniverseParameters(Σ, n))
+    CodeUniverseIterator(q::Integer, n::Integer) =
+        CodeUniverseIterator(UniverseParameters(q, n))
+end
+
+"""
+    struct CodeUniverse <: AbstractCode
+    
+Defines a structure for the messages in the code.  Parameters are the abstract array of messages `𝒰`, and the length of the messages `n`.
+
+    CodeUniverse(𝒰::AbstractArray, Σ::Alphabet)
+    
+An inner constructor function on the structure `CodeUniverse`.
+"""
+struct CodeUniverse <: AbstractCode
+    𝒰::AbstractArray
+    Σ::Alphabet
+    q::Integer
+    n::Integer # block length
+    
+    
+    function CodeUniverse(𝒰::AbstractArray, Σ::Alphabet)
+        message_length_error = "We have fixed the block length of each message.  Please ensure all messages are of equal length."
+        _allequal_length_(𝒰) || throw(error("$(message_length_error)"))
+    
+        q = length(Σ)
+        n = length(rand(𝒰)) # choose arbitrary message in the list of messages
+    
+        new(𝒰, Σ, q, n)
+    end # end constructor function
+end
 
 """
     struct Rounding end

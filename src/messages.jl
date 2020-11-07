@@ -287,7 +287,6 @@ function mutate_codeword(w::Union{Tuple{T}, NTuple{N, T}}, n::Integer, i::Intege
 end
 
 """
-	get_all_words(Σ::Alphabet, q::Integer, ::Val{n}) -> Array{Tuple{Symbol}, 1}
 	get_all_words(Σ::Alphabet, q::Integer, n::Integer) -> Array{Tuple{Symbol}, 1}
 	get_all_words(Σ::Alphabet, n::Integer) -> Array{Tuple{Symbol}, 1}
 	get_all_words(Σ::AbstractArray, q::Integer, n::Integer) -> Array{Tuple{Symbol}, 1}
@@ -306,21 +305,11 @@ Parameters:
 Returns:
   - Array{Tuple{Symbol}, 1}: An array of codewords.  Each codewords is a tuple, and each character in said word is a symbol.
 """
-@generated function get_all_words(Σ::Alphabet, q::Integer, ::Val{n}) where n
-	quote
-		C = Tuple[]
-			
-		Base.Cartesian.@nloops $n i d -> Σ begin
-			wᵢ = Base.Cartesian.@ntuple $n i
-			push!(C, wᵢ)
-		end
-		
-		return C
-	end
+
+function get_all_words(Σ::Alphabet, q::Integer, n::Integer)
+	return CodeUniverseIterator(UniverseParameters(Σ, q, n))
 end
 
-get_all_words(Σ::Alphabet, q::Integer, n::Integer) =
-	get_all_words(Σ, q, Val(n))
 get_all_words(Σ::Alphabet, n::Integer) =
 	get_all_words(Σ, length(unique(Σ)), n) # if alphabet is given, then q is the length of that alphabet
 get_all_words(Σ::AbstractArray, q::Integer, n::Integer) =
@@ -343,29 +332,19 @@ get_all_words(q::Integer, n::Integer) =
 Search through the universe of all codewords and find a code of block length n and distance d, using the alphabet Σ.  The alphabet will be uniquely generated if none is given.
 	
 Parameters:
+  - 𝒰::UniverseParameters: The parameters of the universe of all codewords of q many letters of block length n.
   - Σ::AbstractArray: The alphabet allowed.
   - q::Integer: The size of the alphabet.
   - n::Integer: The (fixed) length of the words in the code.
   - d::Integer: The minimum distance between words in the code.
-  - 𝒰::AbstractArray: The universe of all codewords of q many letters of block length n.
   
 Returns:
   - Array{Tuple{Symbol}, 1}: An array of codewords.  Each codewords is a tuple, and each character in said word is a symbol.
 """
-function get_codewords_greedy(Σ::Alphabet, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray)
-	C = Tuple[]
-	
-	for wᵢ in 𝒰
-		push_if_allowed!(C, wᵢ, d)
-	end
-	
-	return C
-end
-
 function get_codewords_greedy(𝒰::UniverseParameters, d::Integer)
 	C = Tuple[]
 	
-	for wᵢ in 𝒰
+	for wᵢ in CodeUniverseIterator(𝒰)
 		push_if_allowed!(C, wᵢ, d)
 	end
 	

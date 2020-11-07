@@ -69,7 +69,8 @@ using Polynomials
 	@test Alphabet([1, 2, 3]) == deepsym([1, 2, 3])
 	@test Alphabet(["1", "2", "3"]) == deepsym([1, 2, 3])
 	# TODO: write test for CodeUniverse struct
-	@test [i for i in UniverseParameters(["a", "b", "c"], 3)] == get_all_words(["a", "b", "c"], 3) # implicitly tests UniverseParameters _and_ Base.iterate extension
+	@test [i for i in CodeUniverseIterator(["a", "b", "c"], 3)] == get_all_words(["a", "b", "c"], 3) # implicitly tests CodeUniverseIterator
+	@test CodeUniverseIterator(["a", "b", "c"], 4) == Tuple[(:a, :a, :a, :a), (:b, :a, :a, :a), (:c, :a, :a, :a), (:a, :b, :a, :a), (:b, :b, :a, :a), (:c, :b, :a, :a), (:a, :c, :a, :a), (:b, :c, :a, :a), (:c, :c, :a, :a), (:a, :a, :b, :a), (:b, :a, :b, :a), (:c, :a, :b, :a), (:a, :b, :b, :a), (:b, :b, :b, :a), (:c, :b, :b, :a), (:a, :c, :b, :a), (:b, :c, :b, :a), (:c, :c, :b, :a), (:a, :a, :c, :a), (:b, :a, :c, :a), (:c, :a, :c, :a), (:a, :b, :c, :a), (:b, :b, :c, :a), (:c, :b, :c, :a), (:a, :c, :c, :a), (:b, :c, :c, :a), (:c, :c, :c, :a), (:a, :a, :a, :b), (:b, :a, :a, :b), (:c, :a, :a, :b), (:a, :b, :a, :b), (:b, :b, :a, :b), (:c, :b, :a, :b), (:a, :c, :a, :b), (:b, :c, :a, :b), (:c, :c, :a, :b), (:a, :a, :b, :b), (:b, :a, :b, :b), (:c, :a, :b, :b), (:a, :b, :b, :b), (:b, :b, :b, :b), (:c, :b, :b, :b), (:a, :c, :b, :b), (:b, :c, :b, :b), (:c, :c, :b, :b), (:a, :a, :c, :b), (:b, :a, :c, :b), (:c, :a, :c, :b), (:a, :b, :c, :b), (:b, :b, :c, :b), (:c, :b, :c, :b), (:a, :c, :c, :b), (:b, :c, :c, :b), (:c, :c, :c, :b), (:a, :a, :a, :c), (:b, :a, :a, :c), (:c, :a, :a, :c), (:a, :b, :a, :c), (:b, :b, :a, :c), (:c, :b, :a, :c), (:a, :c, :a, :c), (:b, :c, :a, :c), (:c, :c, :a, :c), (:a, :a, :b, :c), (:b, :a, :b, :c), (:c, :a, :b, :c), (:a, :b, :b, :c), (:b, :b, :b, :c), (:c, :b, :b, :c), (:a, :c, :b, :c), (:b, :c, :b, :c), (:c, :c, :b, :c), (:a, :a, :c, :c), (:b, :a, :c, :c), (:c, :a, :c, :c), (:a, :b, :c, :c), (:b, :b, :c, :c), (:c, :b, :c, :c), (:a, :c, :c, :c), (:b, :c, :c, :c), (:c, :c, :c, :c)]
 	
 	@test sphere_covering_bound(5,7,3) == 215
 	@test sphere_packing_bound(5,7,3) == 2693
@@ -86,8 +87,8 @@ using Polynomials
 	@test isgolayperfect(23, 12, 7, 3) == false
 	@test isgolayperfect(11, 6, 5, 4) == false
 	
-	@test length(get_codewords(5, 5, 3)) ∈ [74:74...]
-	@test length(get_codewords(4, 7, 3; m = 1)) ∈ [256:308...]
+	# @test length(get_codewords(5, 5, 3)) ∈ [74:74...]
+	# @test length(get_codewords(4, 7, 3; m = 1)) ∈ [256:308...]
 	@test length(get_codewords_greedy(5, 5, 3)) == 74
 	randq, randn = rand(1:8, 2)
 	@test length(get_all_words(randq, randn)) == big(randq)^randn
@@ -101,6 +102,4 @@ using Polynomials
 	@test parity_check(normal_form([1 2 0 1 2 1 2; 2 2 2 0 1 1 1; 1 0 1 1 2 1 2; 0 1 0 1 1 2 2], 3), 3) == [1 1 2 1 1 0 0; 1 0 0 1 0 1 0; 1 2 1 2 0 0 1]
 	@test isincode([0, 2, 1, 2, 0, 1, 0], transpose(parity_check([1 0 0 0 2 2 2; 0 1 0 0 2 0 1; 0 0 1 0 1 0 2; 0 0 0 1 2 2 1], 3)), 3) == true
 	@test isincode([1, 0, 2, 2, 1, 2, 1], transpose(parity_check([1 0 0 0 2 2 2; 0 1 0 0 2 0 1; 0 0 1 0 1 0 2; 0 0 0 1 2 2 1], 3)), 3) == false
-	
-	@test collect(UniverseParameters(["a", "b", "c"], 4)) == Tuple[(:a, :a, :a, :a), (:b, :a, :a, :a), (:c, :a, :a, :a), (:a, :b, :a, :a), (:b, :b, :a, :a), (:c, :b, :a, :a), (:a, :c, :a, :a), (:b, :c, :a, :a), (:c, :c, :a, :a), (:a, :a, :b, :a), (:b, :a, :b, :a), (:c, :a, :b, :a), (:a, :b, :b, :a), (:b, :b, :b, :a), (:c, :b, :b, :a), (:a, :c, :b, :a), (:b, :c, :b, :a), (:c, :c, :b, :a), (:a, :a, :c, :a), (:b, :a, :c, :a), (:c, :a, :c, :a), (:a, :b, :c, :a), (:b, :b, :c, :a), (:c, :b, :c, :a), (:a, :c, :c, :a), (:b, :c, :c, :a), (:c, :c, :c, :a), (:a, :a, :a, :b), (:b, :a, :a, :b), (:c, :a, :a, :b), (:a, :b, :a, :b), (:b, :b, :a, :b), (:c, :b, :a, :b), (:a, :c, :a, :b), (:b, :c, :a, :b), (:c, :c, :a, :b), (:a, :a, :b, :b), (:b, :a, :b, :b), (:c, :a, :b, :b), (:a, :b, :b, :b), (:b, :b, :b, :b), (:c, :b, :b, :b), (:a, :c, :b, :b), (:b, :c, :b, :b), (:c, :c, :b, :b), (:a, :a, :c, :b), (:b, :a, :c, :b), (:c, :a, :c, :b), (:a, :b, :c, :b), (:b, :b, :c, :b), (:c, :b, :c, :b), (:a, :c, :c, :b), (:b, :c, :c, :b), (:c, :c, :c, :b), (:a, :a, :a, :c), (:b, :a, :a, :c), (:c, :a, :a, :c), (:a, :b, :a, :c), (:b, :b, :a, :c), (:c, :b, :a, :c), (:a, :c, :a, :c), (:b, :c, :a, :c), (:c, :c, :a, :c), (:a, :a, :b, :c), (:b, :a, :b, :c), (:c, :a, :b, :c), (:a, :b, :b, :c), (:b, :b, :b, :c), (:c, :b, :b, :c), (:a, :c, :b, :c), (:b, :c, :b, :c), (:c, :c, :b, :c), (:a, :a, :c, :c), (:b, :a, :c, :c), (:c, :a, :c, :c), (:a, :b, :c, :c), (:b, :b, :c, :c), (:c, :b, :c, :c), (:a, :c, :c, :c), (:b, :c, :c, :c), (:c, :c, :c, :c)]
 end # end runtests
