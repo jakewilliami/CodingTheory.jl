@@ -13,7 +13,8 @@ using Polynomials
 include("utils.jl")
 
 # Abstract types
-export FinitePolynomial, AbstractCode, Alphabet, Messages, no_round, CodeUniverse, CodeUniverseIterator, UniverseParameters
+export FinitePolynomial, AbstractCode, Alphabet, Messages, no_round,
+        CodeUniverse, CodeUniverseIterator, UniverseParameters
 
 # RREF
 export rref, rref!
