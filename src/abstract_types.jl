@@ -103,7 +103,7 @@ struct UniverseParameters <: AbstractCode
 end
 
 # Iteration inteface functions
-Base.length(iter::UniverseParameters) = iter.q^iter.n
+Base.length(iter::UniverseParameters) = big(iter.q)^iter.n
 Base.eltype(iter::UniverseParameters) = NTuple{iter.n, Symbol}
 
 # Other Base interface functions for UniverseParameters
