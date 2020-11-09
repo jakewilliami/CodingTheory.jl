@@ -13,9 +13,9 @@ using DataFramesMeta: @where
 =#
 
 const ruled_out = Tuple[
-        (3, 11, 5), # n words ≈ 186 ≠ 729
-        (21, 4, 3), # n words ≈ 359 ≠ 2401
-        (6, 7, 3), # n words ≈ 2995 ≠ 7776
+        # (3, 11, 5), # n words ≈ 186 ≠ 729
+        # (21, 4, 3), # n words ≈ 359 ≠ 2401
+        # (6, 7, 3), # n words ≈ 2995 ≠ 7776
         # (2, 23, 7), # this is one of the Golay codes, silly me
     ]
 
