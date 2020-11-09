@@ -233,7 +233,7 @@ end
 """
 	push_if_allowed!(C::AbstractArray{T}, w::T, d::Integer)
 
-Takes in an array and a word.  As long as the word does not mean that the distance is smaller than d, we add w to the array.  If we are successful in doing this, return true.  Otherwise, return false.  *This is a mutating function.  Use `push_if_allowed` for a non-mutating version of this function.*
+Takes in an array and a word.  As long as the word does not mean that the distance is smaller than d, we add w to the array.  If we are successful in doing this, return true.  Otherwise, return false.  *This is a mutating function.*
 """
 function push_if_allowed!(C::AbstractArray{T}, w::T, d::Integer) where T
 	isempty(C) && (push!(C, w); return true)
@@ -248,13 +248,28 @@ function push_if_allowed!(C::AbstractArray{T}, w::T, d::Integer) where T
 	return true
 end
 
-push_if_allowed(C::AbstractArray{T}, w::T, d::Integer) where T =
-	push_if_allowed!(copy(C), w, d)
+"""
+	push_if_allowed!(C::AbstractArray{T}, C′::AbstractArray{T}, w::T, d::Integer)
+
+Takes in two arrays, A and B.  If w is allowed in C given distance d, push to C′.  If we are successful in doing this, return true.  Otherwise, return false.  *This is a mutating function.*
+"""
+function push_if_allowed!(C::AbstractArray{T}, C′::AbstractArray{T}, w::T, d::Integer) where T
+	isempty(C) && (push!(C′, w); return true)
+	
+	for c in C
+		if hamming_distance(c, w) < d
+			return false
+		end
+	end
+	
+	push!(C′, w)
+	return true
+end
 
 """
 	replace_if_allowed!(C::AbstractArray, d::Integer, w, w′) -> Bool
 
-Takes in an array and a word.  As long as the word does not mean that the distance is smaller than d, we replace a with b in the array.  Replaces and returns true if allowed; otherwise returns false.  *This is a mutating function.  Use `replace_if_allowed` for a non-mutating version of this function.*
+Takes in an array and a word.  As long as the word does not mean that the distance is smaller than d, we replace a with b in the array.  Replaces and returns true if allowed; otherwise returns false.  *This is a mutating function.*
 """
 function replace_if_allowed!(C::AbstractArray, d::Integer, w, w′)
 	for c in C
@@ -266,14 +281,6 @@ function replace_if_allowed!(C::AbstractArray, d::Integer, w, w′)
 	replace!(C, w => w′)
 	return true
 end
-
-"""
-	replace_if_allowed(C::AbstractArray, d::Integer, w, w′)
-
-Takes in an array and a word.  As long as the word does not mean that the distance is smaller than d, we replace a with b in the array.  Replaces and returns true if allowed; otherwise returns false.
-"""
-replace_if_allowed(C::AbstractArray, d::Integer, w, w′) =
-	replace_if_allowed!(copy(C), d, w, w′)
 
 """
 	mutate_codeword(w::Tuple{T}, n::Integer, i::Integer, a::T) -> Tuple
@@ -364,42 +371,69 @@ get_codewords_greedy(Σ::AbstractArray, n::Integer, d::Integer) =
 	get_codewords_greedy(UniverseParameters(Σ, n), d)
 get_codewords_greedy(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray) =
 	get_codewords_greedy(Alphabet(Σ), q, n, d, 𝒰)
+	
 
-"""
-	get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray) -> Array{Tuple{Symbol}, 1}
-	get_codewords_random(Σ::AbstractArray, n::Integer, d::Integer, 𝒰::AbstractArray) -> Array{Tuple{Symbol}, 1}
-	get_codewords_random(q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray)	-> Array{Tuple{Symbol}, 1}
-	get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer) -> Array{Tuple{Symbol}, 1}
-	get_codewords_random(Σ::AbstractArray, n::Integer, d::Integer) -> Array{Tuple{Symbol}, 1}
-	get_codewords_random(q::Integer, n::Integer, d::Integer) -> Array{Tuple{Symbol}, 1}
+argmaxminima(A::AbstractArray; dims::Integer) = getindex(argmin(A, dims=dims), argmax(argmin(A, dims=dims)))
+maxminima(A::AbstractArray; dims::Integer) = getindex(minimum(A, dims=dims), maximum(minimum(A, dims=dims)))
+argminmaxima(A::AbstractArray; dims::Integer) = getindex(argmax(A, dims=dims), argmin(argmax(A, dims=dims)))
+minmaxima(A::AbstractArray; dims::Integer) = getindex(maximum(A, dims=dims), minimum(maximum(A, dims=dims)))
 	
-Search through the universe of all codewords at random and find a code of block length n and distance d, using the alphabet Σ.  The alphabet will be uniquely generated if none is given.
-	
-Parameters:
-  - Σ::AbstractArray: The alphabet allowed.
-  - q::Integer: The size of the alphabet.
-  - n::Integer: The (fixed) length of the words in the code.
-  - d::Integer: The minimum distance between words in the code.
-  - 𝒰::AbstractArray: The universe of all codewords of q many letters of block length n.
-  
-Returns:
-  - Array{Tuple{Symbol}, 1}: An array of codewords.  Each codewords is a tuple, and each character in said word is a symbol.
-"""
-function get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray)
+function get_codewords_random(𝒰::UniverseParameters, d::Integer; m::Integer=100)
 	C = Tuple[]
-	Σ = ensure_symbolic(Σ)
-	Σ = unique(Σ)
-	𝒰′ = copy(𝒰)
 	
-	while ! isempty(𝒰′)
-		wᵢ = rand(𝒰′)
-		
-		push_if_allowed!(C, wᵢ, d)
-		deleteat!(𝒰′, findfirst(x -> isequal(x, wᵢ), 𝒰′))
+	starting_word = rand(𝒰) # get a random word in the code start
+	push!(C, starting_word)
+	
+	for _ in 1:length(𝒰)
+		C′ = Tuple[]
+		for _ in 1:m
+			push_if_allowed!(C, C′, rand(𝒰), d) # if allowed in C, push to C′
+		end
+		isempty(C′) && break
+		# [push_if_allowed!(C, C′, w, d) for _ in 1:m]
+		distances = [hamming_distance(wᵢ, wⱼ) for wᵢ in C, wⱼ in C′]
+		best_word = getindex(C′, getindex(argmaxminima(distances, dims = 1), 2))
+		push!(C, best_word)
 	end
 	
 	return C
 end
+
+# """
+# 	get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray) -> Array{Tuple{Symbol}, 1}
+# 	get_codewords_random(Σ::AbstractArray, n::Integer, d::Integer, 𝒰::AbstractArray) -> Array{Tuple{Symbol}, 1}
+# 	get_codewords_random(q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray)	-> Array{Tuple{Symbol}, 1}
+# 	get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer) -> Array{Tuple{Symbol}, 1}
+# 	get_codewords_random(Σ::AbstractArray, n::Integer, d::Integer) -> Array{Tuple{Symbol}, 1}
+# 	get_codewords_random(q::Integer, n::Integer, d::Integer) -> Array{Tuple{Symbol}, 1}
+#
+# Search through the universe of all codewords at random and find a code of block length n and distance d, using the alphabet Σ.  The alphabet will be uniquely generated if none is given.
+#
+# Parameters:
+#   - Σ::AbstractArray: The alphabet allowed.
+#   - q::Integer: The size of the alphabet.
+#   - n::Integer: The (fixed) length of the words in the code.
+#   - d::Integer: The minimum distance between words in the code.
+#   - 𝒰::AbstractArray: The universe of all codewords of q many letters of block length n.
+#
+# Returns:
+#   - Array{Tuple{Symbol}, 1}: An array of codewords.  Each codewords is a tuple, and each character in said word is a symbol.
+# """
+# function get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray)
+# 	C = Tuple[]
+# 	Σ = ensure_symbolic(Σ)
+# 	Σ = unique(Σ)
+# 	𝒰′ = copy(𝒰)
+#
+# 	while ! isempty(𝒰′)
+# 		wᵢ = rand(𝒰′)
+#
+# 		push_if_allowed!(C, wᵢ, d)
+# 		deleteat!(𝒰′, findfirst(x -> isequal(x, wᵢ), 𝒰′))
+# 	end
+#
+# 	return C
+# end
 
 # if alphabet is given, then q is the length of that alphabet
 # get_codewords_random(Σ::AbstractArray, n::Integer, d::Integer, 𝒰::AbstractArray) =
@@ -417,23 +451,38 @@ end
 # get_codewords_random(q::Integer, n::Integer, d::Integer) =
 # 	get_codewords_random(Symbol[gensym() for _ in 1:q], q, n, d, get_all_words(q, n))
 
-using IterTools
+# using IterTools
+#
+# function get_codewords_random(𝒰::UniverseParameters, d::Integer)
+# 	C = Tuple[]
+# 	N = [1:length(𝒰)...]
+# 	while ! isempty(N)
+# 	# for _ in 1:length(𝒰)
+# 		# https://github.com/JuliaCollections/IterTools.jl/blob/master/src/IterTools.jl#L610-L689
+# 		m = rand(N)
+# 		push_if_allowed!(C, nth(CodeUniverseIterator(𝒰), m), d)
+# 		deleteat!(N, findfirst(x -> isequal(x, m), N))
+# 	end
+#
+# 	return C
+# end
+#
 
-function get_codewords_random(𝒰::UniverseParameters, d::Integer)
-	C = Tuple[]
-	N = [1:length(𝒰)...]
-	while ! isempty(N)
-	# for _ in 1:length(𝒰)
-		# https://github.com/JuliaCollections/IterTools.jl/blob/master/src/IterTools.jl#L610-L689
-		m = rand(N)
-		push_if_allowed!(C, nth(CodeUniverseIterator(𝒰), m), d)
-		deleteat!(N, findfirst(x -> isequal(x, m), N))
-	end
-	
-	return C
-end
+get_codewords_random(Σ::Alphabet, q::Integer, n::Integer, d::Integer; m::Integer=100) =
+	get_codewords_random(UniverseParameters(Σ, q, n), d, m=m)
+get_codewords_random(Σ::Alphabet, n::Integer, d::Integer; m::Integer=100) =
+	get_codewords_random(UniverseParameters(Σ, n), d, m=m)
+get_codewords_random(q::Integer, n::Integer, d::Integer; m::Integer=100) =
+	get_codewords_random(UniverseParameters(q, n), d, m=m)
+get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer; m::Integer=100) =
+	get_codewords_random(Alphabet(Σ), q, n, d, m=m)
+get_codewords_random(Σ::AbstractArray, n::Integer, d::Integer; m::Integer=100) =
+	get_codewords_random(UniverseParameters(Σ, n), d, m=m)
+get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray; m::Integer=100) =
+	get_codewords_random(Alphabet(Σ), q, n, d, 𝒰, m=m)
 
-get_codewords_random(Σ::AbstractArray, n::Integer, d::Integer) = get_codewords_random(UniverseParameters(Alphabet(Σ), n), d)
+# get_codewords_random(Σ::AbstractArray, n::Integer, d::Integer; m::Integer=100) = get_codewords_random(UniverseParameters(Alphabet(Σ), n), d, m=m)
+# get_codewords_random(q::Integer, n::Integer, d::Integer; m::Integer=100) = get_codewords_random(UniverseParameters(q, n), d, m=m)
 
 
 
@@ -458,15 +507,13 @@ Parameters:
 Returns:
   - Array{Tuple{Symbol}, 1}: An array of codewords.  Each codewords is a tuple, and each character in said word is a symbol.
 """
-function get_codewords(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray; m::Integer=10)
+function get_codewords(𝒰::UniverseParameters, d::Integer; m::Integer=10)
 	code_size = 0
 	C = Tuple[]
-	Σ = ensure_symbolic(Σ)
-	Σ = unique(Σ)
 	
 
 	for _ in 1:m
-		random_code = get_codewords_random(Σ, q, n, d, 𝒰)
+		random_code = get_codewords_random(𝒰, d)
 		random_size = length(random_code)
 		if random_size > code_size
 			code_size = random_size
@@ -474,7 +521,7 @@ function get_codewords(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, �
 		end
 	end
 	
-	greedy_code = get_codewords_greedy(Σ, q, n, d, 𝒰)
+	greedy_code = get_codewords_greedy(𝒰, d)
 	greedy_size = length(greedy_code)
 	if greedy_size > code_size
 		code_size = greedy_size
@@ -484,21 +531,34 @@ function get_codewords(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, �
 	return C
 end
 
-# if alphabet is given, then q is the length of that alphabet
-get_codewords(Σ::AbstractArray, n::Integer, d::Integer, 𝒰::AbstractArray; m::Integer=10) =
-	get_codewords(Σ, length(unique(Σ)), n, d, 𝒰, m = m)
-# generate symbols if no alphabet is given
-get_codewords(q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray; m::Integer=10) =
-	get_codewords(Symbol[gensym() for _ in 1:q], q, n, d, 𝒰, m = m)
-# if the universe of all possible codewords is not given, find it
-get_codewords(Σ::AbstractArray, q::Integer, n::Integer, d::Integer; m::Integer=10) =
-	get_codewords(Σ, q, n, d, get_all_words(Σ, q, n), m = m)
-# if the universe of all possible codewords is not given, find it and the size of the alphabet
-get_codewords(Σ::AbstractArray, n::Integer, d::Integer; m::Integer=10) =
-	get_codewords(Σ, length(unique(Σ)), n, d, get_all_words(Σ, n), m = m)
-# if only alphabet size, block length, and distance are given.
+get_codewords(Σ::Alphabet, q::Integer, n::Integer, d::Integer; m::Integer=10) =
+	get_codewords(UniverseParameters(Σ, q, n), d, m=m)
+get_codewords(Σ::Alphabet, n::Integer, d::Integer; m::Integer=10) =
+	get_codewords(UniverseParameters(Σ, n), d, m=m)
 get_codewords(q::Integer, n::Integer, d::Integer; m::Integer=10) =
-	get_codewords(Symbol[gensym() for _ in 1:q], q, n, d, get_all_words(q, n), m = m)
+	get_codewords(UniverseParameters(q, n), d, m=m)
+get_codewords(Σ::AbstractArray, q::Integer, n::Integer, d::Integer; m::Integer=10) =
+	get_codewords(Alphabet(Σ), q, n, d, m=m)
+get_codewords(Σ::AbstractArray, n::Integer, d::Integer; m::Integer=10) =
+	get_codewords(UniverseParameters(Σ, n), d, m=m)
+get_codewords(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray; m::Integer=10) =
+	get_codewords(Alphabet(Σ), q, n, d, 𝒰, m=m)
+
+# # if alphabet is given, then q is the length of that alphabet
+# get_codewords(Σ::AbstractArray, n::Integer, d::Integer, 𝒰::AbstractArray; m::Integer=10) =
+# 	get_codewords(Σ, length(unique(Σ)), n, d, 𝒰, m = m)
+# # generate symbols if no alphabet is given
+# get_codewords(q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray; m::Integer=10) =
+# 	get_codewords(Symbol[gensym() for _ in 1:q], q, n, d, 𝒰, m = m)
+# # if the universe of all possible codewords is not given, find it
+# get_codewords(Σ::AbstractArray, q::Integer, n::Integer, d::Integer; m::Integer=10) =
+# 	get_codewords(Σ, q, n, d, get_all_words(Σ, q, n), m = m)
+# # if the universe of all possible codewords is not given, find it and the size of the alphabet
+# get_codewords(Σ::AbstractArray, n::Integer, d::Integer; m::Integer=10) =
+# 	get_codewords(Σ, length(unique(Σ)), n, d, get_all_words(Σ, n), m = m)
+# # if only alphabet size, block length, and distance are given.
+# get_codewords(q::Integer, n::Integer, d::Integer; m::Integer=10) =
+# 	get_codewords(Symbol[gensym() for _ in 1:q], q, n, d, get_all_words(q, n), m = m)
 
 """
 	get_codewords(G::AbstractArray, m::Integer) -> Array{Tuple{Symbol}, 1}

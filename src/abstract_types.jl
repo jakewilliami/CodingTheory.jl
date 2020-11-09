@@ -108,7 +108,7 @@ Base.length(iter::UniverseParameters) = big(iter.q)^iter.n
 Base.eltype(iter::UniverseParameters) = NTuple{iter.n, Symbol}
 
 # Other Base interface functions for UniverseParameters
-Base.rand(𝒰::UniverseParameters) = rand(𝒰.Σ)
+Base.rand(𝒰::UniverseParameters) = ntuple(_ -> rand(𝒰.Σ), 𝒰.n)
 
 """
 	rand(𝒰::UniverseParameters, C::AbstractArray) -> Tuple
@@ -181,6 +181,8 @@ struct CodeUniverse <: AbstractCode
         new(𝒰, Σ, q, n)
     end # end constructor function
 end
+
+rand
 
 """
     struct Rounding end
