@@ -55,10 +55,14 @@ Parameters:
 Returns:
   - Integer: the sphere packing bound.
 """
-sphere_packing_bound(q::Integer, n::Integer, d::Integer) = __sphere_bound(floor, q, n, Int(floor((d - 1) / 2)))
-sphere_packing_bound(q::Integer, n::Integer, d::Integer, ::Rounding) = __sphere_bound(identity, q, n, Int(floor((d - 1) / 2)))
-hamming_bound(q::Integer, n::Integer, d::Integer) = sphere_packing_bound(q, n, d)
-hamming_bound(q::Integer, n::Integer, d::Integer, ::Rounding) = sphere_packing_bound(q, n, d, no_round)
+sphere_packing_bound(q::T, n::T, d::T) where T <: Integer =
+	__sphere_bound(a -> floor(T, a), q, n, floor(T, (d - 1) / 2))
+sphere_packing_bound(q::T, n::T, d::T, ::Rounding) where T <: Integer =
+	__sphere_bound(identity, q, n, floor(T, (d - 1) / 2))
+hamming_bound(q::T, n::T, d::T) where T <: Integer =
+	sphere_packing_bound(q, n, d)
+hamming_bound(q::T, n::T, d::T, ::Rounding) where T <: Integer =
+	sphere_packing_bound(q, n, d, no_round)
 
 """
 	sphere_packing_bound(q::Integer, n::Integer, d::Integer) -> Real
@@ -73,7 +77,58 @@ Parameters:
 Returns:
   - Real: the Singleton bound.  Can round down, as it is an equivalent to the Hamming bound in that it is an upper bound.
 """
-singleton_bound(q::Number, n::Number, d::Number) = float(big(q))^(big(n) - big(d) + 1)
+# promote()
+# _T = typeof(T)
+
+singleton_bound(q::T, n::T, d::T) where T <: Integer =
+	floor(T, float(big(q))^(big(n) - big(d) + 1))
+singleton_bound(q::T, n::T, d::T, ::Rounding) where T <: Integer =
+	float(big(q))^(big(n) - big(d) + 1)
+	
+	
+gilbert_varshamov_bound(q::T, n::T, d::T) where T <: Integer =
+	__sphere_bound(a -> floor(T, a), q, n, d - 1)
+gilbert_varshamov_bound(q::T, n::T, d::T, ::Rounding) where T <: Integer =
+	__sphere_bound(identity, q, n, d - 1)
+
+function __plotkin_bound_core(round_func::Function, q::T, n::T, d::T) where T <: Integer
+	if ! isequal(q, 2)
+		throw(error("The Plotkin bound only works for the binary code."))
+	end
+	
+	if iseven(d) && 2d > n
+		return round_func((d) / (2d + 1 - n))
+	elseif isodd(d) && 2d + 1 > n
+		return round_func((d + 1) / (2d + 1 - n))
+	elseif iseven(d)
+		return T(4d)
+		# return A_2(2d, d) ≤ 4d
+	elseif isodd(d)
+		return T(4d + 4)
+		# return A_2(2d + 1, d) ≤ 4d + 4
+	end
+end
+
+plotkin_bound(q::T, n::T, d::T) where T <: Integer =
+	__plotkin_bound_core(a -> floor(T, a), q, n, d)
+plotkin_bound(q::T, n::T, d::T, ::Rounding) where T <: Integer =
+	__plotkin_bound_core(identity, q, n, d, no_round)
+
+elias_bassalygo_bound(q::T, n::T, d::T) where T <: Integer =
+elias_bassalygo_bound(q::T, n::T, d::T, ::Rounding) where T <: Integer =
+	
+	
+function __johnson_bound_core(round_func::Function, q::T, n::T, d::T) where T <: Integer
+	if isinteger((d - 1) / 2)
+		t = T((d - 1) / 2)
+		__sphere_bound(round_func, q, n, t) # if d = 2t + 1
+	elseif isinteger(d / 2)
+		t = T(d / 2)
+		__sphere_bound(round_func, q, n, t)
+	end
+end
+
+
 
 """
 	construct_ham_matrix(r::Integer, q::Integer) -> Matrix
@@ -378,7 +433,7 @@ maxminima(A::AbstractArray; dims::Integer) = getindex(minimum(A, dims=dims), max
 argminmaxima(A::AbstractArray; dims::Integer) = getindex(argmax(A, dims=dims), argmin(argmax(A, dims=dims)))
 minmaxima(A::AbstractArray; dims::Integer) = getindex(maximum(A, dims=dims), minimum(maximum(A, dims=dims)))
 	
-function get_codewords_random(𝒰::UniverseParameters, d::Integer; m::Integer=100)
+function get_codewords_random(𝒰::UniverseParameters, d::Integer; m::Integer=10000)
 	C = Tuple[]
 	
 	starting_word = rand(𝒰) # get a random word in the code start
@@ -468,17 +523,17 @@ end
 # end
 #
 
-get_codewords_random(Σ::Alphabet, q::Integer, n::Integer, d::Integer; m::Integer=100) =
+get_codewords_random(Σ::Alphabet, q::Integer, n::Integer, d::Integer; m::Integer=10000) =
 	get_codewords_random(UniverseParameters(Σ, q, n), d, m=m)
-get_codewords_random(Σ::Alphabet, n::Integer, d::Integer; m::Integer=100) =
+get_codewords_random(Σ::Alphabet, n::Integer, d::Integer; m::Integer=10000) =
 	get_codewords_random(UniverseParameters(Σ, n), d, m=m)
-get_codewords_random(q::Integer, n::Integer, d::Integer; m::Integer=100) =
+get_codewords_random(q::Integer, n::Integer, d::Integer; m::Integer=10000) =
 	get_codewords_random(UniverseParameters(q, n), d, m=m)
-get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer; m::Integer=100) =
+get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer; m::Integer=10000) =
 	get_codewords_random(Alphabet(Σ), q, n, d, m=m)
-get_codewords_random(Σ::AbstractArray, n::Integer, d::Integer; m::Integer=100) =
+get_codewords_random(Σ::AbstractArray, n::Integer, d::Integer; m::Integer=10000) =
 	get_codewords_random(UniverseParameters(Σ, n), d, m=m)
-get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray; m::Integer=100) =
+get_codewords_random(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray; m::Integer=10000) =
 	get_codewords_random(Alphabet(Σ), q, n, d, 𝒰, m=m)
 
 # get_codewords_random(Σ::AbstractArray, n::Integer, d::Integer; m::Integer=100) = get_codewords_random(UniverseParameters(Alphabet(Σ), n), d, m=m)

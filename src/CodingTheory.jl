@@ -20,7 +20,9 @@ export FinitePolynomial, AbstractCode, Alphabet, Messages, no_round,
 export rref, rref!
 
 # Messages, Distance, and Primes
-export rate, sphere_covering_bound, sphere_packing_bound,
+export rate, sphere_covering_bound, sphere_packing_bound, hamming_bound,
+        singleton_bound, gilbert_varshamov_bound, elias_bassalygo_bound,
+        plotkin_bound,
         construct_ham_matrix, isperfect, ishammingperfect, isgolayperfect,
         get_codewords_greedy, get_codewords_random, get_all_words,
         get_codewords
