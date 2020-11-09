@@ -11,22 +11,6 @@ using .CodingTheory
 
 stop_at = parse(BigInt, ARGS[1])
 
-function perfect_search()
-    q = 6 # a non prime power
-    count = 0
-    n, k, d = 0, 0, 0
-
-    for n in 3:100, k in 3:100, d in 3:100
-        # println(n,k,d,q)
-        if isperfect(n, k, d, q) #&& ! ishammingperfect(n, k, d, q) && ! isgolayperfect(n, k, d, q)
-            # return n, k, d, q
-            println("[$(n), $(k), $(d)]$(q)-code")
-        end
-    end
-
-    return nothing
-end
-
 # You might want to use your code to search for parameters where q^n divided by sphere_packing_bound(q,n,d) is an integer. I think this is essentially how Golay started his search - it would be interesting to replicate some of that search.
 function integer_search(stop_at::Integer)::Array{Array{Number, 1}}
     A = []
@@ -42,9 +26,11 @@ function integer_search(stop_at::Integer)::Array{Array{Number, 1}}
 			(q, n, d) ∈ processed && continue
             # note that we actually don't want to filter out non-linear codes
 			# distance shouldn't be larger than the block length; filter trivial distances of one; we filter out combinations when all are equal; filter out codes that are generalised hamming codes; filter out even distances
-			if d < n && ! isone(d) && ! CodingTheory.allequal(q, n, d) && ! ishammingperfect(q, n, d) && ! iszero(mod(d, 2))
-                hb = CodingTheory.hamming_bound(q, n, d, no_round)
-                if isinteger(hb) && ! isone(hb)
+			if d < n && ! isone(d) && ! CodingTheory.allequal(q, n, d) && ! ishammingperfect(q, n, d) && ! iszero(mod(d, 2)) && ! isprimepower(q)
+				hb = hamming_bound(q, n, d, no_round)
+                sb = singleton_bound(q, n, d, no_round)
+				
+                if isinteger(hb) && ! isone(hb) && hb ≥ sb
 					push!(processed, (q, n, d))
 					# i += 1; println("$i:\t$q, $n, $d")
                     push!(A, [q, n, d, hb])
@@ -64,8 +50,8 @@ function make_integer_csv(stop_at::Integer)
         push!(D, i)
     end
 	
-	data_file_desktop = joinpath(homedir(), "Desktop", "hamming_bound_integers_$(stop_at).csv")
-	data_file_other = joinpath(dirname(dirname(@__FILE__)), "other", "hamming_bound_integers_$(stop_at).csv")
+	data_file_desktop = joinpath(homedir(), "Desktop", "bound_integers_$(stop_at).csv")
+	data_file_other = joinpath(dirname(dirname(@__FILE__)), "other", "bound_integers_$(stop_at).csv")
 
     CSV.write(data_file_desktop, D)
     CSV.write(data_file_other, D)
@@ -80,7 +66,7 @@ function bound_comparison(stop_at::Integer)::Tuple{Int, Array{Array{Number, 1}}}
 	i = 0
     
     while true
-        for q in 1:upper_bound, n in 1:upper_bound, d in 1:upper_bound
+        @showprogress for q in 1:upper_bound, n in 1:upper_bound, d in 1:upper_bound
 			# skip configurations that have already been processed
 			# arelessthan(upper_bound - increment_bound, q, n, d) && continue
 			(q, n, d) ∈ processed && continue

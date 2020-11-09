@@ -22,7 +22,7 @@ const ruled_out = Tuple[
 
 
 # use bounds.jl to get the hamming bounds
-datafile = "/Users/jakeireland/Desktop/hamming_bound_integers_10000.csv" # obtain using bounds.jl
+datafile = "/Users/jakeireland/Desktop/bound_integers_10000.csv" # obtain using bounds.jl
 
 # Sort dataframe by hamming bound
 df = round.(BigInt, sort(DataFrame(CSV.read(datafile)), :hamming_bound))
@@ -32,4 +32,4 @@ df = round.(BigInt, sort(DataFrame(CSV.read(datafile)), :hamming_bound))
 # Filter out those (q, n, d) configurations already ruled out.
 df = @where(df, tuple.(:q, :n, :d) .∉ Ref(ruled_out))
 
-println(df[1:11, :])
+println(df[1:20, :])
