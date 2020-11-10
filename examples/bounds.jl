@@ -18,9 +18,10 @@ function integer_search(stop_at::Integer)::Array{Array{Number, 1}}
     increment_bound = 10
 	processed = []
 	i = 0
-    
+    p = Progress(stop_at, 1) # minimum update interval: 1 second
+	
     while true
-        @showprogress for q in 1:upper_bound, n in 1:upper_bound, d in 1:upper_bound
+        for q in 1:upper_bound, n in 1:upper_bound, d in 1:upper_bound
 			# skip configurations that have already been processed
 			# arelessthan(upper_bound - increment_bound, q, n, d) && continue
 			(q, n, d) ∈ processed && continue
@@ -30,11 +31,12 @@ function integer_search(stop_at::Integer)::Array{Array{Number, 1}}
 				hb = hamming_bound(q, n, d, no_round)
                 sb = singleton_bound(q, n, d, no_round)
 				
-                if isinteger(hb) && ! isone(hb) && ! isone(sb) #&& hb ≥ sb
+                if isinteger(hb) && ! isone(hb) && ! isone(sb) && hb ≥ sb
 					push!(processed, (q, n, d))
 					# i += 1; println("$i:\t$q, $n, $d")
                     push!(A, [q, n, d, hb, minimum([hb, sb])])
                     isequal(length(A), stop_at) && return A
+					next!(p)
                 end
             end
         end
