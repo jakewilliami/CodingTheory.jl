@@ -8,6 +8,7 @@ module CodingTheory
 
 using Primes: isprime, primes
 using LinearAlgebra: I
+using FLoops: @floop, ThreadedEx
 using Polynomials
 
 include("utils.jl")
