@@ -25,7 +25,7 @@ const ruled_out = Tuple[
 datafile = "/Users/jakeireland/Desktop/bound_integers_10000.csv" # obtain using bounds.jl
 
 # Sort dataframe by hamming bound
-df = round.(BigInt, sort(DataFrame(CSV.read(datafile)), :hamming_bound))
+df = round.(BigInt, sort(DataFrame(CSV.read(datafile)), :smallest_bound))
 
 # println(df[1:11, :])
 

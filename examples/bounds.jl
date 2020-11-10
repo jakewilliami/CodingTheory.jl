@@ -30,10 +30,10 @@ function integer_search(stop_at::Integer)::Array{Array{Number, 1}}
 				hb = hamming_bound(q, n, d, no_round)
                 sb = singleton_bound(q, n, d, no_round)
 				
-                if isinteger(hb) && ! isone(hb) && hb ≥ sb
+                if isinteger(hb) && ! isone(hb) && ! isone(sb) #&& hb ≥ sb
 					push!(processed, (q, n, d))
 					# i += 1; println("$i:\t$q, $n, $d")
-                    push!(A, [q, n, d, hb])
+                    push!(A, [q, n, d, hb, minimum([hb, sb])])
                     isequal(length(A), stop_at) && return A
                 end
             end
@@ -44,7 +44,7 @@ end
 
 function make_integer_csv(stop_at::Integer)
     A = integer_search(stop_at)
-    D = DataFrame(q = Number[], n = Number[], d = Number[], hamming_bound = Number[])
+    D = DataFrame(q = Number[], n = Number[], d = Number[], hamming_bound = Number[], smallest_bound = Number[])
 
     for i in A
         push!(D, i)

@@ -9,7 +9,7 @@ ENV["GKS_ENCODING"] = "utf-8"
 using Base.Threads: @threads
 using ProgressMeter: @showprogress, Progress, next!
 using FLoops: @floop, ThreadedEx
-using Plots, Formatting#, CSV, DataFrames
+using Plots, Formatting, CSV, DataFrames
 
 plotly()
 
@@ -32,7 +32,7 @@ function add_plot_info(plt::AbstractPlot; extra::AbstractString=string(), counte
 	annotate!(plt, max(x * 2, x + 100), ((y - 10 * counter) / factor1), extra)
 end
 
-function graphing(q::Integer, n::Integer, d::Integer, stop_at::Integer; m::Integer=10_000)
+function obtain_data(q::Integer, n::Integer, d::Integer, stop_at::Integer; m::Integer=10_000)
 	n < d && throw(error("You cannot have a distance greater than the block length."))
 	upper_bound_adjustment = 10
     num_of_datapoints = stop_at
@@ -56,11 +56,26 @@ function graphing(q::Integer, n::Integer, d::Integer, stop_at::Integer; m::Integ
     end
 
     save_path = joinpath(dirname(@__DIR__), "other", "random_number_analysis", "random_number_in_code,q=$(q),n=$(n),d=$(d),i=$(num_of_datapoints),m=$(batch_size).pdf")
-    
+	data_path = joinpath(dirname(@__DIR__), "other", "random_number_analysis", "random_number_in_code,q=$(q),n=$(n),d=$(d),i=$(num_of_datapoints),m=$(batch_size).pdf")
+	
+	D = DataFrame(size_of_code = Number[])
+
+    for i in A
+        push!(D, i)
+    end
+	
+	CSV.write(data_path, D)
+	
+	return data
+end
+
+function graphing(q::Integer, n::Integer, d::Integer, stop_at::Integer; m::Integer=10_000)
+	data = obtain_data(q, n, d, stop_at, m = m)
 	## Plot points
 	theme(:solarized)
 	
 	x_max = ifelse(abs(🐖 - 🍖) ≤ upper_bound_adjustment && abs(🐖 - 🐺) ≤ upper_bound_adjustment, maximum([🐖, 🍖, 🐺]), 🐖)
+	# x_max = ifelse(abs(🐖 - 🍖) ≤ upper_bound_adjustment && abs(🐖 - 🐺) ≤ upper_bound_adjustment, maximum([🐖, 🍖, 🐺]), ifelse(abs(🐖 - 🍖) ≤ upper_bound_adjustment, max(🐖, 🍖), ifelse(abs(🐖 - 🐺) ≤ upper_bound_adjustment, max(🐖, 🍖), 🐖)))
 	bins = minimum(data) - 0.5 : max(maximum(data), x_max) + 0.5
     
     plt = histogram(
@@ -162,7 +177,7 @@ function graphing(q::Integer, n::Integer, d::Integer, stop_at::Integer; m::Integ
 	return nothing
 end
 
-# for i in 7:-1:2
-	global q, n, d = 2, 2, 2
-	graphing(q, n, d, stop_at)
+# for i in 3:7
+global q, n, d = 2, 2, 2
+graphing(q, n, d, stop_at, m = 100)
 # end
