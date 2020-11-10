@@ -16,12 +16,6 @@ plotly()
 include(joinpath(dirname(dirname(@__FILE__)), "src", "CodingTheory.jl"))
 using .CodingTheory
 
-if isempty(ARGS)
-	throw(error("Please specify the number of datapoints you want to calculate from the command line."))
-end
-
-stop_at = parse(BigInt, ARGS[1])
-
 function add_plot_info(plt::AbstractPlot; extra::AbstractString=string(), counter::Integer=0)
     x = xlims(Plots.current())[1]
     y = ylims(Plots.current())[2]
@@ -34,33 +28,19 @@ end
 
 function obtain_data(q::Integer, n::Integer, d::Integer, stop_at::Integer; m::Integer=10_000)
 	n < d && throw(error("You cannot have a distance greater than the block length."))
-	upper_bound_adjustment = 10
-    num_of_datapoints = stop_at
     data = []
-	
-	if @isdefined m
-		batch_size = m
-	else
-		batch_size = 10_000 # the default value for m; a kwarg in `get_codewords_random`.
-	end
+	data_path = joinpath(dirname(@__DIR__), "other", "random_number_analysis", "random_number_in_code,q=$(q),n=$(n),d=$(d),i=$(stop_at),m=$(m).csv")
 	
 	## Obtain data
-	🐖 = length(get_codewords_greedy(q, n, d))
-	🍖 = hamming_bound(q, n, d)
-	🐺 = singleton_bound(q, n, d)
-    
-	p = Progress(num_of_datapoints, 1) # minimum update interval: 1 second
-    @floop ThreadedEx() for _ in 1:num_of_datapoints
+	p = Progress(stop_at, 1) # minimum update interval: 1 second
+    @floop ThreadedEx() for _ in 1:stop_at
 		push!(data, length(get_codewords_random(q, n, d, m = m)))
 		next!(p) # increment progress bar
     end
-
-    save_path = joinpath(dirname(@__DIR__), "other", "random_number_analysis", "random_number_in_code,q=$(q),n=$(n),d=$(d),i=$(num_of_datapoints),m=$(batch_size).pdf")
-	data_path = joinpath(dirname(@__DIR__), "other", "random_number_analysis", "random_number_in_code,q=$(q),n=$(n),d=$(d),i=$(num_of_datapoints),m=$(batch_size).csv")
 	
 	D = DataFrame(size_of_code = Number[])
 
-    for i in A
+    for i in data
         push!(D, i)
     end
 	
@@ -71,8 +51,9 @@ function obtain_data(q::Integer, n::Integer, d::Integer, stop_at::Integer; m::In
 	return data
 end
 
-function graphing(q::Integer, n::Integer, d::Integer, stop_at::Integer; m::Integer=10_000)
-	data = obtain_data(q, n, d, stop_at, m = m)
+function graphing(q::Integer, n::Integer, d::Integer, data::Union{AbstractArray, DataFrame}, stop_at::Integer; m::Integer=10_000)
+	save_path = joinpath(dirname(@__DIR__), "other", "random_number_analysis", "random_number_in_code,q=$(q),n=$(n),d=$(d),i=$(stop_at),m=$(m).pdf")
+	
 	## Plot points
 	theme(:solarized)
 	
@@ -86,7 +67,7 @@ function graphing(q::Integer, n::Integer, d::Integer, stop_at::Integer; m::Integ
 					xlabel = "|C|",
 					ylabel = "Frequency of Times Found",
 					label = "",
-					title = "(q, n, d) = ($q, $n, $d): $(format(num_of_datapoints, commas = true)) Random Samples, with Selection Size $(format(batch_size, commas = true))",
+					title = "(q, n, d) = ($q, $n, $d): $(format(stop_at, commas = true)) Random Samples, with Selection Size $(format(m, commas = true))",
 					xticks = minimum(data) : max(maximum(data), x_max),
 					bins = bins
 					)
@@ -179,7 +160,27 @@ function graphing(q::Integer, n::Integer, d::Integer, stop_at::Integer; m::Integ
 	return nothing
 end
 
+graphing(q::Integer, n::Integer, d::Integer, stop_at::Integer; m::Integer=10_000) =
+	graphing(q, n, d, obtain_data(q, n, d, stop_at, m = m), stop_at, m = m)
+
+if isempty(ARGS) || length(ARGS) < 4
+	throw(error("""
+	Please specify the number of datapoints you want to calculate from the command line, along with q, n, and d.  For example
+		./examples/random_number_in_code.jl 6 7 3 1000
+	"""))
+end
+
+global q = parse(Int, ARGS[1])
+global n = parse(Int, ARGS[2])
+global d = parse(Int, ARGS[3])
+global stop_at = parse(Int, ARGS[4])
+
+global upper_bound_adjustment = 10
+global 🐖 = length(get_codewords_greedy(q, n, d))
+global 🍖 = hamming_bound(q, n, d)
+global 🐺 = singleton_bound(q, n, d)
+
 # for i in 3:7
-global q, n, d = 2, 2, 2
+# global q, n, d = 2, 2, 2
 graphing(q, n, d, stop_at, m = 100)
 # end
