@@ -56,7 +56,7 @@ function obtain_data(q::Integer, n::Integer, d::Integer, stop_at::Integer; m::In
     end
 
     save_path = joinpath(dirname(@__DIR__), "other", "random_number_analysis", "random_number_in_code,q=$(q),n=$(n),d=$(d),i=$(num_of_datapoints),m=$(batch_size).pdf")
-	data_path = joinpath(dirname(@__DIR__), "other", "random_number_analysis", "random_number_in_code,q=$(q),n=$(n),d=$(d),i=$(num_of_datapoints),m=$(batch_size).pdf")
+	data_path = joinpath(dirname(@__DIR__), "other", "random_number_analysis", "random_number_in_code,q=$(q),n=$(n),d=$(d),i=$(num_of_datapoints),m=$(batch_size).csv")
 	
 	D = DataFrame(size_of_code = Number[])
 
@@ -65,6 +65,8 @@ function obtain_data(q::Integer, n::Integer, d::Integer, stop_at::Integer; m::In
     end
 	
 	CSV.write(data_path, D)
+	
+	println("Wrote data to $(data_path)")
 	
 	return data
 end
