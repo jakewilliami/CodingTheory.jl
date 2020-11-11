@@ -59,12 +59,13 @@ function graphing(q::Integer, n::Integer, d::Integer, data::Union{AbstractArray,
 	theme(:solarized)
 	
 	x_max = 0
-	if 🍖 - maximum(data) ∈ [1:upper_bound_adjustment...]
+	if 🍖 - maximum(data) ∈ [0:upper_bound_adjustment...]
 		x_max = 🍖
 	end
-	if 🐺 - maximum(data) ∈ [1:upper_bound_adjustment...]
+	if 🐺 - maximum(data) ∈ [0:upper_bound_adjustment...]
 		x_max = 🐺
 	end
+
 	bin_adjustment = ifelse(🐖_obtained, 0.5, minimum(abs.(extrema(vcat(data, x_max)) .- 🐖)) + 0.5) # ensure the bins encompass the greedy
 	bins = minimum(data) - bin_adjustment : max(maximum(data), x_max) + bin_adjustment
     
@@ -140,8 +141,7 @@ function graphing(q::Integer, n::Integer, d::Integer, data::Union{AbstractArray,
 	
 		🍖_annotated = true
 	end
-	println(x_max)
-	println(abs(x_max - 🐺) ≤ upper_bound_adjustment)
+
 	if abs(x_max - 🐺) ≤ upper_bound_adjustment && ! 🐺_annotated # only the singleton bound fits on the plot
 		🐺_idx = searchsortedlast(bins, 🐺) # <- the index of that value
 		🐺_y_top = plt.series_list[1].plotattributes[:y][1:6:end][🐺_idx] # height of bar of choice
