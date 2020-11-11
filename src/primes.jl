@@ -23,8 +23,23 @@ function isprimepower(n::Integer)
 	return false
 end
 
+function primepower(n::Integer)
+	n ≤ 1 && return nothing
+	isprime(n) && return n, 1
+		
+	for a in primes(ceil(Int, sqrt(n)))
+		for m in 2:ceil(Int, sqrt(n)) # m > 1
+			a^m > n && break
+			isequal(a^m, n) && return a, m
+		end
+	end
+	
+	return nothing
+end
 
-## The following function are obtained from https://cr.yp.to/papers/powers.pdf
+#========================================================================#
+
+## The following function are obtained from DJB
 
 struct DJBFloat
 	a::Signed
@@ -100,7 +115,7 @@ Write a MIX program that multiplies $(u_1u_2\ldots u_n)_b$ by $v$, where $v$ is 
 		
 The running time is 23N + K + 5 cycles, and K is rougly (1/2)N.
 =#
-function mult(u::Integer, v::Real, b::Integer)
+function mul(u::Integer, v::Real, b::Integer)
 	n = ndigits(u) #; base = b
 	u̲ = round.(reverse(digits(u)), base = b)
 	w̲ = Vector{Int}(undef, n)
@@ -165,10 +180,10 @@ function __newton_nroot(y::Real, k::Real, b::Real)
 	b′ = ceil(Int, (b - ceil(Int, lg(2*k))) / 2)
 	B = 2*b′ + 4 - ceil(Int, lg(l))
 	z = ifelse(b′ ≤ ceil(Int, lg(8*k)), __nroot(__nroot(y, k, b′)), __newton_nroot(y, k, b′)) # if else, then b′ ≥ ceil(Int, lg(8*k)) + 1
-	r2 = trunc(z, B) * (k + 1)
-	r3 = trunc(__pow(z, k + 1, B) * trunc(y, B), B)
+	r₂ = trunc(z, B) * (k + 1)
+	r₃ = trunc(__pow(z, k + 1, B) * trunc(y, B), B)
 	
-	return r4 = div(r2 - r3, k, B)
+	return r₄ = div(r₂ - r₃, k, B)
 end
 
 #=
@@ -238,29 +253,4 @@ function __find_prime_power(n::Integer)
 	end
 	
 	return x, 1
-end
-
-
-
-
-
-
-
-
-
-
-
-
-function primepower(n::Integer)
-	n ≤ 1 && return nothing
-	isprime(n) && return n, 1
-		
-	for a in primes(ceil(Int, sqrt(n)))
-		for m in 2:ceil(Int, sqrt(n)) # m > 1
-			a^m > n && break
-			isequal(a^m, n) && return a, m
-		end
-	end
-	
-	return nothing
 end

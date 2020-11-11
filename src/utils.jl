@@ -177,3 +177,9 @@ Examples:
 	false
 """
 has_identity(M::Matrix) = isequal(M[:, 1:size(M, 1)], I(size(M, 1))) ? true : false
+
+function sizeof_perfect_code(q::Integer, n::Integer, d::Integer)
+	return (sizeof(ntuple(_ -> gensym(), n)) * hamming_bound(q, n, d)) / 1073741824
+end
+
+sizeof_perfect_code(q::Number, n::Number, d::Number) = sizeof_perfect_code(round.(BigInt, [q, n, d])...)
