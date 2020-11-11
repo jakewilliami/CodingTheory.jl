@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
     #=
-    exec julia --project="$(realpath $(dirname $0))" --color=yes --startup-file=no -e "include(popfirst!(ARGS))" \
+    exec julia -tauto --project="$(realpath $(dirname $0))" --color=yes --startup-file=no -e "include(popfirst!(ARGS))" \
     "${BASH_SOURCE[0]}" "$@"
     =#
 
@@ -27,11 +27,11 @@ function integer_search(stop_at::Integer)::Array{Array{Number, 1}}
 			(q, n, d) ∈ processed && continue
             # note that we actually don't want to filter out non-linear codes
 			# distance shouldn't be larger than the block length; filter trivial distances of one; we filter out combinations when all are equal; filter out codes that are generalised hamming codes; filter out even distances
-			if d < n && ! isone(d) && ! CodingTheory.allequal(q, n, d) && ! ishammingperfect(q, n, d) && ! iszero(mod(d, 2)) && ! isprimepower(q)
+			if d < n && ! isone(q) #&& ! CodingTheory.allequal(q, n, d) && ! ishammingperfect(q, n, d) && ! iseven(d) && ! isprimepower(q)
 				hb = hamming_bound(q, n, d, no_round)
                 sb = singleton_bound(q, n, d, no_round)
 				
-                if isinteger(hb) && ! isone(hb) && ! isone(sb) && hb ≥ sb
+                if isinteger(hb) #&& ! isone(hb) && ! isone(sb) && hb ≤ sb
 					push!(processed, (q, n, d))
 					# i += 1; println("$i:\t$q, $n, $d")
                     push!(A, [q, n, d, hb, minimum([hb, sb])])
@@ -57,7 +57,7 @@ function make_integer_csv(stop_at::Integer)
 
     CSV.write(data_file_desktop, D)
     CSV.write(data_file_other, D)
-	println("Wrote data to $(data_file_other).")
+	println("\nWrote data to $(data_file_other).")
 end
 
 function bound_comparison(stop_at::Integer)::Tuple{Int, Array{Array{Number, 1}}}
