@@ -140,7 +140,7 @@ function graphing(q::Integer, n::Integer, d::Integer, data::Union{AbstractArray,
 	
 		🍖_annotated = true
 	end
-	println(🐺)
+	println(x_max)
 	println(abs(x_max - 🐺) ≤ upper_bound_adjustment)
 	if abs(x_max - 🐺) ≤ upper_bound_adjustment && ! 🐺_annotated # only the singleton bound fits on the plot
 		🐺_idx = searchsortedlast(bins, 🐺) # <- the index of that value
