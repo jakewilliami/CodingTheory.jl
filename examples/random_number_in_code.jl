@@ -198,7 +198,9 @@ graphing(q::Integer, n::Integer, d::Integer, stop_at::Integer; m::Integer=10_000
 
 # (6, 3, 2),
 # (10, 3, 2),
-# for (q, n, d) in [(6, 4, 2), (12, 3, 2), (21, 4, 3), (14, 3, 2), (15, 3, 2), (18, 3, 2), (6, 5, 2), (6, 7, 3)]
+# (6, 4, 2), (12, 3, 2), (21, 4, 3), (14, 3, 2), (15, 3, 2),
+# (18, 3, 2),
+# for (q, n, d) in [(6, 5, 2), (6, 7, 3)]
 # 	println("Processing (q, n, d) = ($(q), $(n), $(d))")
 # 	global upper_bound_adjustment = 10
 # 	global 🐖 = length(get_codewords_greedy(q, n, d))
@@ -213,7 +215,7 @@ graphing(q::Integer, n::Integer, d::Integer, stop_at::Integer; m::Integer=10_000
 # graphing(q, n, d, stop_at, m = m)
 
 # reading from pre-obtained data
-q, n, d = 6, 3, 2
+q, n, d = 21, 4, 3
 m = 10_000
 stop_at = 1000
 global upper_bound_adjustment = 10
@@ -222,5 +224,5 @@ global 🍖 = hamming_bound(q, n, d)
 global 🐺 = singleton_bound(q, n, d)
 # data = CSV.read("/Users/jakeireland/projects/CodingTheory.jl/other/random_number_analysis/random_number_in_code,q=$(q),n=$(n),d=$(d),i=$(stop_at),m=$(m).csv")
 # data = CSV.read("/Users/jakeireland/projects/CodingTheory.jl/other/random_number_analysis/mildly_interesting_ones/[2]-10-3-2/random_number_in_code,q=10,n=3,d=2,i=1000,m=10000.csv")
-data = CSV.read("/Users/jakeireland/projects/CodingTheory.jl/other/random_number_analysis/mildly_interesting_ones/[1]-6-2-3/random_number_in_code,q=6,n=3,d=2,i=1000,m=10000.csv")
+data = CSV.read("/Users/jakeireland/Desktop/random_number_in_code,q=21,n=4,d=3,i=1000,m=10000.csv")
 graphing(q, n, d, data, stop_at, m = m)
