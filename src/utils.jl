@@ -181,5 +181,9 @@ has_identity(M::Matrix) = isequal(M[:, 1:size(M, 1)], I(size(M, 1))) ? true : fa
 function sizeof_perfect_code(q::Integer, n::Integer, d::Integer)
 	return (sizeof(ntuple(_ -> gensym(), n)) * hamming_bound(q, n, d)) / (2^30)
 end
+"""
+	sizeof_perfect_code(q::Number, n::Number, d::Number) -> Number
 
+Calculates the number of gigabytes required to store a perfect code of parameters q, n, and d.
+"""
 sizeof_perfect_code(q::Number, n::Number, d::Number) = sizeof_perfect_code(round.(BigInt, [q, n, d])...)
