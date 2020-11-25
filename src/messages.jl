@@ -516,7 +516,7 @@ function get_codewords_random_mmap(mmappath::AbstractString, 𝒰::UniverseParam
 	return C
 end
 
-get_codewords_random(𝒰::UniverseParameters, d::Integer) = get_codewords_random(joinpath(tempdir(), "mmap.bin"), 𝒰, d)
+# get_codewords_random(𝒰::UniverseParameters, d::Integer) = get_codewords_random(joinpath(tempdir(), "mmap.bin"), 𝒰, d)
 
 """
 	get_codewords(Σ::AbstractArray, q::Integer, n::Integer, d::Integer, 𝒰::AbstractArray; m::Integer=10) -> Array{Tuple{Symbol}, 1}
