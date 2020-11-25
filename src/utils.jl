@@ -178,12 +178,22 @@ Examples:
 """
 has_identity(M::Matrix) = isequal(M[:, 1:size(M, 1)], I(size(M, 1))) ? true : false
 
-function sizeof_perfect_code(q::Integer, n::Integer, d::Integer)
-	return (sizeof(ntuple(_ -> gensym(), n)) * hamming_bound(q, n, d)) / (2^30)
-end
 """
 	sizeof_perfect_code(q::Number, n::Number, d::Number) -> Number
 
 Calculates the number of gigabytes required to store a perfect code of parameters q, n, and d.
 """
+function sizeof_perfect_code(q::Integer, n::Integer, d::Integer)
+	return (sizeof(ntuple(_ -> gensym(), n)) * hamming_bound(big.([q, n, d])...)) / (2^30)
+end
 sizeof_perfect_code(q::Number, n::Number, d::Number) = sizeof_perfect_code(round.(BigInt, [q, n, d])...)
+
+"""
+	sizeof_perfect_code(q::Number, n::Number) -> Number
+
+Calculates the number of gigabytes required to store all unique words of length n from an alphabet of size q.
+"""
+function sizeof_all_words(q::Integer, n::Integer)
+	return (sizeof(ntuple(_ -> gensym(), n)) * big(q)^n) / (2^30)
+end
+sizeof_all_words(q::Number, n::Number) = sizeof_all_words(round.(BigInt, [q, n])...)
