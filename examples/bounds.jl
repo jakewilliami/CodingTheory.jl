@@ -27,18 +27,19 @@ function integer_search(stop_at::Integer)::Array{Array{Number, 1}}
 			(q, n, d) ∈ processed && continue
             # note that we actually don't want to filter out non-linear codes
 			# distance shouldn't be larger than the block length; filter trivial distances of one; we filter out combinations when all are equal; filter out codes that are generalised hamming codes; filter out even distances
-			if d < n && ! isone(q) #&& ! CodingTheory.allequal(q, n, d) && ! ishammingperfect(q, n, d) && ! iseven(d) && ! isprimepower(q)
+			# if d < n && ! isone(q) #&& ! CodingTheory.allequal(q, n, d) && ! ishammingperfect(q, n, d) && ! iseven(d) && ! isprimepower(q)
+			q, n, d = big(q), big(n), big(d)
 				hb = hamming_bound(q, n, d, no_round)
                 sb = singleton_bound(q, n, d, no_round)
 				
-                if isinteger(hb) #&& ! isone(hb) && ! isone(sb) && hb ≤ sb
+                # if isinteger(hb) #&& ! isone(hb) && ! isone(sb) && hb ≤ sb
 					push!(processed, (q, n, d))
 					# i += 1; println("$i:\t$q, $n, $d")
-                    push!(A, [q, n, d, hb, minimum([hb, sb])])
+                    push!(A, [q, n, d, hb, sb])
                     isequal(length(A), stop_at) && return A
 					next!(p)
-                end
-            end
+                # end
+            # end
         end
         upper_bound += increment_bound
     end
@@ -46,7 +47,7 @@ end
 
 function make_integer_csv(stop_at::Integer)
     A = integer_search(stop_at)
-    D = DataFrame(q = Number[], n = Number[], d = Number[], hamming_bound = Number[], smallest_bound = Number[])
+    D = DataFrame(q = Number[], n = Number[], d = Number[], hamming_bound = Number[], singleton_bound = Number[])
 
     for i in A
         push!(D, i)
