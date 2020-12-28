@@ -6,7 +6,7 @@
     =#
 
 """
-	hamming_distance(w₁, w₂) -> Integer
+	hamming_distance(w₁, w₂) -> Int
 
 The Hamming distance of two words is the number of changes that need to be made to each letter in the word for the words to be the same.  This does not work for words of unequal length.
 	
@@ -15,71 +15,65 @@ Parameters:
   - w₂: Another word.
   
 Returns:
-  - Integer: the number of changes needing to be made to one word for it to be identical to the other.
+  - Int: the number of changes needing to be made to one word for it to be identical to the other.
 """
-function hamming_distance(w₁, w₂)
+function hamming_distance(w₁::T, w₂::T) where T <: Union{String, Vector, NTuple}
     if ! isequal(length(w₁), length(w₂))
         throw(error("Cannot compute Hamming Distance on strings of unequal length."))
     end
     
     distance = 0
-        
-    for i in 1:length(w₁)
-        if w₁[i] ≠ w₂[i]
-            distance += 1
-        end
-    end
+    
+	for (s₁, s₂) in zip(w₁, w₂)
+		if s₁ ≠ s₂
+			distance += 1
+		end
+	end
     
     return distance
 end
 
-function __hamming_space(relation::Function, Σⁿ::AbstractArray{T}, w::AbstractArray, e::Integer) where T# <: AbstractArray
+function __hamming_space(relation::Function, Σⁿ::AbstractArray{T}, w::AbstractArray, e::Int) where T
 	e < 0 && throw(error("e (the ball/sphere \"radius\") must be a non-negative number."))
+	Σⁿ, w = deepsym(Σⁿ), ensure_symbolic(w)
 	
-	w = ensure_symbolic(w)
-	ball = []
-	
-	for v in deepsym(Σⁿ)
-		relation(hamming_distance(w, v), e) && push!(ball, v)
-	end
-	
-	return ball
+	return eltype(Σⁿ)[v for v in deepsym(Σⁿ) if relation(hamming_distance(w, v), e)]
 end
 
 """
-	hamming_ball(Σⁿ::AbstractArray, w::AbstractArray, e::Integer) -> Vector{Vector}
+	hamming_ball(Σⁿ::AbstractArray, w::Vector, e::Int) -> Vector{Vector}
 
 Get the codewords of radius e of a ball centered at word w.  That is, all words whose distance from w is less than or equal to the radius.
 
 Parameters:
   - Σⁿ::AbstractArray: An array of words in the code.
-  - w::AbstractArray: A word.
-  - e::Integer: The radius of the ball.
+  - w::Vector: A word.
+  - e::Int: The radius of the ball.
   
 Returns:
   - AbstractArray: The list of words in Σⁿ whose distance from w is less than or equal to e.  Returns an array of array of symbols.
 """
-hamming_ball(Σⁿ::AbstractArray{T}, w::AbstractArray, e::Integer) where T =
+hamming_ball(Σⁿ::AbstractArray{T}, w::Vector{S}, e::Int) where {T, S} =
 	__hamming_space(≤, Σⁿ, w, e)
 
 """
-	hamming_sphere(Σⁿ::AbstractArray, w::AbstractArray, e::Integer) -> Vector{Vector}
+	hamming_sphere(Σⁿ::AbstractArray, w::Vector, e::Int) -> Vector{Vector}
 
 Get the codewords of radius e of a sohere centered at word w.  That is, all words whose distance from w is exactly equal to to the radius.
 
 Parameters:
   - Σⁿ::AbstractArray: An array of words in the code.
-  - w::AbstractArray: A word.
-  - e::Integer: The radius of the ball.
+  - w::Vector: A word.
+  - e::Int: The radius of the ball.
   
 Returns:
   - AbstractArray: The list of words in Σⁿ whose distance from w is exactly equal to e.  Returns an array of array of symbols.
 """
-hamming_sphere(Σⁿ::AbstractArray{T}, w::AbstractArray, e::Integer) where T =
+hamming_sphere(Σⁿ::AbstractArray{T}, w::Vector{S}, e::Int) where {T, S} =
 	__hamming_space(isequal, Σⁿ, w, e)
 
 """
-	code_distance(C::AbstractArray) -> Integer
+	code_distance(C::AbstractArray) -> Int
 	
 Finds the distance of the code.  That is, given a code C, finds the minimum distance between any two words in the code, which are not the same. (Find the minimum hamming distance in the code for all unique letters).
 
@@ -87,31 +81,27 @@ Parameters:
   - C::AbstractArray: An array of words in the code.
   
 Return:
-  - Integer: the distance of the code.
+  - Int: the distance of the code.
 """
-function code_distance(C::AbstractArray{T}) where T <: AbstractArray{Any}
-	return code_distance(deepsym(C))
-end
-
-# function code_distance(C::AbstractArray{Int})::Integer
-# 	return code_distance(collect(copy.(eachcol(A))))
-# end
-
 function code_distance(C::AbstractArray{T}) where T
 	isempty(C) && return nothing
-	distances = []
+	C = deepsym(C)
+	min_distance = nothing
 	
 	for c in C, c′ in C
 		if c ≠ c′
-			push!(distances, hamming_distance(c, c′))
+			ham_dist = hamming_distance(c, c′)
+			if isnothing(min_distance) || ham_dist < min_distance
+				min_distance = ham_dist
+			end
 		end
 	end
-
-	return minimum(distances)
+	
+	return min_distance
 end
 
 """
-	code_distance!(C::AbstractArray{T}, w::T) -> Integer
+	code_distance!(C::AbstractArray{T}, w::T) -> Int
 
 A wrapper to get the code distance after pushing a word to the code.  *This directly changes the matrix M.  Use `code_distance` for a non-mutating version of this function.*
 
@@ -120,7 +110,7 @@ Parameters:
   - w: A word to be appended to C.
   
 Returns:
-  - Integer: The code distance after adding w to C.
+  - Int: The code distance after adding w to C.
 """
 function code_distance!(C::AbstractArray{T}, w::T) where T
 	push!(C, w)
@@ -128,7 +118,7 @@ function code_distance!(C::AbstractArray{T}, w::T) where T
 end
 
 """
-	code_distance(C::AbstractArray{T}, w::T) -> Integer
+	code_distance(C::AbstractArray{T}, w::T) -> Int
 
 A wrapper to get the code distance after pushing a word to the code.
 
@@ -137,78 +127,78 @@ Parameters:
   - w: A word to be appended to C.
   
 Returns:
-  - Integer: The code distance after adding w to C.
+  - Int: The code distance after adding w to C.
 """
 function code_distance(C::AbstractArray{T}, w::T) where T
 	code_distance!(copy(C), w)
 end
 
 """
-	t_error_detecting(C::AbstractArray{T}, t::Integer) -> Bool
+	t_error_detecting(C::AbstractArray{T}, t::Int) -> Bool
 	
 Check if a given code C can detect t many errors.
 	
 Parameters:
   - C::AbstractArray: An array of words in the code.
-  - t::Integer: The number of errors you want to check that the code can detect.
+  - t::Int: The number of errors you want to check that the code can detect.
   
 Returns:
   - Bool: Yes, C can detect t errors, or no it cannot (true of false).
 """
-function t_error_detecting(C::AbstractArray{T}, t::Integer) where T <: AbstractArray{Int}
+function t_error_detecting(C::AbstractArray{T}, t::Int) where T <: AbstractArray{Int}
 	code_distance(C) ≥ t + 1 && return true
 	return false
 end
 
 """
-	t_error_correcting(C::AbstractArray{T}, t::Integer) -> Bool
+	t_error_correcting(C::AbstractArray{T}, t::Int) -> Bool
 	
 Check if a given code C can correct t many errors.
 	
 Parameters:
   - C::AbstractArray: An array of words in the code.
-  - t::Integer: The number of errors you want to check that the code can correct.
+  - t::Int: The number of errors you want to check that the code can correct.
   
 Returns:
   - Bool: Yes, C can correct t errors, or no it cannot (true of false).
 """
-function t_error_correcting(C::AbstractArray{T}, t::Integer) where T <: AbstractArray{Int}
+function t_error_correcting(C::AbstractArray{T}, t::Int) where T <: AbstractArray{Int}
 	code_distance(C) ≥ 2*t + 1 && return true
 	return false
 end
 
 
 """
-	find_error_detection_max(C::AbstractArray{T}, modulo::Integer) -> Integer
+	find_error_detection_max(C::AbstractArray{T}, modulo::Int) -> Int
 	
 Finds the greatest number t such that C is error t error detecting.
 	
 Parameters:
   - C::AbstractArray: An array of words in the code.
-  - moldulo::Integer: The modulus of the finite field.  The upper bound of t.
+  - moldulo::Int: The modulus of the finite field.  The upper bound of t.
   
 Returns:
-  - Integer: The maximum number t such that the code is t error detecting.
+  - Int: The maximum number t such that the code is t error detecting.
 """
-function find_error_detection_max(C::AbstractArray{T}, modulo::Integer) where T <: AbstractArray{Int}
-	for t in modulo-1:-1:0
+function find_error_detection_max(C::AbstractArray{T}, modulo::Int) where T <: AbstractArray{Int}
+	for t in (modulo - 1):-1:0
 		t_error_detecting(C, t) && return t
 	end
 end
 
 """
-	find_error_correction_max(C::AbstractArray{T}, modulo::Integer) -> Integer
+	find_error_correction_max(C::AbstractArray{T}, modulo::Int) -> Int
 	
 Finds the greatest number t such that C is error t error correcting.
 	
 Parameters:
   - C::AbstractArray: An array of words in the code.
-  - moldulo::Integer: The modulus of the finite field.  The upper bound of t.
+  - moldulo::Int: The modulus of the finite field.  The upper bound of t.
   
 Returns:
-  - Integer: The maximum number t such that the code is t error correcting.
+  - Int: The maximum number t such that the code is t error correcting.
 """
-function find_error_correction_max(C::AbstractArray{T}, modulo::Integer) where T <: AbstractArray{Int}
+function find_error_correction_max(C::AbstractArray{T}, modulo::Int) where T <: AbstractArray{Int}
 	for t in modulo-1:-1:0
 		t_error_correcting(C, t) && return t
 	end
