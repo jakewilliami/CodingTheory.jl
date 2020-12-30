@@ -93,44 +93,39 @@ function multiplication_table(degree::Int, modulo::Int)
 	return poly_matrix
 end
 
-"""
-	list_span(u̲::Vector, v̲::Vector, modulo::Int) -> Array
+function __list_span_inner(modulo::Int, u̲::Vector{T}...) where T <: Number
+    n_vec = length(u̲)
+    span = Vector{T}[zero(u̲[1])]
+	
+    for n in 1:n_vec
+        new_span = copy(span)
+        for v in span, λ in 1:(modulo - 1)
+            w̲ = mod.(v + λ * u̲[n], modulo)
+            if w̲ ∉ new_span
+                push!(new_span, w̲)
+            end
+        end
+        span = new_span
+    end
+	
+	return span
+end
 
-Given two vectors `u̲` and `v̲`, prints all linear combinations of those vectors, modulo `modulo`.  NB: this function can take in another vector, but is not yet generalised to more than three.
+"""
+	list_span(u̲::Vector, v̲::Vector,... modulo::Int) -> Array
+
+Given any number of vectors `u̲`, `v̲`,... , prints all linear combinations of those vectors, modulo `modulo`.
 
 Parameters:
   - u̲::Vector: One vector.
   - v̲::Vector: Another vector.
+  - ...: Other vectors.
   - modulo::Int: The modulus of the field.
   
 Returns:
   - Array: All vectors in the span of u̲ and v̲, under modulo.
 """
-function list_span(u̲::Vector{T}, v̲::Vector{T}, modulo::Int) where T <: Number
-	span = Vector{T}[]
-	
-	for λ in 0:(modulo - 1), γ in 0:(modulo - 1)
-		w̲ = mod.(λ*u̲ + γ*v̲, modulo)
-		if w̲ ∉ span
-			push!(span, w̲)
-		end
-	end
-	
-	return span
-end
-
-function list_span(u̲::Vector{T}, v̲::Vector{T}, t̲::Vector{T}, modulo::Int) where T <: Number
-	span = Vector{T}[]
-	
-	for λ in 0:(modulo - 1), γ in 0:(modulo - 1), α in 0:(modulo - 1)
-		w̲ = mod.(λ*u̲ + γ*v̲ + α*t̲, modulo)
-		if w̲ ∉ span
-			push!(span, w̲)
-		end
-	end
-
-	return span
-end
+list_span(args...) = __list_span_inner(last(args), args[1:end-1]...)
 
 """
 	islinear(C::Vector, modulo::Int; verbose::Bool = false) -> Bool
