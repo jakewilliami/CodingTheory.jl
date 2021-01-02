@@ -9,13 +9,15 @@ module CodingTheory
 using Primes: isprime, primes
 using LinearAlgebra: I
 using FLoops: @floop, ThreadedEx
-using Polynomials
+using Polynomials, StaticArrays
 
 include("utils.jl")
 
 # Abstract types
-export FinitePolynomial, AbstractCode, Alphabet, Messages, no_round,
-        CodeUniverse, CodeUniverseIterator, UniverseParameters
+export FinitePolynomial, AbstractCode, NonStaticAbstractWord, AbstractWord, Word,
+        Alphabet, Messages, CodeUniverse, CodeUniverseIterator, UniverseParameters
+export no_round, getindex, setindex!, firstindex, lastindex, size, length, rand,
+        gensym, genalphabet, eltype, isword, isabstractword
 
 # RREF
 export rref, rref!

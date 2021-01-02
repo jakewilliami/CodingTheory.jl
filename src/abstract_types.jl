@@ -15,6 +15,49 @@ abstract type FiniteField end
 abstract type AbstractCode end
 
 """
+    NonStaticAbstractWord{N, T} = Union{NTuple{N, T}, AbstractVector{T}} where {N, T}
+"""
+NonStaticAbstractWord{N, T} = Union{NTuple{N, T}, AbstractVector{T}} where {N, T}
+
+"""
+    mutable struct Word{N, T}
+    Word(w::NTuple{N, T})
+    Word(w::AbstractVector{T})
+    Word(i::T...)
+
+A Word is an `StaticArrays.MVector` which is efficient (like tuple) yet mutable.
+"""
+mutable struct Word{N, T}
+    w::MVector{N, T}
+    
+    Word(w::NTuple{N, T}) where {N, T} = new{N, T}(MVector{N, T}(w))
+    Word(w::AbstractVector{T}) where {T} =
+        (len = length(w); new{len, T}(MVector{len, T}(w)))
+    Word(i::T...) where {T} =
+        (len = length(i); new{len, T}(MVector{len, T}(i)))
+end
+
+# Indexing Interface
+Base.getindex(W::Word{N, T}, i::Int) where {N, T} = getindex(W.w, i)
+Base.setindex!(W::Word{N, T}, v, i::Int) where {N, T} = setindex!(W.w, v, i)
+Base.firstindex(W::Word{N, T}) where {N, T} = firstindex(W.w)
+Base.lastindex(W::Word{N, T}) where {N, T} = lastindex(W.w)
+
+# Abstract Array Interface
+Base.size(::Word{N, T}) where {N, T} = tuple(N)
+Base.length(::Word{N, T}) where {N, T} = N
+
+"""
+    AbstractWord{N} = Union{NonStaticAbstractWord{N, T}, MVector{T}} where {T}
+"""
+AbstractWord{N, T} = Union{Word{N, T}, NonStaticAbstractWord{N, T}, MVector{N, T}} where {N, T}
+
+isword(w) = w isa Word
+isword(i...) = isword(i)
+isabstractword(w) = w isa AbstractWord
+isabstractword(i...) = isabstractword(i)
+
+"""
     struct Alphabet <: AbstractCode
         
 Has the parameter Σ, which is the alphabet; a collection of strings, characters, symbols, or Ints.
@@ -34,18 +77,8 @@ A constructor method for the struct Alphabet.  Takes in a symbols and splits it 
 """
 struct Alphabet <: AbstractVector{Symbol}
     Σ::AbstractVector{Symbol}
-    
-    function Alphabet(Σ::Vector{T}) where T
-        Σ = ensure_symbolic(unique(Σ))
-        
-        new(Σ)
-    end # end constructor function
 
-    function Alphabet(Σ::String)
-        Σ = ensure_symbolic(collect(unique(Σ)))
-        
-        new(Σ)
-    end # end constructor function
+    Alphabet(Σ::Union{Vector{T}, String}) where {T} = new(ensure_symbolic(unique(Σ)))
 end # end struct
 
 # Indexing Interface
@@ -57,9 +90,21 @@ Base.lastindex(A::Alphabet) = lastindex(A.Σ)
 # Abstract Array Interface
 Base.size(A::Alphabet) = size(A.Σ)
 Base.length(A::Alphabet) = length(A.Σ)
-Base.getindex(A::Alphabet, i::Int) = getindex(A.Σ, i)
-Base.setindex!(A::Alphabet, v, i::Int) = setindex(A.Σ, v, i)
 Base.rand(A::Alphabet) = rand(A.Σ)
+
+"""
+    gensym(q::Int) -> Vector{Symbol}
+
+Generates a vector of unique symbols of length q.
+"""
+Base.gensym(q::Int) = Symbol[gensym() for _ in 1:q]
+
+"""
+    genalphabet(q::Int)
+
+Generates an alphabet of q unique symbols.
+"""
+genalphabet(q::Int) = Alphabet(gensym(q))
 
 """
     struct UniverseParameters <: AbstractCode
@@ -76,31 +121,14 @@ An inner constructor function on the structure `UniverseParameters`.
 """
 struct UniverseParameters <: AbstractCode
     Σ::Alphabet
-    q::Int
+    q::Int # size of alphabet
     n::Int # block length
     
-    function UniverseParameters(Σ::Alphabet, n::Int)
-        q = length(Σ)
-        
-        new(Σ, q, n)
-    end
-    
+    UniverseParameters(Σ::Alphabet, n::Int) = new(Σ, length(q), n)
     UniverseParameters(Σ::Alphabet, q::Int, n::Int) = new(Σ, q, n)
-    
-    function UniverseParameters(Σ::Vector{T}, n::Int) where T
-        Σ = Alphabet(Σ)
-        q = length(Σ)
-        
-        new(Σ, q, n)
-    end
-    
-    UniverseParameters(Σ::Vector{T}, q::Int, n::Int) where {T} = new(Σ, q, n)
-    
-    function UniverseParameters(q::Int, n::Int)
-        Σ = Alphabet(Symbol[gensym() for i in 1:q])
-        
-        new(Σ, q, n)
-    end
+    UniverseParameters(Σ::AbstractVector{T}, n::Int) where {T} = new(Alphabet(Σ), length(Σ), n)
+    UniverseParameters(Σ::AbstractVector{T}, q::Int, n::Int) where {T} = new(Σ, q, n)
+    UniverseParameters(q::Int, n::Int) = new(genalphabet(q), q, n)
 end
 
 # Iteration inteface functions
@@ -118,7 +146,7 @@ Given universe parameters 𝒰 and a code C, return a tuple including
   - A random letter in the alphabet; and
   - A random index in the block length.
 """
-Base.rand(𝒰::UniverseParameters, C::AbstractArray) = rand.(tuple(C, 𝒰.Σ, 1:𝒰.n))
+Base.rand(𝒰::UniverseParameters, C::AbstractArray) = tuple(Word(rand(C)), rand(𝒰.Σ), rand(1:𝒰.n))
 
 """
     struct CodeUniverseIterator <: AbstractCode
@@ -145,12 +173,12 @@ struct CodeUniverseIterator <: AbstractCode
 
     function CodeUniverseIterator(𝒰::UniverseParameters)
         Σ = 𝒰.Σ
-        return reshape(collect(Iterators.product(Vector{eltype(Σ)}[Σ for _ in 1:𝒰.n]...)), :)
+        return Iterators.product(Vector{eltype(Σ)}[Σ for _ in 1:𝒰.n]...)
     end
 
-    CodeUniverseIterator(Σ::Union{Alphabet, Vector{T}}, q::Int, n::Int) where {T} =
+    CodeUniverseIterator(Σ::Union{Alphabet, AbstractVector{T}}, q::Int, n::Int) where {T} =
         CodeUniverseIterator(UniverseParameters(Σ, q, n))
-    CodeUniverseIterator(Σ::Union{Alphabet, Vector{T}}, n::Int) where {T} =
+    CodeUniverseIterator(Σ::Union{Alphabet, AbstractVector{T}}, n::Int) where {T} =
         CodeUniverseIterator(UniverseParameters(Σ, n))
     CodeUniverseIterator(q::Int, n::Int) =
         CodeUniverseIterator(UniverseParameters(q, n))
@@ -166,20 +194,16 @@ Defines a structure for the messages in the code.  Parameters are the abstract a
 An inner constructor function on the structure `CodeUniverse`.
 """
 struct CodeUniverse <: AbstractCode
-    𝒰::Vector{T} where T
+    𝒰::AbstractVector{Word{N, T}} where {N, T}
     Σ::Alphabet
-    q::Int
+    q::Int # alphabet size
     n::Int # block length
     
-    
-    function CodeUniverse(𝒰::Vector{T}, Σ::Alphabet) where T
+    function CodeUniverse(𝒰::AbstractVector{Word{N, T}}, Σ::Alphabet) where {N, T}
         message_length_error = "We have fixed the block length of each message.  Please ensure all messages are of equal length."
-        _allequal_length_(𝒰) || throw(error("$(message_length_error)"))
+        _allequal_length_(𝒰) || throw(error(message_length_error))
     
-        q = length(Σ)
-        n = length(rand(𝒰)) # choose arbitrary message in the list of messages
-    
-        new(𝒰, Σ, q, n)
+        new(𝒰, Σ, length(Σ), length(first(𝒰)))
     end # end constructor function
 end
 
