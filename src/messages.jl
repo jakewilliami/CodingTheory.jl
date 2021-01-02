@@ -117,7 +117,6 @@ plotkin_bound(q::T, n::T, d::T, ::Rounding) where T <: Integer =
 elias_bassalygo_bound(q::T, n::T, d::T) where T <: Integer =
 elias_bassalygo_bound(q::T, n::T, d::T, ::Rounding) where T <: Integer =
 	
-	
 function __johnson_bound_core(round_func::Function, q::T, n::T, d::T) where T <: Integer
 	if isinteger((d - 1) / 2) # is odd
 		t = T((d - 1) / 2)
@@ -127,8 +126,6 @@ function __johnson_bound_core(round_func::Function, q::T, n::T, d::T) where T <:
 		__sphere_bound(round_func, q, n, t)
 	end
 end
-
-
 
 """
 	construct_ham_matrix(r::Int, q::Int) -> Matrix
@@ -271,7 +268,7 @@ end
 
 Takes in an array and a word.  As long as the word does not mean that the distance is smaller than d, we add w to the array.  If we are successful in doing this, return true.  Otherwise, return false.  *This is a mutating function.*
 """
-function push_if_allowed!(C::AbstractArray{T}, w::T, d::Int) where T
+function push_if_allowed!(C::AbstractArray{T}, w::T, d::Int) where T <: AbstractWord
 	isempty(C) && (push!(C, w); return true)
 	
 	for c in C
@@ -289,7 +286,7 @@ end
 
 Takes in two arrays, A and B.  If w is allowed in C given distance d, push to C′.  If we are successful in doing this, return true.  Otherwise, return false.  *This is a mutating function.*
 """
-function push_if_allowed!(C::AbstractArray{T}, C′::AbstractArray{T}, w::T, d::Int) where T
+function push_if_allowed!(C::AbstractVector{T}, C′::AbstractVector{T}, w::T, d::Int) where T <: AbstractWord
 	isempty(C) && (push!(C′, w); return true)
 	
 	for c in C
@@ -307,7 +304,7 @@ end
 
 Takes in an array and a word.  As long as the word does not mean that the distance is smaller than d, we replace a with b in the array.  Replaces and returns true if allowed; otherwise returns false.  *This is a mutating function.*
 """
-function replace_if_allowed!(C::AbstractArray, d::Int, ws::Pair)
+function replace_if_allowed!(C::AbstractVector{T}, d::Int, ws::Pair) where T <: AbstractWord
 	w, w′ = ws
 	
 	for c in C
@@ -319,29 +316,30 @@ function replace_if_allowed!(C::AbstractArray, d::Int, ws::Pair)
 	replace!(C, ws)
 	return true
 end
-
-function replace_if_allowed!(C::AbstractArray, d::Int, w, w′)
+function replace_if_allowed!(C::AbstractVector{T}, d::Int, w::T, w′::T) where T <: AbstractWord
 	return replace_if_allowed!(C, d, Pair(w, w′))
 end
 
-"""
-	mutate_codeword(w::Tuple{T}, n::Int, i::Int, a::T) -> Tuple
-
-Mutates the word w, which is a `Tuple` of length n, changing its iᵗʰ index to a.
-"""
-function mutate_codeword(w::Union{Tuple{T}, NTuple{N, T}}, n::Int, i::Int, a::T) where {N, T}
-	w̲ = collect(w)
-	w̲[i] = a
+_mutate_codeword(w::Word{N, T}, i::Int, a::T) where {T, N} =
+	setindex!(w, a, i)
 	
-	return ntuple(j -> w̲[j], n)
-end
+"""
+	mutate_codeword(w::NonStaticAbstractWord{N, T}, n::Int, i::Int, a::T) where {T, N} -> MVector{N, T}
+	mutate_codeword(w::Word{N, T}, n::Int, i::Int, a::T) where {T, N} -> MVector{N, T}
+
+Mutates the word w, which is an `MVector` of length N, changing its iᵗʰ index to a.
+"""
+mutate_codeword(w::NonStaticAbstractWord{N, T}, i::Int, a::T) where {T, N} =
+	_mutate_codeword(Word{N, T}(w), i, a)
+mutate_codeword(w::Word{N, T}, n::Int, i::Int, a::T) where {T, N} =
+	_mutate_codeword(w, i, a)
 
 """
-	get_all_words(Σ::Alphabet, q::Int, n::Int) -> Array{Tuple{Symbol}, 1}
-	get_all_words(Σ::Alphabet, n::Int) -> Array{Tuple{Symbol}, 1}
-	get_all_words(Σ::AbstractArray, q::Int, n::Int) -> Array{Tuple{Symbol}, 1}
-	get_all_words(Σ::AbstractArray, n::Int) -> Array{Tuple{Symbol}, 1}
-	get_all_words(q::Int, n::Int) -> Array{Tuple{Symbol}, 1}
+	get_all_words(Σ::Alphabet{N}, q::Int, n::Int) -> Codewords{M}
+	get_all_words(Σ::Alphabet{N}, n::Int) -> Codewords{M}
+	get_all_words(Σ::AbstractArray, q::Int, n::Int) -> Codewords{M}
+	get_all_words(Σ::AbstractArray, n::Int) -> Codewords{M}
+	get_all_words(q::Int, n::Int) -> Codewords{M}
 	
 Get the universe of all codewords of a given alphabet.  The alphabet will be uniquely generated if none is given.
 	
@@ -353,31 +351,26 @@ Parameters:
   - 𝒰::AbstractArray: The universe of all codewords of q many letters of block length n.
   
 Returns:
-  - Array{Tuple{Symbol}, 1}: An array of codewords.  Each codewords is a tuple, and each character in said word is a symbol.
+  - Codewords{M}: An array of codewords, each of length `M`.  Each codewords is a tuple, and each character in said word is a symbol.
 """
-
-function get_all_words(Σ::Alphabet, q::Int, n::Int)
-	return CodeUniverseIterator(UniverseParameters(Σ, q, n))
-end
-
-get_all_words(Σ::Alphabet, n::Int) =
-	get_all_words(Σ, length(unique(Σ)), n) # if alphabet is given, then q is the length of that alphabet
-get_all_words(Σ::AbstractArray, q::Int, n::Int) =
-	get_all_words(Alphabet(Σ), q, Val(n))
+get_all_words(Σ::Alphabet{N}, q::Int, n::Int) where {N} =
+	collect(CodeUniverseIterator(UniverseParameters(Σ, q, n)))
+get_all_words(Σ::Alphabet{N}, n::Int) where {N} =
+	get_all_words(Σ, length(Set(Σ)), n) # if alphabet is given, then q is the length of that alphabet
 get_all_words(Σ::AbstractArray, n::Int) =
-	get_all_words(Alphabet(Σ), length(unique(Σ)), n) # if alphabet is given, then q is the length of that alphabet
+	get_all_words(Alphabet(Σ), length(Set(Σ)), n) # if alphabet is given, then q is the length of that alphabet
 get_all_words(q::Int, n::Int) =
-	get_all_words(Alphabet(Symbol[gensym() for _ in 1:q]), q, n) # generate symbols if no alphabet is given
+	get_all_words(genalphabet(q), q, n) # generate symbols if no alphabet is given
 
 """
-	get_codewords_greedy(Σ::AbstractArray, q::Int, n::Int, d::Int, 𝒰::AbstractArray) -> Array{Tuple{Symbol}, 1}
-	get_codewords_greedy(𝒰::UniverseParameters, d::Int) -> Array{Tuple{Symbol}, 1}
-	get_codewords_greedy(Σ::Alphabet, q::Int, n::Int, d::Int) -> Array{Tuple{Symbol}, 1}
-	get_codewords_greedy(Σ::Alphabet, n::Int, d::Int) -> Array{Tuple{Symbol}, 1}
-	get_codewords_greedy(q::Int, n::Int, d::Int) -> Array{Tuple{Symbol}, 1}
-	get_codewords_greedy(Σ::AbstractArray, q::Int, n::Int, d::Int) -> Array{Tuple{Symbol}, 1}
-	get_codewords_greedy(Σ::AbstractArray, n::Int, d::Int) -> Array{Tuple{Symbol}, 1}
-	get_codewords_greedy(Σ::AbstractArray, q::Int, n::Int, d::Int, 𝒰::AbstractArray) -> Array{Tuple{Symbol}, 1}
+	get_codewords_greedy(Σ::AbstractArray, q::Int, n::Int, d::Int, 𝒰::AbstractArray) -> Codewords{M}
+	get_codewords_greedy(𝒰::UniverseParameters, d::Int) -> Codewords{M}
+	get_codewords_greedy(Σ::Alphabet{N}, q::Int, n::Int, d::Int) -> Codewords{M}
+	get_codewords_greedy(Σ::Alphabet{N}, n::Int, d::Int) -> Codewords{M}
+	get_codewords_greedy(q::Int, n::Int, d::Int) -> Codewords{M}
+	get_codewords_greedy(Σ::AbstractArray, q::Int, n::Int, d::Int) -> Codewords{M}
+	get_codewords_greedy(Σ::AbstractArray, n::Int, d::Int) ->Codewords{M}
+	get_codewords_greedy(Σ::AbstractArray, q::Int, n::Int, d::Int, 𝒰::AbstractArray) -> Codewords{M}
 	
 Search through the universe of all codewords and find a code of block length n and distance d, using the alphabet Σ.  The alphabet will be uniquely generated if none is given.
 	
@@ -389,10 +382,10 @@ Parameters:
   - d::Int: The minimum distance between words in the code.
   
 Returns:
-  - Array{Tuple{Symbol}, 1}: An array of codewords.  Each codewords is a tuple, and each character in said word is a symbol.
+  - Codewords{M}: An array of codewords, each of length `M`.  Each codewords is a tuple, and each character in said word is a symbol.
 """
 function get_codewords_greedy(𝒰::UniverseParameters, d::Int)
-	C = Tuple[]
+	C = eltype(𝒰)[]
 	
 	for wᵢ in CodeUniverseIterator(𝒰)
 		push_if_allowed!(C, wᵢ, d)
@@ -400,10 +393,9 @@ function get_codewords_greedy(𝒰::UniverseParameters, d::Int)
 	
 	return C
 end
-
-get_codewords_greedy(Σ::Alphabet, q::Int, n::Int, d::Int) =
+get_codewords_greedy(Σ::Alphabet{N}, q::Int, n::Int, d::Int) where {N} =
 	get_codewords_greedy(UniverseParameters(Σ, q, n), d)
-get_codewords_greedy(Σ::Alphabet, n::Int, d::Int) =
+get_codewords_greedy(Σ::Alphabet{N}, n::Int, d::Int) where {N} =
 	get_codewords_greedy(UniverseParameters(Σ, n), d)
 get_codewords_greedy(q::Int, n::Int, d::Int) =
 	get_codewords_greedy(UniverseParameters(q, n), d)
@@ -415,18 +407,18 @@ get_codewords_greedy(Σ::AbstractArray, q::Int, n::Int, d::Int, 𝒰::AbstractAr
 	get_codewords_greedy(Alphabet(Σ), q, n, d, 𝒰)
 	
 
-argmaxminima(A::AbstractArray; dims::Int) = getindex(argmin(A, dims=dims), argmax(argmin(A, dims=dims)))
-maxminima(A::AbstractArray; dims::Int) = getindex(minimum(A, dims=dims), maximum(minimum(A, dims=dims)))
-argminmaxima(A::AbstractArray; dims::Int) = getindex(argmax(A, dims=dims), argmin(argmax(A, dims=dims)))
-minmaxima(A::AbstractArray; dims::Int) = getindex(maximum(A, dims=dims), minimum(maximum(A, dims=dims)))
+argmaxminima(A::AbstractArray; dims::Int) = getindex(argmin(A, dims = dims), argmax(argmin(A, dims = dims)))
+maxminima(A::AbstractArray; dims::Int) = getindex(minimum(A, dims = dims), maximum(minimum(A, dims = dims)))
+argminmaxima(A::AbstractArray; dims::Int) = getindex(argmax(A, dims = dims), argmin(argmax(A, dims = dims)))
+minmaxima(A::AbstractArray; dims::Int) = getindex(maximum(A, dims = dims), minimum(maximum(A, dims = dims)))
 
 """
-	get_codewords_random(Σ::AbstractArray, q::Int, n::Int, d::Int, 𝒰::AbstractArray) -> Array{Tuple{Symbol}, 1}
-	get_codewords_random(Σ::AbstractArray, n::Int, d::Int, 𝒰::AbstractArray) -> Array{Tuple{Symbol}, 1}
-	get_codewords_random(q::Int, n::Int, d::Int, 𝒰::AbstractArray)	-> Array{Tuple{Symbol}, 1}
-	get_codewords_random(Σ::AbstractArray, q::Int, n::Int, d::Int) -> Array{Tuple{Symbol}, 1}
-	get_codewords_random(Σ::AbstractArray, n::Int, d::Int) -> Array{Tuple{Symbol}, 1}
-	get_codewords_random(q::Int, n::Int, d::Int) -> Array{Tuple{Symbol}, 1}
+	get_codewords_random(Σ::Alphabet{N}, q::Int, n::Int, d::Int, 𝒰::AbstractArray) -> Codewords{M}
+	get_codewords_random(Σ::Alphabet{N}, n::Int, d::Int, 𝒰::AbstractArray) -> Codewords{M}
+	get_codewords_random(q::Int, n::Int, d::Int, 𝒰::AbstractArray)	-> Codewords{M}
+	get_codewords_random(Σ::AbstractArray, q::Int, n::Int, d::Int) -> Codewords{M}
+	get_codewords_random(Σ::AbstractArray, n::Int, d::Int) -> Codewords{M}
+	get_codewords_random(q::Int, n::Int, d::Int) -> Codewords{M}
 
 Search through the universe of all codewords at random and find a code of block length n and distance d, using the alphabet Σ.  The alphabet will be uniquely generated if none is given.
 
@@ -438,22 +430,22 @@ Parameters:
   - 𝒰::AbstractArray: The universe of all codewords of q many letters of block length n.
 
 Returns:
-  - Array{Tuple{Symbol}, 1}: An array of codewords.  Each codewords is a tuple, and each character in said word is a symbol.
+  - Codewords{M}: An array of codewords, each of length `M`.  Each codewords is a tuple, and each character in said word is a symbol.
 """
-function get_codewords_random(𝒰::UniverseParameters, d::Int; m::Int=1000)
-	C = Tuple[]
+function get_codewords_random(𝒰::UniverseParameters, d::Int; m::Int = 1000)
+	C = eltype(𝒰)[]
 	
 	starting_word = rand(𝒰) # get a random word in the code start
 	push!(C, starting_word)
 	
 	for _ in 1:length(𝒰)
-		C′ = Tuple[]
+		C′ = eltype(𝒰)[]
 		for _ in 1:m
 			push_if_allowed!(C, C′, rand(𝒰), d) # if allowed in C, push to C′
 		end
 		isempty(C′) && break
 		# [push_if_allowed!(C, C′, w, d) for _ in 1:m]
-		distances = [hamming_distance(wᵢ, wⱼ) for wᵢ in C, wⱼ in C′]
+		distances = Int[hamming_distance(wᵢ, wⱼ) for wᵢ in C, wⱼ in C′]
 		best_word = getindex(C′, getindex(argmaxminima(distances, dims = 1), 2))
 		push!(C, best_word)
 	end
@@ -461,9 +453,9 @@ function get_codewords_random(𝒰::UniverseParameters, d::Int; m::Int=1000)
 	return C
 end
 
-get_codewords_random(Σ::Alphabet, q::Int, n::Int, d::Int; m::Int=1000) =
+get_codewords_random(Σ::Alphabet{N}, q::Int, n::Int, d::Int; m::Int=1000) where {N} =
 	get_codewords_random(UniverseParameters(Σ, q, n), d, m=m)
-get_codewords_random(Σ::Alphabet, n::Int, d::Int; m::Int=1000) =
+get_codewords_random(Σ::Alphabet{N}, n::Int, d::Int; m::Int=1000) where {N} =
 	get_codewords_random(UniverseParameters(Σ, n), d, m=m)
 get_codewords_random(q::Int, n::Int, d::Int; m::Int=1000) =
 	get_codewords_random(UniverseParameters(q, n), d, m=m)
@@ -475,43 +467,43 @@ get_codewords_random(Σ::AbstractArray, q::Int, n::Int, d::Int, 𝒰::AbstractAr
 	get_codewords_random(Alphabet(Σ), q, n, d, 𝒰, m=m)
 
 
-using Mmap
-function get_codewords_random_mmap(mmappath::AbstractString, 𝒰::UniverseParameters, d::Int)
-	io = open(mmappath, "r+") # allow read and write
-	# write(s, size(A,2))
-	# read(s, Int)
-	# close(s)
-	# B = Mmap.mmap(io, BitArray, (25,30000))
-	# Mmap.sync!(B);
-	# close(io);
-	# rm("mmap.bin")
-	starting_word = rand(𝒰) # get a random word in the code start
-	push!(C, starting_word)
-	
-	for _ in 1:length(𝒰)
-		C′ = Tuple[]
-		for _ in 1:m
-			push_if_allowed!(C, C′, rand(𝒰), d) # if allowed in C, push to C′
-		end
-		isempty(C′) && break
-		# [push_if_allowed!(C, C′, w, d) for _ in 1:m]
-		distances = [hamming_distance(wᵢ, wⱼ) for wᵢ in C, wⱼ in C′]
-		best_word = getindex(C′, getindex(argmaxminima(distances, dims = 1), 2))
-		push!(C, best_word)
-	end
-	
-	return C
-end
+# using Mmap
+# function get_codewords_random_mmap(mmappath::AbstractString, 𝒰::UniverseParameters, d::Int)
+# 	io = open(mmappath, "r+") # allow read and write
+# 	# write(s, size(A,2))
+# 	# read(s, Int)
+# 	# close(s)
+# 	# B = Mmap.mmap(io, BitArray, (25,30000))
+# 	# Mmap.sync!(B);
+# 	# close(io);
+# 	# rm("mmap.bin")
+# 	starting_word = rand(𝒰) # get a random word in the code start
+# 	push!(C, starting_word)
+#
+# 	for _ in 1:length(𝒰)
+# 		C′ = Tuple[]
+# 		for _ in 1:m
+# 			push_if_allowed!(C, C′, rand(𝒰), d) # if allowed in C, push to C′
+# 		end
+# 		isempty(C′) && break
+# 		# [push_if_allowed!(C, C′, w, d) for _ in 1:m]
+# 		distances = [hamming_distance(wᵢ, wⱼ) for wᵢ in C, wⱼ in C′]
+# 		best_word = getindex(C′, getindex(argmaxminima(distances, dims = 1), 2))
+# 		push!(C, best_word)
+# 	end
+#
+# 	return C
+# end
 
 # get_codewords_random(𝒰::UniverseParameters, d::Int) = get_codewords_random(joinpath(tempdir(), "mmap.bin"), 𝒰, d)
 
 """
-	get_codewords(Σ::AbstractArray, q::Int, n::Int, d::Int, 𝒰::AbstractArray; m::Int=10) -> Array{Tuple{Symbol}, 1}
-	get_codewords(Σ::AbstractArray, n::Int, d::Int, 𝒰::AbstractArray; m::Int=10) -> Array{Tuple{Symbol}, 1}
-	get_codewords(q::Int, n::Int, d::Int, 𝒰::AbstractArray; m::Int=10) -> Array{Tuple{Symbol}, 1}
-	get_codewords(Σ::AbstractArray, q::Int, n::Int, d::Int; m::Int=10) -> Array{Tuple{Symbol}, 1}
-	get_codewords(Σ::AbstractArray, n::Int, d::Int; m::Int=10) -> Array{Tuple{Symbol}, 1}
-	get_codewords(q::Int, n::Int, d::Int; m::Int=10) -> Array{Tuple{Symbol}, 1}
+	get_codewords(Σ::Alphabet{N}, q::Int, n::Int, d::Int, 𝒰::AbstractArray; m::Int=10) -> Codewords{M}
+	get_codewords(Σ::Alphabet{N}, n::Int, d::Int, 𝒰::AbstractArray; m::Int=10) -> Codewords{M}
+	get_codewords(q::Int, n::Int, d::Int, 𝒰::AbstractArray; m::Int=10) -> Codewords{M}
+	get_codewords(Σ::AbstractArray, q::Int, n::Int, d::Int; m::Int=10) -> Codewords{M}
+	get_codewords(Σ::AbstractArray, n::Int, d::Int; m::Int=10) -> Codewords{M}
+	get_codewords(q::Int, n::Int, d::Int; m::Int=10) -> Codewords{M}
 
 Use function `get_codewords_random` m many times, and `get_codewords_greedy`.  Return the code with the greatest number of words.  The alphabet will be uniquely generated if none is given.  You can omit Σ and 𝒰.  You can omit q if Σ is given.
 	
@@ -524,11 +516,11 @@ Parameters:
   - m::Int (kwarg): Try a random code m many times.
   
 Returns:
-  - Array{Tuple{Symbol}, 1}: An array of codewords.  Each codewords is a tuple, and each character in said word is a symbol.
+  - Codewords{M}: An array of codewords, each of length `M`.  Each codewords is a tuple, and each character in said word is a symbol.
 """
 function get_codewords(𝒰::UniverseParameters, d::Int; m::Int=10)
 	code_size = 0
-	C = Tuple[]
+	C = eltype(𝒰)[]
 	
 
 	for _ in 1:m
@@ -550,9 +542,9 @@ function get_codewords(𝒰::UniverseParameters, d::Int; m::Int=10)
 	return C
 end
 
-get_codewords(Σ::Alphabet, q::Int, n::Int, d::Int; m::Int=10) =
+get_codewords(Σ::Alphabet{N}, q::Int, n::Int, d::Int; m::Int=10) where {N} =
 	get_codewords(UniverseParameters(Σ, q, n), d, m=m)
-get_codewords(Σ::Alphabet, n::Int, d::Int; m::Int=10) =
+get_codewords(Σ::Alphabet{N}, n::Int, d::Int; m::Int=10) where {N} =
 	get_codewords(UniverseParameters(Σ, n), d, m=m)
 get_codewords(q::Int, n::Int, d::Int; m::Int=10) =
 	get_codewords(UniverseParameters(q, n), d, m=m)
@@ -564,7 +556,7 @@ get_codewords(Σ::AbstractArray, q::Int, n::Int, d::Int, 𝒰::AbstractArray; m:
 	get_codewords(Alphabet(Σ), q, n, d, 𝒰, m=m)
 
 """
-	get_codewords(G::AbstractArray, m::Int) -> Array{Tuple{Symbol}, 1}
+	get_codewords(G::AbstractArray, m::Int) -> Codewords{M}
 
 Get codewords of a code from the generating matrix under a finite field of modulo m.  Precisely, computes all linear combinations of the rows of the generating matrix.
 	
@@ -573,7 +565,7 @@ Parameters:
   - m::Int: The bounds of the finite field (i.e., the molulus you wish to work in).
   
 Returns:
-  - Array{Tuple{Symbol}, 1}: An array of codewords.  Each codewords is a tuple, and each character in said word is a symbol.
+  - Codewords{M}: An array of codewords, each of length `M`.  Each codewords is a tuple, and each character in said word is a symbol.
 """
 function get_codewords(G::AbstractArray, m::Int)
 	codewords = Vector()
@@ -583,7 +575,7 @@ function get_codewords(G::AbstractArray, m::Int)
 		rows[i] = [G[i, j] for j in 1:size(G, 2)]
 	end
 	
-	for c in Base.Iterators.product([0:m-1 for i in 1:size(G, 1)]...)
+	for c in Base.Iterators.product([0:m-1 for _ in 1:size(G, 1)]...)
 		word = Ref(c[1]) .* rows[1]
 		
 		for i in 2:size(G, 1)

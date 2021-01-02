@@ -13,55 +13,49 @@ function displaymatrix(M::AbstractArray)
     return show(IOContext(stdout, :limit => true, :compact => true, :short => true), "text/plain", M); print("\n")
 end
 
+_Iterable{T} = Union{AbstractArray{T}, NTuple{N, T}} where N
+
 """
-	allequal_length(A::AbstractArray) -> Bool
+	allequal_length(A) -> Bool
 	allequal_length(a, b...) -> Bool
 
 Check that all elements in a list are of equal length.
 """
-@inline function allequal_length(A::AbstractArray)
+@inline function allequal_length(A::_Iterable{T}) where T
     length(A) < 2 && return true
 	
     @inbounds for i in 2:length(A)
-        isequal(length(A[1]), length(A[i])) || return false
+        isequal(length(first(A)), length(A[i])) || return false
     end
 	
     return true
 end
-
-@inline function allequal_length(a...)::Bool
-    A = [a...]
-    return allequal_length(A)
-end
+@inline allequal_length(a::T...) where {T} = allequal_length(a)
 
 """
-	allequal(A::AbstractArray) -> Bool
+	allequal(A) -> Bool
 	allequal(a, b...) -> Bool
 
 Check that all elements in a list are equal to each other.
 """
-@inline function allequal(A::AbstractArray)
+@inline function allequal(A::_Iterable{T}) where T
     length(A) < 2 && return true
     
     @inbounds for i in 2:length(A)
-        A[1] ≠ A[i] && return false
+        first(A) ≠ A[i] && return false
     end
     
     return true
 end
-
-@inline function allequal(a...)::Bool
-    A = [a...]
-    return allequal(A)
-end
+@inline allequal(a::T...) where {T} = allequal(a)
 
 """
-	aredistinct(A::AbstractArray) -> Bool
+	aredistinct(A) -> Bool
 	aredistinct(a, b...) -> Bool
 
 Check that all elements in a list are distinct from every other element in the list.
 """
-@inline function aredistinct(A::AbstractArray)
+@inline function aredistinct(A::_Iterable{T}) where T
     length(A) < 2 && return true
     
     while ! iszero(length(A))
@@ -71,30 +65,22 @@ Check that all elements in a list are distinct from every other element in the l
     
     return true
 end
-
-@inline function aredistinct(a...)::Bool
-    A = [a...]
-    return aredistinct(A)
-end
+@inline aredistinct(a::T...) where {T} = aredistinct(a)
 
 """
-	arelessthan(x::Number, A::AbstractArray) -> Bool
+	arelessthan(x::Number, A) -> Bool
 	arelessthan(x::Number, a, b...) -> Bool
 
 Check that all elements in a list are less than a given x.
 """
-@inline function arelessthan(x::Number, A::AbstractArray)
+@inline function arelessthan(x::Number, A::_Iterable{T}) where T
     @inbounds for a in A
         a < x || return false
     end
     
     return true
 end
-
-@inline function arelessthan(x::Number, a::Number...)::Bool
-    A = [a...]
-    return arelessthan(x, A)
-end
+@inline arelessthan(x::Number, a::Number...) = arelessthan(x, a)
 
 """
 	areequalto(x::Number, A::AbstractArray) -> Bool
@@ -102,23 +88,14 @@ end
 
 Check that all elements in a list are equal to a given x.
 """
-@inline function areequalto(x, A::AbstractArray)
+@inline function areequalto(x, A::_Iterable{T}) where T
     @inbounds for a in A
         a != x || return false
     end
     
     return true
 end
-
-@inline function areequalto(x, a::Number...)::Bool
-    A = [a...]
-    return areequalto(x, A)
-end
-
-@inline function areequalto(x, A::Tuple)
-	A = [A...]
-	return areequalto(x, A)
-end
+@inline areequalto(x, a::Number...) = areequalto(x, a)
 
 """
 	deepsym(a::AbstractArray)
@@ -126,7 +103,7 @@ end
 Convert inner-most elements into symbols
 """
 deepsym(a) = Symbol.(a)
-deepsym(a::AbstractArray) = deepsym.(a)
+deepsym(a::_Iterable{T}) where {T} = deepsym.(a)
 
 """
 	deepeltype(a::AbstractArray) -> Type
@@ -134,7 +111,7 @@ deepsym(a::AbstractArray) = deepsym.(a)
 Returns the type of the inner-most element in a nested array structure.
 """
 deepeltype(a) = deepeltype(typeof(a))
-deepeltype(::Type{T}) where {T <: AbstractArray} = deepeltype(eltype(T))
+deepeltype(::Type{T}) where {T <: _Iterable{R}} where {R} = deepeltype(eltype(T))
 deepeltype(::Type{T}) where T = T
 
 """
@@ -176,14 +153,14 @@ Examples:
 	julia> has_identity(B)
 	false
 """
-has_identity(M::Matrix) = isequal(M[:, 1:size(M, 1)], I(size(M, 1))) ? true : false
+has_identity(M::Matrix) = isequal(M[:, axes(M, 1)], I(size(M, 1))) ? true : false
 
 """
 	sizeof_perfect_code(q::Number, n::Number, d::Number) -> Number
 
 Calculates the number of gigabytes required to store a perfect code of parameters q, n, and d.
 """
-function sizeof_perfect_code(q::Integer, n::Integer, d::Integer)
+function sizeof_perfect_code(q::Int, n::Int, d::Int)
 	return (sizeof(ntuple(_ -> gensym(), n)) * hamming_bound(big.([q, n, d])...)) / (2^30)
 end
 sizeof_perfect_code(q::Number, n::Number, d::Number) = sizeof_perfect_code(round.(BigInt, [q, n, d])...)
@@ -193,7 +170,7 @@ sizeof_perfect_code(q::Number, n::Number, d::Number) = sizeof_perfect_code(round
 
 Calculates the number of gigabytes required to store all unique words of length n from an alphabet of size q.
 """
-function sizeof_all_words(q::Integer, n::Integer)
+function sizeof_all_words(q::Int, n::Int)
 	return (sizeof(ntuple(_ -> gensym(), n)) * big(q)^n) / (2^30)
 end
-sizeof_all_words(q::Number, n::Number) = sizeof_all_words(round.(BigInt, [q, n])...)
+sizeof_all_words(q::Number, n::Number) = sizeof_all_words(round.(BigInt, (q, n))...)

@@ -8,30 +8,30 @@
 Gauss-Jordan elimination over finite fields, modulo n
 =#
 
-function swaprows!(A::Matrix, i::Integer, j::Integer)
-    for k in 1:size(A, 2)
+function swaprows!(A::Matrix{T}, i::Int, j::Int) where T
+    for k in axes(A, 2)
         A[i, k], A[j, k] = A[j, k], A[i, k]
     end
     
-    return nothing
+    return A
 end
 
-function swapcols!(A::Matrix, i::Integer, j::Integer)
-    for k in 1:size(A, 1)
+function swapcols!(A::Matrix{T}, i::Int, j::Int) where T
+    for k in axes(A, 1)
         A[k, i], A[k, j] = A[k, j], A[k, i]
     end
     
-    return nothing
+    return A
 end
 
 """
-    rref!(A::Matrix{Int}, n::Integer; colswap::Bool=false, verbose::Bool=false, vverbose::Bool=false) -> Matrix{Integer}
+    rref!(A::Matrix{Int}, n::Int; colswap::Bool=false, verbose::Bool=false, vverbose::Bool=false) -> Matrix{Int}
     
 Performs Gauss-Jordan Elimination on a matrix A.  *This directly changes the matrix A.  Use `rref` for a non-mutating version of this function.*
 
 Parameters:
-  - A::Matrix{Int}: A matrix of integers you wish to perform Gauss-Jordan elimiation on.
-  - n::Integer: The modulus of the finite field you are working under.
+  - A::Matrix{Int}: A matrix of Ints you wish to perform Gauss-Jordan elimiation on.
+  - n::Int: The modulus of the finite field you are working under.
   - colswap::Bool (kwarg): Whether or not you allow for column swapping.
   - verbose::Bool (kwarg): Print the row operations.
   - vverbose::Bool(kwarg): Print the intermediate matrices of the algorithm.
@@ -40,15 +40,14 @@ Returns:
   - Matrix{Int}: a matrix in row echelon form.
 """
 function rref!(A::Matrix{Int},
-    n::Integer;
-    colswap::Bool=false,
-    verbose::Bool=false,
-    vverbose::Bool=false)::Matrix{Int}
+    n::Int;
+    colswap::Bool = false,
+    verbose::Bool = false,
+    vverbose::Bool = false)
     
-    nrows, ncols = size(A)
     i = j = 1
     
-    while i ≤ nrows && j ≤ ncols
+    while i ≤ size(A, 1) && j ≤ size(A, 2)
         # Rule 1: Swap zero rows if out of order and ensure leading ones cascade down diagonally.
         s = findfirst(!iszero, A[i:end, :])
         isnothing(s) && break
@@ -77,7 +76,7 @@ function rref!(A::Matrix{Int},
         # Rule 3: Subtract it from the others
         s = findfirst(!iszero, A[i,:])
         isnothing(s) && break
-        for k in 1:nrows
+        for k in axes(A, 1)
             if i ≠ k
                 β = A[k, s]
                 A[k, :] .= mod.(A[k, :] .- β .* A[i, :], n)
@@ -123,13 +122,13 @@ function rref!(A::Matrix{Int},
 end
 
 """
-    rref(A::Matrix{Int}, n::Integer; colswap::Bool=false, verbose::Bool=false, vverbose::Bool=false) -> Matrix{Integer}
+    rref(A::Matrix{Int}, n::Int; colswap::Bool=false, verbose::Bool=false, vverbose::Bool=false) -> Matrix{Int}
     
 Performs Gauss-Jordan Elimination on a matrix A.
 
 Parameters:
-  - A::Matrix{Int}: A matrix of integers you wish to perform Gauss-Jordan elimiation on.
-  - n::Integer: The modulus of the finite field you are working under.
+  - A::Matrix{Int}: A matrix of Ints you wish to perform Gauss-Jordan elimiation on.
+  - n::Int: The modulus of the finite field you are working under.
   - colswap::Bool (kwarg): Whether or not you allow for column swapping.
   - verbose::Bool (kwarg): Print the row operations.
   - vverbose::Bool(kwarg): Print the intermediate matrices of the algorithm.
@@ -138,8 +137,8 @@ Returns:
   - Matrix{Int}: a matrix in row echelon form.
 """
 rref(A::Matrix{Int},
-    n::Integer;
-    colswap::Bool=false,
-    verbose::Bool=false,
-    vverbose::Bool=false
-    )::Matrix{Int} = rref!(copy(A), n::Integer; colswap=colswap, verbose=verbose, vverbose=vverbose)
+    n::Int;
+    colswap::Bool = false,
+    verbose::Bool = false,
+    vverbose::Bool = false
+    ) = rref!(copy(A), n::Int; colswap = colswap, verbose = verbose, vverbose = vverbose)
