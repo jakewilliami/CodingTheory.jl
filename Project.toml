@@ -1,7 +1,7 @@
 name = "CodingTheory"
 uuid = "89c41d41-0018-4667-9435-0b7cbc9fb764"
 authors = ["Jake W. Ireland <jakewilliami@icloud.com> and contributors"]
-version = "0.2.1"
+version = "0.2.2"
 
 [deps]
 FLoops = "cc61a311-1640-44b5-9fba-1b764f453329"
