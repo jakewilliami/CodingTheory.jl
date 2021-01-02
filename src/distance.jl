@@ -17,7 +17,7 @@ Parameters:
 Returns:
   - Int: the number of changes needing to be made to one word for it to be identical to the other.
 """
-function hamming_distance(w₁::T, w₂::T) where T <: Union{String, Vector, NTuple}
+function hamming_distance(w₁::T, w₂::T) where T <: AbstractWord
     if ! isequal(length(w₁), length(w₂))
         throw(error("Cannot compute Hamming Distance on strings of unequal length."))
     end
@@ -33,7 +33,7 @@ function hamming_distance(w₁::T, w₂::T) where T <: Union{String, Vector, NTu
     return distance
 end
 
-function __hamming_space(relation::Function, Σⁿ::AbstractArray{T}, w::AbstractArray, e::Int) where T
+function __hamming_space(relation::Function, Σⁿ::AbstractArray{T}, w::AbstractArray, e::Int) where T <: AbstractWord
 	e < 0 && throw(error("e (the ball/sphere \"radius\") must be a non-negative number."))
 	Σⁿ, w = deepsym(Σⁿ), ensure_symbolic(w)
 	
@@ -53,7 +53,7 @@ Parameters:
 Returns:
   - AbstractArray: The list of words in Σⁿ whose distance from w is less than or equal to e.  Returns an array of array of symbols.
 """
-hamming_ball(Σⁿ::AbstractArray{T}, w::Vector{S}, e::Int) where {T, S} =
+hamming_ball(Σⁿ::AbstractArray{T}, w::Vector{S}, e::Int) where {T <: AbstractWord, S} =
 	__hamming_space(≤, Σⁿ, w, e)
 
 """
@@ -69,7 +69,7 @@ Parameters:
 Returns:
   - AbstractArray: The list of words in Σⁿ whose distance from w is exactly equal to e.  Returns an array of array of symbols.
 """
-hamming_sphere(Σⁿ::AbstractArray{T}, w::Vector{S}, e::Int) where {T, S} =
+hamming_sphere(Σⁿ::AbstractArray{T}, w::Vector{S}, e::Int) where {T <: AbstractWord, S} =
 	__hamming_space(isequal, Σⁿ, w, e)
 
 """
@@ -83,7 +83,7 @@ Parameters:
 Return:
   - Int: the distance of the code.
 """
-function code_distance(C::AbstractArray{T}) where T
+function code_distance(C::AbstractArray{T}) where T <: AbstractWord
 	isempty(C) && return nothing
 	C = deepsym(C)
 	min_distance = nothing
@@ -112,7 +112,7 @@ Parameters:
 Returns:
   - Int: The code distance after adding w to C.
 """
-function code_distance!(C::AbstractArray{T}, w::T) where T
+function code_distance!(C::AbstractArray{T}, w::T) where T <: AbstractWord
 	push!(C, w)
 	return code_distance(C)
 end
@@ -129,7 +129,7 @@ Parameters:
 Returns:
   - Int: The code distance after adding w to C.
 """
-function code_distance(C::AbstractArray{T}, w::T) where T
+function code_distance(C::AbstractArray{T}, w::T) where T <: AbstractWord
 	code_distance!(copy(C), w)
 end
 
@@ -145,7 +145,7 @@ Parameters:
 Returns:
   - Bool: Yes, C can detect t errors, or no it cannot (true of false).
 """
-function t_error_detecting(C::AbstractArray{T}, t::Int) where T <: AbstractArray{Int}
+function t_error_detecting(C::AbstractArray{T}, t::Int) where T <: Union{AbstractArray{Int}, AbstractWord}
 	code_distance(C) ≥ t + 1 && return true
 	return false
 end
@@ -162,7 +162,7 @@ Parameters:
 Returns:
   - Bool: Yes, C can correct t errors, or no it cannot (true of false).
 """
-function t_error_correcting(C::AbstractArray{T}, t::Int) where T <: AbstractArray{Int}
+function t_error_correcting(C::AbstractArray{T}, t::Int) where T <: Union{AbstractArray{Int}, AbstractWord}
 	code_distance(C) ≥ 2*t + 1 && return true
 	return false
 end
@@ -180,7 +180,7 @@ Parameters:
 Returns:
   - Int: The maximum number t such that the code is t error detecting.
 """
-function find_error_detection_max(C::AbstractArray{T}, modulo::Int) where T <: AbstractArray{Int}
+function find_error_detection_max(C::AbstractArray{T}, modulo::Int) where T <: Union{AbstractArray{Int}, AbstractWord}
 	for t in (modulo - 1):-1:0
 		t_error_detecting(C, t) && return t
 	end
@@ -198,7 +198,7 @@ Parameters:
 Returns:
   - Int: The maximum number t such that the code is t error correcting.
 """
-function find_error_correction_max(C::AbstractArray{T}, modulo::Int) where T <: AbstractArray{Int}
+function find_error_correction_max(C::AbstractArray{T}, modulo::Int) where T <: Union{AbstractArray{Int}, AbstractWord}
 	for t in modulo-1:-1:0
 		t_error_correcting(C, t) && return t
 	end

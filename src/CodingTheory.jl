@@ -15,7 +15,8 @@ include("utils.jl")
 
 # Abstract types
 export FinitePolynomial, AbstractCode, NonStaticAbstractWord, AbstractWord, Word,
-        Alphabet, Messages, CodeUniverse, CodeUniverseIterator, UniverseParameters
+        Codewords, Alphabet, Messages, CodeUniverse, CodeUniverseIterator,
+        UniverseParameters
 export no_round, getindex, setindex!, firstindex, lastindex, size, length, rand,
         gensym, genalphabet, eltype, isword, isabstractword
 

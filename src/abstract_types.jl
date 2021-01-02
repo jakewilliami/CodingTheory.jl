@@ -15,14 +15,15 @@ abstract type FiniteField end
 abstract type AbstractCode end
 
 """
-    NonStaticAbstractWord{N, T} = Union{NTuple{N, T}, AbstractVector{T}} where {N, T}
+    NonStaticAbstractWord{N, T} = Union{NTuple{N, T}, AbstractVector{T}, AbstractString} where {N, T}
 """
-NonStaticAbstractWord{N, T} = Union{NTuple{N, T}, AbstractVector{T}} where {N, T}
+NonStaticAbstractWord{N, T} = Union{NTuple{N, T}, AbstractVector{T}, AbstractString} where {N, T}
 
 """
     mutable struct Word{N, T}
     Word(w::NTuple{N, T})
     Word(w::AbstractVector{T})
+    Word(w::AbstractString)
     Word(i::T...)
 
 A Word is an `StaticArrays.MVector` which is efficient (like tuple) yet mutable.
@@ -33,6 +34,8 @@ mutable struct Word{N, T}
     Word(w::NTuple{N, T}) where {N, T} = new{N, T}(MVector{N, T}(w))
     Word(w::AbstractVector{T}) where {T} =
         (len = length(w); new{len, T}(MVector{len, T}(w)))
+    Word(w::AbstractString) =
+        MVector{length(w), eltype(w)}(collect(w))
     Word(i::T...) where {T} =
         (len = length(i); new{len, T}(MVector{len, T}(i)))
 end
@@ -56,6 +59,15 @@ isword(w) = w isa Word
 isword(i...) = isword(i)
 isabstractword(w) = w isa AbstractWord
 isabstractword(i...) = isabstractword(i)
+
+"""
+    Codewords{N} <: AbstractCode
+
+Simply a wrapper type for a vector of abstract words of length `N`.
+"""
+Codewords{N} = Vector{AbstractWord{N, T}} where T
+# Codewords{N} = Vector{Word{N, T}} where T
+
 
 """
     struct Alphabet <: AbstractCode
@@ -177,9 +189,9 @@ struct CodeUniverseIterator <: AbstractCode
         return Iterators.product(Vector{eltype(Σ)}[Σ for _ in 1:𝒰.n]...)
     end
 
-    CodeUniverseIterator(Σ::Union{Alphabet, AbstractVector{T}}, q::Int, n::Int) where {T} =
+    CodeUniverseIterator(Σ::Union{Alphabet{N}, AbstractVector{T}}, q::Int, n::Int) where {N, T} =
         CodeUniverseIterator(UniverseParameters(Σ, q, n))
-    CodeUniverseIterator(Σ::Union{Alphabet, AbstractVector{T}}, n::Int) where {T} =
+    CodeUniverseIterator(Σ::Union{Alphabet{N}, AbstractVector{T}}, n::Int) where {N, T} =
         CodeUniverseIterator(UniverseParameters(Σ, n))
     CodeUniverseIterator(q::Int, n::Int) =
         CodeUniverseIterator(UniverseParameters(q, n))
@@ -195,12 +207,12 @@ Defines a structure for the messages in the code.  Parameters are the abstract a
 An inner constructor function on the structure `CodeUniverse`.
 """
 struct CodeUniverse <: AbstractCode
-    𝒰::AbstractVector{Word{M, T}} where {M, T}
+    𝒰::Codewords{M} where {M}
     Σ::Alphabet{N} where N
     q::Int # alphabet size
     n::Int # block length
     
-    function CodeUniverse(𝒰::AbstractVector{Word{N, T}}, Σ::Alphabet{N}) where {N, M, T}
+    function CodeUniverse(𝒰::Codewords{M}, Σ::Alphabet{N}) where {N, M}
         message_length_error = "We have fixed the block length of each message.  Please ensure all messages are of equal length."
         _allequal_length_(𝒰) || throw(error(message_length_error))
     
