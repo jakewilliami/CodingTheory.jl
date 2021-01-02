@@ -70,15 +70,16 @@ A constructor method for the struct Alphabet.  Takes an array of letters in the 
     
 ---
 
-    Alphabet(Σ::AbstractArray)
-	Alphabet(Σ::AbstractString)
+    Alphabet{N}(Σ::AbstractArray)
+	Alphabet{N}(Σ::AbstractString)
 
-A constructor method for the struct Alphabet.  Takes in a symbols and splits it into constituent characters.  Those symbols are the letters in the alphabet.  Will attempt to parse these as 64-bit Ints.
+A constructor method for the struct Alphabet.  Takes in a symbols and splits it into constituent characters.  Those symbols are the letters in the alphabet.  `N` is the number of letters in the alphabet
 """
-struct Alphabet <: AbstractVector{Symbol}
+struct Alphabet{N} <: AbstractVector{Symbol} where N
     Σ::AbstractVector{Symbol}
 
-    Alphabet(Σ::Union{Vector{T}, String}) where {T} = new(ensure_symbolic(unique(Σ)))
+    Alphabet(Σ::Union{Vector{T}, String}) where {T} =
+        (Σ_unique = Set(Σ); new{length(Σ_unique)}(ensure_symbolic(Σ_unique)))
 end # end struct
 
 # Indexing Interface
@@ -88,9 +89,9 @@ Base.firstindex(A::Alphabet) = firstindex(A.Σ)
 Base.lastindex(A::Alphabet) = lastindex(A.Σ)
 
 # Abstract Array Interface
-Base.size(A::Alphabet) = size(A.Σ)
-Base.length(A::Alphabet) = length(A.Σ)
-Base.rand(A::Alphabet) = rand(A.Σ)
+Base.size(A::Alphabet{N}) where {N} = tuple(N)
+Base.length(A::Alphabet{N}) where {N} = N
+Base.rand(A::Alphabet{N}) where {N} = rand(A.Σ)
 
 """
     gensym(q::Int) -> Vector{Symbol}
@@ -120,13 +121,13 @@ Defines a structure for the messages in the code.  Parameters are the alphabet `
 An inner constructor function on the structure `UniverseParameters`.
 """
 struct UniverseParameters <: AbstractCode
-    Σ::Alphabet
+    Σ::Alphabet{N} where N
     q::Int # size of alphabet
     n::Int # block length
     
-    UniverseParameters(Σ::Alphabet, n::Int) = new(Σ, length(q), n)
-    UniverseParameters(Σ::Alphabet, q::Int, n::Int) = new(Σ, q, n)
-    UniverseParameters(Σ::AbstractVector{T}, n::Int) where {T} = new(Alphabet(Σ), length(Σ), n)
+    UniverseParameters(Σ::Alphabet{N}, n::Int) where {N} = new(Σ, N, n)
+    UniverseParameters(Σ::Alphabet{N}, q::Int, n::Int) where {N} = new(Σ, q, n)
+    UniverseParameters(Σ::AbstractVector{T}, n::Int) where {T} = (Σ = Alphabet(Σ); new(Σ, length(Σ), n))
     UniverseParameters(Σ::AbstractVector{T}, q::Int, n::Int) where {T} = new(Σ, q, n)
     UniverseParameters(q::Int, n::Int) = new(genalphabet(q), q, n)
 end
@@ -194,12 +195,12 @@ Defines a structure for the messages in the code.  Parameters are the abstract a
 An inner constructor function on the structure `CodeUniverse`.
 """
 struct CodeUniverse <: AbstractCode
-    𝒰::AbstractVector{Word{N, T}} where {N, T}
-    Σ::Alphabet
+    𝒰::AbstractVector{Word{M, T}} where {M, T}
+    Σ::Alphabet{N} where N
     q::Int # alphabet size
     n::Int # block length
     
-    function CodeUniverse(𝒰::AbstractVector{Word{N, T}}, Σ::Alphabet) where {N, T}
+    function CodeUniverse(𝒰::AbstractVector{Word{N, T}}, Σ::Alphabet{N}) where {N, M, T}
         message_length_error = "We have fixed the block length of each message.  Please ensure all messages are of equal length."
         _allequal_length_(𝒰) || throw(error(message_length_error))
     

@@ -134,22 +134,22 @@ deepsym(a::AbstractArray) = deepsym.(a)
 Returns the type of the inner-most element in a nested array structure.
 """
 deepeltype(a) = deepeltype(typeof(a))
-(deepeltype(::Type{T}) where T <: AbstractArray) = deepeltype(eltype(T))
+deepeltype(::Type{T}) where {T <: AbstractArray} = deepeltype(eltype(T))
 deepeltype(::Type{T}) where T = T
 
 """
-	ensure_symbolic!(Σ::AbstractArray) -> AbstractArray
+	ensure_symbolic!(Σ) -> typeof(Σ)
 
 Ensures that the inner-most elements of a nested array structure are of the type `Symbol`.  *This is a mutating function.  Use its twin, non-mutating function, `ensure_symbolic`, if you need a non-mutating version of this.*
 """
-ensure_symbolic!(Σ::AbstractArray) = deepeltype(Σ) isa Symbol ? Σ : deepsym(Σ)
+ensure_symbolic!(Σ) = deepeltype(Σ) isa Symbol ? Σ : deepsym(Σ)
 
 """
-	ensure_symbolic(Σ::AbstractArray) -> AbstractArray
+	ensure_symbolic(Σ) -> typeof(Σ)
 
 Ensures that the inner-most elements of a nested array structure are of the type `Symbol`.
 """
-ensure_symbolic(Σ::AbstractArray) = ensure_symbolic!(copy(Σ))
+ensure_symbolic(Σ) = ensure_symbolic!(copy(Σ))
 
 """
 	has_identity(M::Matrix) -> Bool
