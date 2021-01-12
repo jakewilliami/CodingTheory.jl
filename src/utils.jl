@@ -160,13 +160,12 @@ Inner function on `has_identity` function.  Will return a tuple of:
 function _has_identity(M::Matrix, n::Union{T, Base.OneTo{T}, AbstractRange{T}}) where {T <: Integer}
 	for ID_size in n # iterate through possible identity sizes; try identity matrixes from the maximum size down
 		n isa Integer || (isone(ID_size) && continue) # skip I(1) unless that is the integer specifically given
-		# println("trying identity of size $ID_size")
 		max_starting_row, max_starting_col = size(M) .- (ID_size - 1)
 		for i in CartesianIndices(M) # iterate through all possible starting positions
-			# println("Checking position $i; is it in the bounds of ($max_starting_row, $max_starting_col)?")
+			m = M[i]
+			(isone(m) || iszero(m)) || continue # skip starting positions that are invalid
 			_row, _col = Tuple(i)
 			if _row ≤ max_starting_row && _col ≤ max_starting_col # ensure the matrix at position i has enough space for an identity
-				# println("Yes it is; now we need to check if $(M[_row:(_row + ID_size - 1), _col:(_col + ID_size - 1)]) is an identity matrix")
 				isequal(M[_row:(_row + ID_size - 1), _col:(_col + ID_size - 1)], I(ID_size)) && return true, (_row, _col), ID_size
 			end
 		end
@@ -273,6 +272,7 @@ false
 ```
 """
 has_identity_on_left(M::Matrix) = isequal(M[:, axes(M, 1)], I(size(M, 1))) ? true : false
+isrre(M::Matrix) = has_identity_on_left(M)
 
 """
 ```julia
