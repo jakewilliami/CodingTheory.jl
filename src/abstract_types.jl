@@ -26,7 +26,7 @@ NonStaticAbstractWord{N, T} = Union{NTuple{N, T}, AbstractVector{T}, AbstractStr
 NonStaticAbstractWord{N, T} = Union{NTuple{N, T}, AbstractVector{T}, AbstractString} where {N, T}
 
 """
-``julia
+```julia
 mutable struct Word{N, T}
 Word(w::NTuple{N, T})
 Word(w::AbstractVector{T})
