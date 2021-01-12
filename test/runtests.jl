@@ -44,6 +44,16 @@ function aresamearrays(A::AbstractArray{T, N}, B::AbstractArray{R, M}) where {T,
 end
 
 @time @testset "CodingTheory.jl" begin
+	@test has_identity([1 0 0 2 3 0; 0 1 0 1 2 2; 0 0 1 4 3 0], 1) == true
+	@test has_identity([1 0 0 2 3 0; 0 1 0 1 2 2; 0 0 1 4 3 0]) == true
+	@test has_identity([1 0 1 2 3 0; 0 1 0 1 2 2; 0 0 1 4 3 0]) == true
+	@test has_identity([1 0 1 2 3 0; 0 1 0 1 2 2; 0 0 1 4 3 0], 3) == false
+	@test has_identity([-96 -66 20 1 0 0; -65 59 -82 0 1 0; -16 87 -113 0 0 1]) == true
+	@test has_identity([78 -99 125 -123 -111 -71 17; -115 78 40 -88 81 -40 78; -99 126 -54 1 0 0 24; -55 88 42 0 1 0 -8; 119 55 2 0 0 1 -92; -40 -21 -89 -79 59 -44 9]) == true
+	@test has_identity([78 -99 125 -123 -111 -71 17; -115 78 40 -88 81 -40 78; -99 126 -54 1 0 0 24; -55 88 42 0 1 0 -8; 119 55 2 0 0 1 -92; -40 -21 -89 -79 59 -44 9], 4) == false
+	@test has_identity_on_left([1 0 0 2 3 0; 0 1 0 1 2 2; 0 0 1 4 3 0]) == true
+	@test has_identity_on_left([-96 -66 20 1 0 0; -65 59 -82 0 1 0; -16 87 -113 0 0 1]) == false
+	
 	@test hamming_distance("ABC", "DBC") == 1
 	@test hamming_distance("ABC", "DEF") == 3
 	
@@ -125,7 +135,7 @@ end
 	@test isgolayperfect(23, 12, 7, 3) == false
 	@test isgolayperfect(11, 6, 5, 4) == false
 	
-	@test length(get_codewords(5, 5, 3)) ∈ [74:74...] # implicitly tests Word struct
+	@test length(get_codewords(5, 5, 3)) ∈ [74:74...] # implicitly tests Word struct, and `get_codewords_random`
 	@test length(get_codewords(4, 7, 3; m = 1)) ∈ [256:308...]
 	@test length(get_codewords_greedy(5, 5, 3)) == 74
 	randq, randn = rand(1:8, 2)
