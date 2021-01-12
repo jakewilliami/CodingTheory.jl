@@ -5,26 +5,34 @@
     =#
 
 """
-    abstract type FiniteField end
+```julia
+abstract type FiniteField end
+```
 """
 abstract type FiniteField end
 
 """
-    abstract type AbstractCode end
+```julia
+abstract type AbstractCode end
+```
 """
 abstract type AbstractCode end
 
 """
-    NonStaticAbstractWord{N, T} = Union{NTuple{N, T}, AbstractVector{T}, AbstractString} where {N, T}
+```julia
+NonStaticAbstractWord{N, T} = Union{NTuple{N, T}, AbstractVector{T}, AbstractString} where {N, T}
+```
 """
 NonStaticAbstractWord{N, T} = Union{NTuple{N, T}, AbstractVector{T}, AbstractString} where {N, T}
 
 """
-    mutable struct Word{N, T}
-    Word(w::NTuple{N, T})
-    Word(w::AbstractVector{T})
-    Word(w::AbstractString)
-    Word(i::T...)
+``julia
+mutable struct Word{N, T}
+Word(w::NTuple{N, T})
+Word(w::AbstractVector{T})
+Word(w::AbstractString)
+Word(i::T...)
+```
 
 A Word is an `StaticArrays.MVector` which is efficient (like tuple) yet mutable.
 """
@@ -51,7 +59,9 @@ Base.size(::Word{N, T}) where {N, T} = tuple(N)
 Base.length(::Word{N, T}) where {N, T} = N
 
 """
-    AbstractWord{N} = Union{NonStaticAbstractWord{N, T}, MVector{T}} where {T}
+```julia
+AbstractWord{N} = Union{NonStaticAbstractWord{N, T}, MVector{T}} where {T}
+```
 """
 AbstractWord{N, T} = Union{Word{N, T}, NonStaticAbstractWord{N, T}, MVector{N, T}} where {N, T}
 
@@ -61,7 +71,9 @@ isabstractword(w) = w isa AbstractWord
 isabstractword(i...) = isabstractword(i)
 
 """
-    Codewords{N} <: AbstractCode
+```julia
+Codewords{N} <: AbstractCode
+```
 
 Simply a wrapper type for a vector of abstract words of length `N`.
 """
@@ -70,20 +82,26 @@ Codewords{N} = Vector{AbstractWord{N, T}} where T
 
 
 """
-    struct Alphabet <: AbstractCode
-        
+```julia
+struct Alphabet <: AbstractCode
+```
+
 Has the parameter Σ, which is the alphabet; a collection of strings, characters, symbols, or Ints.
 
 ---
 
-    Alphabet(Σ::AbstractArray)
+```julia
+Alphabet(Σ::AbstractArray)
+```
 
 A constructor method for the struct Alphabet.  Takes an array of letters in the alphabet, and attempts to parse them as 64-bit Ints.
     
 ---
 
-    Alphabet{N}(Σ::AbstractArray)
-	Alphabet{N}(Σ::AbstractString)
+```julia
+Alphabet{N}(Σ::AbstractArray)
+Alphabet{N}(Σ::AbstractString)
+```
 
 A constructor method for the struct Alphabet.  Takes in a symbols and splits it into constituent characters.  Those symbols are the letters in the alphabet.  `N` is the number of letters in the alphabet
 """
@@ -106,30 +124,38 @@ Base.length(A::Alphabet{N}) where {N} = N
 Base.rand(A::Alphabet{N}) where {N} = rand(A.Σ)
 
 """
-    gensym(q::Int) -> Vector{Symbol}
+```julia
+gensym(q::Int) -> Vector{Symbol}
+```
 
 Generates a vector of unique symbols of length q.
 """
 Base.gensym(q::Int) = Symbol[gensym() for _ in 1:q]
 
 """
-    genalphabet(q::Int)
+```julia
+genalphabet(q::Int)
+```
 
 Generates an alphabet of q unique symbols.
 """
 genalphabet(q::Int) = Alphabet(gensym(q))
 
 """
-    struct UniverseParameters <: AbstractCode
-    
+```julia
+struct UniverseParameters <: AbstractCode
+```
+
 Defines a structure for the messages in the code.  Parameters are the alphabet `Σ`, size of alphabet `q`, and block length `n`
 
-    UniverseParameters(Σ::Alphabet, n::Int)
-    UniverseParameters(Σ::AbstractArray, n::Int)
-    UniverseParameters(Σ::Alphabet, q::Int, n::Int)
-    UniverseParameters(Σ::AbstractArray, q::Int, n::Int)
-    UniverseParameters(q::Int, n::Int)
-    
+```julia
+UniverseParameters(Σ::Alphabet, n::Int)
+UniverseParameters(Σ::AbstractArray, n::Int)
+UniverseParameters(Σ::Alphabet, q::Int, n::Int)
+UniverseParameters(Σ::AbstractArray, q::Int, n::Int)
+UniverseParameters(q::Int, n::Int)
+```
+
 An inner constructor function on the structure `UniverseParameters`.
 """
 struct UniverseParameters <: AbstractCode
@@ -152,7 +178,9 @@ Base.eltype(iter::UniverseParameters) = NTuple{iter.n, Symbol}
 Base.rand(𝒰::UniverseParameters) = ntuple(_ -> rand(𝒰.Σ), 𝒰.n)
 
 """
-	rand(𝒰::UniverseParameters, C::AbstractArray) -> Tuple
+```julia
+rand(𝒰::UniverseParameters, C::AbstractArray) -> Tuple
+```
 
 Given universe parameters 𝒰 and a code C, return a tuple including
   - A random word in C;
@@ -162,24 +190,29 @@ Given universe parameters 𝒰 and a code C, return a tuple including
 Base.rand(𝒰::UniverseParameters, C::AbstractArray) = tuple(Word(rand(C)), rand(𝒰.Σ), rand(1:𝒰.n))
 
 """
-    struct CodeUniverseIterator <: AbstractCode
+```julia
+struct CodeUniverseIterator <: AbstractCode
+```
 
 A structure used to iterate through a code universe, with specified universe parameters.  E.g.,
 
-    for c in CodeUniverseIterator(["a", "b", "c"], 3)
-        println(c)
-    end
+```julia
+for c in CodeUniverseIterator(["a", "b", "c"], 3)
+    println(c)
+end
+```
 
 Fields:
-  - 𝒰::UniverseParameters
+  - `𝒰::UniverseParameters`
 
 Methods:
 
-    CodeUniverseIterator(𝒰::UniverseParameters)
-    CodeUniverseIterator(Σ::Union{Alphabet, AbstractArray}, q::Int, n::Int)
-    CodeUniverseIterator(Σ::Union{Alphabet, AbstractArray}, n::Int)
-    CodeUniverseIterator(q::Int, n::Int)
-
+```julia
+CodeUniverseIterator(𝒰::UniverseParameters)
+CodeUniverseIterator(Σ::Union{Alphabet, AbstractArray}, q::Int, n::Int)
+CodeUniverseIterator(Σ::Union{Alphabet, AbstractArray}, n::Int)
+CodeUniverseIterator(q::Int, n::Int)
+```
 """
 struct CodeUniverseIterator <: AbstractCode
     𝒰::UniverseParameters
@@ -198,11 +231,15 @@ struct CodeUniverseIterator <: AbstractCode
 end
 
 """
-    struct CodeUniverse <: AbstractCode
+```julia
+struct CodeUniverse <: AbstractCode
+```
     
 Defines a structure for the messages in the code.  Parameters are the abstract array of messages `𝒰`, and the length of the messages `n`.
 
-    CodeUniverse(𝒰::AbstractArray, Σ::Alphabet)
+```julia
+CodeUniverse(𝒰::AbstractArray, Σ::Alphabet)
+```
     
 An inner constructor function on the structure `CodeUniverse`.
 """
@@ -221,7 +258,9 @@ struct CodeUniverse <: AbstractCode
 end
 
 """
-    struct Rounding end
+```julia
+struct Rounding end
+```
 
 An abstract structure used as a parameter in a non-rounding method of `hamming_bound`.  Use `no_round` for this; a predefiend variable of the structure `Rounding`.
 """

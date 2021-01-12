@@ -25,19 +25,33 @@ function swapcols!(A::Matrix{T}, i::Int, j::Int) where T
 end
 
 """
-    rref!(A::Matrix{Int}, n::Int; colswap::Bool=false, verbose::Bool=false, vverbose::Bool=false) -> Matrix{Int}
+```julia
+rref!(A::Matrix{Int}, n::Int; colswap::Bool=false, verbose::Bool=false, vverbose::Bool=false) -> Matrix{Int}
+```
     
-Performs Gauss-Jordan Elimination on a matrix A.  *This directly changes the matrix A.  Use `rref` for a non-mutating version of this function.*
+Performs Gauss-Jordan Elimination on a matrix `A`.  *This directly changes the matrix A.  Use `rref` for a non-mutating version of this function.*
 
 Parameters:
-  - A::Matrix{Int}: A matrix of Ints you wish to perform Gauss-Jordan elimiation on.
-  - n::Int: The modulus of the finite field you are working under.
-  - colswap::Bool (kwarg): Whether or not you allow for column swapping.
-  - verbose::Bool (kwarg): Print the row operations.
-  - vverbose::Bool(kwarg): Print the intermediate matrices of the algorithm.
+  - `A::Matrix{Int}`: A matrix of Ints you wish to perform Gauss-Jordan elimiation on.
+  - `n::Int`: The modulus of the finite field you are working under.
+  - `colswap::Bool` (kwarg): Whether or not you allow for column swapping.
+  - `verbose::Bool` (kwarg): Print the row operations.
+  - `vverbose::Bool` (kwarg): Print the intermediate matrices of the algorithm.
   
 Returns:
-  - Matrix{Int}: a matrix in row echelon form.
+  - `Matrix{Int}`: a matrix in row echelon form.
+
+---
+
+### Examples
+
+```julia
+julia> rref!([1 1 0 2 3 1; 2 0 1 3 4 1; 1 2 2 1 4 3], 5, colswap=true) # gauss-jordan elimitation modulo 5 with column swapping
+3×6 Array{Int64,2}:
+ 1  0  0  3  2  2
+ 0  1  0  2  1  1
+ 0  0  1  0  0  4
+```
 """
 function rref!(A::Matrix{Int},
     n::Int;
@@ -122,19 +136,33 @@ function rref!(A::Matrix{Int},
 end
 
 """
-    rref(A::Matrix{Int}, n::Int; colswap::Bool=false, verbose::Bool=false, vverbose::Bool=false) -> Matrix{Int}
+```julia
+rref(A::Matrix{Int}, n::Int; colswap::Bool=false, verbose::Bool=false, vverbose::Bool=false) -> Matrix{Int}
+```
     
-Performs Gauss-Jordan Elimination on a matrix A.
+Performs Gauss-Jordan Elimination on a matrix `A`.
 
 Parameters:
-  - A::Matrix{Int}: A matrix of Ints you wish to perform Gauss-Jordan elimiation on.
-  - n::Int: The modulus of the finite field you are working under.
-  - colswap::Bool (kwarg): Whether or not you allow for column swapping.
-  - verbose::Bool (kwarg): Print the row operations.
-  - vverbose::Bool(kwarg): Print the intermediate matrices of the algorithm.
+  - `A::Matrix{Int}`: A matrix of Ints you wish to perform Gauss-Jordan elimiation on.
+  - `n::Int`: The modulus of the finite field you are working under.
+  - `colswap::Bool` (kwarg): Whether or not you allow for column swapping.
+  - `verbose::Bool` (kwarg): Print the row operations.
+  - `vverbose::Bool` (kwarg): Print the intermediate matrices of the algorithm.
   
 Returns:
-  - Matrix{Int}: a matrix in row echelon form.
+  - `Matrix{Int}`: a matrix in row echelon form.
+
+---
+
+### Examples
+
+```julia
+julia> rref([1 1 0 2 3 1; 2 0 1 3 4 1; 1 2 2 1 4 3], 5, colswap=true) # gauss-jordan elimitation modulo 5 with column swapping
+3×6 Array{Int64,2}:
+ 1  0  0  3  2  2
+ 0  1  0  2  1  1
+ 0  0  1  0  0  4
+```
 """
 rref(A::Matrix{Int},
     n::Int;

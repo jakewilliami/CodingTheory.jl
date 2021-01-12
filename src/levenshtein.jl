@@ -7,24 +7,28 @@
 # Adapted from Levenshtein.jl
 
 """
-    levenshtein(source::AbstractString, target::AbstractString) -> Integer
-    levenshtein(source::AbstractString, target::AbstractString, cost::Real) -> Integer
-    levenshtein(
-        source::AbstractString,
-        target::AbstractString,
-        deletion_cost::R,
-        insertion_cost::S,
-        substitution_cost::T) -> Integer
-    levenshtein!(
-        source::AbstractString,
-        target::AbstractString,
-        deletion_cost::R,
-        insertion_cost::S,
-        substitution_cost::T,
-        costs::Matrix = Array{promote_type(R, S, T)}(undef, 2, length(target) + 1)
-    ) -> Integer
+```julia
+levenshtein(source::AbstractString, target::AbstractString) -> Integer
+levenshtein(source::AbstractString, target::AbstractString, cost::Real) -> Integer
+levenshtein(
+    source::AbstractString,
+    target::AbstractString,
+    deletion_cost::R,
+    insertion_cost::S,
+    substitution_cost::T) -> Integer
+levenshtein!(
+    source::AbstractString,
+    target::AbstractString,
+    deletion_cost::R,
+    insertion_cost::S,
+    substitution_cost::T,
+    costs::Matrix = Array{promote_type(R, S, T)}(undef, 2, length(target) + 1)
+) -> Integer
+```
     
-Computes the Levenshtein distance.  *These methods are adapted from Levenshtein.jl, by Roger Tu.*
+Computes the Levenshtein distance.
+
+*These methods are adapted from Levenshtein.jl, by Roger Tu.*
 """
 function levenshtein(source::AbstractString, target::AbstractString)
     return levenshtein(source, target, 1)

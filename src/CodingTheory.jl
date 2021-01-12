@@ -11,6 +11,9 @@ using LinearAlgebra: I
 using FLoops: @floop, ThreadedEx
 using Polynomials, StaticArrays
 
+# from utils.jl
+export sizeof_perfect_code, sizeof_all_words, has_identity, has_identity_on_left
+
 include("utils.jl")
 
 # Abstract types
