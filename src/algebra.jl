@@ -424,7 +424,7 @@ generator(M::AbstractArray{Int}, n::Int; colswap::Bool = true) -> Matrix{Int}
 Constructs a generator matrix of the code, depending on if you allow for column swapping or not.  This function uses `normal_form` or `equivalent_code`.
 
 Parameters:
-  -` M::AbstractArray{Int}`: A matrix of Ints.
+  - `M::AbstractArray{Int}`: A matrix of Ints.
   - `n::Int`: The modulus of the finite field.
   - `colswap::Bool` (kwarg): A boolean flag indicating whether or not you allow for swapping of columns when constructing the generating matrix.
 	
