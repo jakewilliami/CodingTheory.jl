@@ -13,7 +13,7 @@ end
 ## Adding CodingTheory.jl
 ```@repl
 using Pkg
-Pkg.add("CodingTheory.jl")
+Pkg.add("CodingTheory")
 ```
 
 ## Documentation
