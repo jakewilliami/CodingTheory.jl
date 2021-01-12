@@ -175,7 +175,104 @@ function _has_identity(M::Matrix, n::Union{T, Base.OneTo{T}, AbstractRange{T}}) 
 	return false, ntuple(_ -> nothing, ndims(M)), nothing
 end
 
+"""
+```julia
+has_identity(M::Matrix) -> Bool
+has_identity(M::Matrix, n::Integer) -> Bool
+```
 
+Checks if a matrix has an identity in it.  If given a number `n`, the function will specifically check if it has an identity matrix _of size n_ in `M`.
+	
+See `CodingTheory._has_identity` for more information.
+
+---
+
+### Examples
+
+```julia
+julia> A = [1 0 0 2 3 0; 0 1 0 1 2 2; 0 0 1 4 3 0]
+3×6 Array{Int64,2}:
+ 1  0  0  2  3  0
+ 0  1  0  1  2  2
+ 0  0  1  4  3  0
+
+julia> B = [1 0 1 2 3 0; 0 1 0 1 2 2; 0 0 1 4 3 0]
+3×6 Array{Int64,2}:
+ 1  0  1  2  3  0
+ 0  1  0  1  2  2
+ 0  0  1  4  3  0
+
+julia> C = [-96 -66 20 1 0 0; -65 59 -82 0 1 0; -16 87 -113 0 0 1]
+3×6 Array{Int64,2}:
+-96  -66    20  1  0  0
+-65   59   -82  0  1  0
+-16   87  -113  0  0  1
+
+julia> D = [78 -99 125 -123 -111 -71 17; -115 78 40 -88 81 -40 78; -99 126 -54 1 0 0 24; -55 88 42 0 1 0 -8; 119 55 2 0 0 1 -92; -40 -21 -89 -79 59 -44 9]
+6×7 Array{Int64,2}:
+   78  -99  125  -123  -111  -71   17
+ -115   78   40   -88    81  -40   78
+  -99  126  -54     1     0    0   24
+  -55   88   42     0     1    0   -8
+  119   55    2     0     0    1  -92
+  -40  -21  -89   -79    59  -44    9
+
+julia> has_identity(A)
+true
+
+julia> has_identity(B)
+true
+
+julia> has_identity(B, 3) # no identity matrix of size 3 exists
+false
+
+julia> has_identity(C)
+true
+
+julia> has_identity(D)
+true
+
+julia> has_identity(D, 4)
+false
+```
+"""
+has_identity(M::Matrix) =
+	_has_identity(M, reverse(minimum(axes(M))))[1]
+has_identity(M::Matrix, n::T) where {T <: Integer} =
+	_has_identity(M, n)[1]
+
+"""
+```julia
+has_identity_on_left(M::Matrix) -> Bool
+```
+
+Checks if the left-hand side of a matrix contains an identity matrix.
+
+---
+
+### Examples
+
+```julia
+julia> A = [1 0 0 2 3 0; 0 1 0 1 2 2; 0 0 1 4 3 0]
+3×6 Array{Int64,2}:
+ 1  0  0  2  3  0
+ 0  1  0  1  2  2
+ 0  0  1  4  3  0
+
+julia> B = [-96 -66 20 1 0 0; -65 59 -82 0 1 0; -16 87 -113 0 0 1]
+3×6 Array{Int64,2}:
+ -96  -66    20  1  0  0
+ -65   59   -82  0  1  0
+ -16   87  -113  0  0  1
+
+julia> has_identity_on_left(A)
+true
+
+julia> has_identity_on_left(B)
+false
+```
+"""
+has_identity_on_left(M::Matrix) = isequal(M[:, axes(M, 1)], I(size(M, 1))) ? true : false
 
 """
 ```julia
