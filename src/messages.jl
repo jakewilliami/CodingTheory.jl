@@ -295,7 +295,7 @@ Returns:
 
 !!! note
 
-    If you are looking for a _maximal_ code, this is likely the function you need.  Increasing `m` and `m_random` arbitrarily should ensure a maximal code—_however_, that computing power/time in not always possible, as it requires a lot of RAM to store certain codes in memeory.  Efforts are being made to make this process better by using memory-mapped filed instead of storing codewords in RAM, but this will make it much slower as well.  Help with this would be much appreciated.
+    *If you are looking for a _maximal_ code, this is likely the function you need.*  Increasing `m` and `m_random` arbitrarily should ensure a maximal code—_however_, that computing power/time in not always possible, as it requires a lot of RAM to store certain codes in memeory.  Efforts are being made to make this process better by using memory-mapped filed instead of storing codewords in RAM, but this will make it much slower as well.  Help with this would be much appreciated.
 
 ---
 
