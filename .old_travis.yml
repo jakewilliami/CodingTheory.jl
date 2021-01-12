@@ -32,3 +32,17 @@ jobs:
         - julia --color=yes	--project=. -e 'using Pkg; Pkg.instantiate()'
         - julia --color=yes	--project=. test/runtests.jl
       julia: nightly
+    - stage: documentation
+      script:
+        - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd()));
+                                               Pkg.instantiate()'
+        - julia --project=docs/ docs/make.jl
+      after_success: skip
+      julia: 1.5
+    - stage: documentation
+    script:
+        - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd()));
+                                               Pkg.instantiate()'
+        - julia --project=docs/ docs/make.jl
+      after_success: skip
+      julia: nightly
