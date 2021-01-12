@@ -26,12 +26,12 @@ export no_round, getindex, setindex!, firstindex, lastindex, size, length, rand,
 # RREF
 export rref, rref!
 
-# Messages, Distance, and Primes
+# Bounds, Messages, Distance, and Primes
 export rate, sphere_covering_bound, sphere_packing_bound, hamming_bound,
         singleton_bound, gilbert_varshamov_bound, elias_bassalygo_bound,
         plotkin_bound, construct_ham_matrix, isperfect, ishammingperfect,
-        isgolayperfect, get_codewords_greedy, get_codewords_random,
-        get_all_words, get_codewords
+        isgolayperfect
+export get_codewords_greedy, get_codewords_random, get_all_words, get_codewords
 export hamming_distance, hamming_ball, code_distance, t_error_detecting,
         t_error_correcting, find_error_detection_max, find_error_correction_max
 export isprimepower
@@ -47,6 +47,7 @@ export levenshtein, levenshtein!
 include("abstract_types.jl")
 include("rref.jl")
 include("messages.jl") # implicitly exports distance.jl and primes.jl
+include("bounds.jl")
 include("algebra.jl")
 include("levenshtein.jl")
 
