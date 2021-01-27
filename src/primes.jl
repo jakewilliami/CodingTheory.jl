@@ -12,24 +12,38 @@ function isprimepower(n::Integer)
 	
 	n ≤ 1 && return false
 	isprime(n) && return true
+	ub = isqrt(n) + 1
 		
-	for a in primes(ceil(Int, sqrt(n)))
-		for m in 2:ceil(Int, sqrt(n)) # m > 1
-			a^m > n && break
-			isequal(a^m, n) && return true
+	for a in primes(ub)
+		for m in 2:ub # m > 1
+			res = a^m
+			res > n && break
+			isequal(res, n) && return true
 		end
 	end
 	
 	return false
 end
 
-function primepower(n::Integer)
+function primepower_brute_force(n::Integer)
 	n ≤ 1 && return nothing
 	isprime(n) && return n, 1
 		
 	for a in primes(ceil(Int, sqrt(n)))
 		for m in 2:ceil(Int, sqrt(n)) # m > 1
 			a^m > n && break
+			isequal(a^m, n) && return a, m
+		end
+	end
+	
+	return nothing
+end
+
+function perfectpower_brute_force(n::Integer)
+	n ≤ 1 && return nothing
+	
+	for a in 1:n
+		for m in 1:n
 			isequal(a^m, n) && return a, m
 		end
 	end
@@ -97,8 +111,8 @@ Base.rem(u::Integer, v::Real, b::Integer) = last(divrem(u, v, b))
 In this section, I define truncation to $b$ bits, written $\text{trunc}_b$, and show that $\frac{r}{\text{trunc}_br}$ is between $1$ and $1+2^{1-b}$.  More generally, for any positive integer $k$, I define $\text{div}_b(r,k)$ as a floating point approximation to $\frac{r}{k}$, so that $\frac{r}{k\text{div}_b(r,k)}$ is between $1$ and $1+2^{1-b}$.\\ Fix $b\geq 1$.  Set $\text{div}_b(a,n,k)=(a+f-\left\lceil\text{lg} k\right\rceil - b, \left\lfloor\frac{n}{2^{f-\left\lceil\text{lg} k\right\rceil-b}k}\right\rfloor)$, where $2^{f-1}\leq n<w^f$.  (Note that $f-\left\lceil \text{lg} k\right\rceil - b$ may be negative.)  This map induces a map, also denoted $\text{div}_b$, upon positive floating-point numbers: \begin{equation}\text{div}_b(2^an,k)=2^{a+f-\left\lceil\text{lg} k\right\rceil - b}\left\lfloor\frac{n}{2^{f-\left\lceil\text{lg}k\right\rceil - b}k}\right\rfloor\quad\quad\quad\text{if }2^{f-1}\leq n<2^f.\end{equation}\\ To compute $\text{div}_b(r,k)$ I also use an algorithm designed for dividing by small integers; time spent computing $\text{div}_b$ is not $M$-time.
 =#
 function Base.trunc(n::Real, b::Integer)
-    # return n & -1 << b
-	return div(n, 1, b)
+    return n & (1 << b - 1)
+	# return div(n, 1, b)
 end
 
 
