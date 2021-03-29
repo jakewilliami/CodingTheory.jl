@@ -4,6 +4,55 @@
     "${BASH_SOURCE[0]}" "$@"
     =#
 
+# TAKE ONE
+
+using Nemo, Primes
+
+function _isprime(n)
+	return Nemo.isprime(Nemo.fmpz(n))
+end
+
+function _factors(n)
+	return n == 0 ? [] : Nemo.factor(Nemo.fmpz(n))
+end
+# function _factors(n)
+# 	first(i) for i in Primes.factor(n)
+# end
+
+function primedivisors(n)
+    n == 0 && return []
+    _isprime(n) && return [Nemo.fmpz(n)]
+    f = _factors(n)
+    return sort!([p for (p, e) ∈ f])
+end
+
+function ω(n)
+	nprimedivisors = 0
+	if n == 0
+		nprimedivisors = 0
+	end
+	if _isprime(n)
+		nprimedivisors = length(Nemo.fmpz(n))
+	end
+
+	return length(_factors(n))
+
+	# return fmpz(length(primedivisors(n)))
+end
+
+function Ω(n)
+    n == fmpz(0) && return 0
+    _isprime(n) && return fmpz(1)
+	
+    return sum(e for (_, e) ∈ _factors(n))
+end
+
+function isperfectpower(n)
+	return ω(n) == 1 && Ω(n) != 1
+end
+
+#---------------------------
+
 #=
 You find the smallest pair (a, n) (small with respect to n) such that a^n is your target number. Then you need to check if a is prime.
 =#

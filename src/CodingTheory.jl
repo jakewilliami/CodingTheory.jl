@@ -6,7 +6,8 @@
     
 module CodingTheory
 
-using Primes: isprime, primes
+using Nemo: isprime, factor, fmpz
+# using Primes: isprime, primes
 using LinearAlgebra: I
 using FLoops: @floop, ThreadedEx
 using Polynomials, StaticArrays
@@ -41,12 +42,15 @@ export FinitePolynomial, list_polys, multiplication_table, list_span, islinear,
         isirreducible, normal_form!, normal_form, equivalent_code!, equivalent_code,
         generator!, generator, parity_check, syndrome, isincode
 
+# Powers
+export isprimepower, isperfectpower
+
 # Levenshtein
 export levenshtein, levenshtein!
 
 include("abstract_types.jl")
 include("rref.jl")
-include("messages.jl") # implicitly exports distance.jl and primes.jl
+include("messages.jl") # implicitly exports distance.jl and powers.jl
 include("bounds.jl")
 include("algebra.jl")
 include("levenshtein.jl")

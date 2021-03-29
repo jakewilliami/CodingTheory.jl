@@ -5,7 +5,7 @@
     =#
 
 include("distance.jl")
-include("primes.jl")
+include("powers.jl")
 
 """
 ```julia
