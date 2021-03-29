@@ -1,12 +1,13 @@
 name = "CodingTheory"
 uuid = "89c41d41-0018-4667-9435-0b7cbc9fb764"
 authors = ["Jake W. Ireland <jakewilliami@icloud.com> and contributors"]
-version = "0.2.2"
+version = "0.2.3"
 
 [deps]
 FLoops = "cc61a311-1640-44b5-9fba-1b764f453329"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Mmap = "a63ad114-7e13-5084-954f-fe012c677804"
+Nemo = "2edaba10-b0f1-5616-af89-8c11ac63239a"
 Polynomials = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
 Primes = "27ebfcd6-29c5-5fa9-bf4b-fb8fc14df3ae"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
