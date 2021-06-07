@@ -14,7 +14,6 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
 FLoops = "0.1"
-Nemo = "0.22"
 Polynomials = "1.1.9, 2.0"
 Primes = "0.5"
 StaticArrays = "1.0.1"
