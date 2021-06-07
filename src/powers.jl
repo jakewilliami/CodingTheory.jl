@@ -25,7 +25,7 @@ function isperfectpower(n::Integer)
     return (e != 1 && e != 0)
 end
 
-"""
+@doc raw"""
 ```julia
 isprimepower(n::Integer) -> Bool
 ```
