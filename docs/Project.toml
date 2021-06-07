@@ -1,6 +1,7 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 FLoops = "cc61a311-1640-44b5-9fba-1b764f453329"
+Hecke = "3e1990a7-5d81-5526-99ce-9ba3ff248f21"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Mmap = "a63ad114-7e13-5084-954f-fe012c677804"
 Nemo = "2edaba10-b0f1-5616-af89-8c11ac63239a"
