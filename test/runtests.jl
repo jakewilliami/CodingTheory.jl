@@ -87,6 +87,14 @@ end
 
 	@test mod(rem(p, q), 3) == Polynomial([1, 1])
 	@test mod(rem(a, b), 2) == Polynomial([1])
+    
+    @test isperfectpower(36) == true
+	@test isprimepower(36) == false
+	@test isperfectpower(9) == true
+	@test isprimepower(9) == true
+	@test isperfectpower(5) == false
+	@test isprimepower(2) == true
+	@test isprimepower(18) == false
 	
 	@test rref([1 0 1 1 1; 1 1 1 0 1; 0 1 1 1 1], 2) == [1 0 0 1 0; 0 1 0 1 0; 0 0 1 0 1]
 	@test rref([1 0 1 0 1 0; 0 1 0 0 1 0; 1 1 1 1 1 1], 2) == [1 0 1 0 1 0; 0 1 0 0 1 0; 0 0 0 1 1 1]
