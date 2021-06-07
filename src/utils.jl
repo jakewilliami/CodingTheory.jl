@@ -55,6 +55,10 @@ Check that all elements in a list are equal to each other.
 end
 @inline allequal(a::T...) where {T} = allequal(a)
 
+@inline function allequal2(A)
+	return !A=A[1:1]==A∪A
+end
+
 """
 ```julia
 aredistinct(A) -> Bool

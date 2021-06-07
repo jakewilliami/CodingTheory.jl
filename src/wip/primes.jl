@@ -92,8 +92,8 @@ function perfectpower_brute_force(n::Integer)
 	n ≤ 1 && return nothing
 	
 	for a in 1:n
-		for m in 1:n
-			isequal(a^m, n) && return a, m
+		for m in 2:n
+			isequal(a^m, n) && return m, a
 		end
 	end
 	

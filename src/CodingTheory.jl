@@ -6,7 +6,8 @@
     
 module CodingTheory
 
-using Nemo: isprime, factor, fmpz
+# using Nemo: isprime, factor, fmpz # for prime power function
+using Hecke: ispower, isprime_power # for perfect power function
 # using Primes: isprime, primes
 using LinearAlgebra: I
 using FLoops: @floop, ThreadedEx
