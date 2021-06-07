@@ -16,6 +16,8 @@ This function is a wrapper around [Hecke.jl's really excellent and efficient `is
 	It should be noted that there is another defintion for "perfect powers":
 		> some number of the form ``p^b``, where ``p, b \in \mathbb{N}``, ``b > 1``, *and ``p`` is a prime number``.
 	Here, we call numbers of this form *prime powers*, or *proper perfect powers*.  By this definition, 36 is *not* a perfect power, because 6 is not prime.
+
+See also: `CodingTheory.isperfectpower`.
 """
 function isperfectpower(n::Integer)
     (n == 0) && return false
@@ -28,8 +30,13 @@ end
 isprimepower(n::Integer) -> Bool
 ```
 
+Given an integer `n`, returns `true` or `false` depending on whether or not it is a prime power.
+
+A prime power is some number of the form ``p^b``, where ``p, b \in \mathbb{N}``, ``b > 1``, *and ``p`` is a prime number``.
+
 This function is a wrapper around [Hecke.jl's really excellent and effcient `ispower` function](https://github.com/thofma/Hecke.jl/blob/master/src/Misc/Integer.jl#L756-L769).
 
+See also: `CodingTheory.isperfectpower`.
 """
 function isprimepower(n::Integer)
     return isprime_power(n)
