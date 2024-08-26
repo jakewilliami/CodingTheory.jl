@@ -336,3 +336,6 @@ function isgolayperfect(n::T, k::T, d::T, q::T) where T <: Int
     (isequal(q, 3) && isequal(n, 11) && isequal(d, 5) && isequal(M, 3^6)) && return true
     return false
 end
+# TODO: should be able to get a method like the following working
+# isgolayperfect(n::T, d::T, q::T) where {T <: Int} = isgolayperfect(n,  log(q, hamming_bound(q, n, d)), d, q)
+# This is because H(q, n, d) = q^k so k = log_q(H(q, n, d))
