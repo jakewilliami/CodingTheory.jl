@@ -38,3 +38,7 @@ We have some algorithms brute-force searching for the codewords in a [q, n, d]-c
 
   - [Eric Sabo's CodingTheory](https://github.com/esabo/CodingTheory) may offer more comprehensive support for coding theory computation
   - [Claus Fieker, William Hart, Tommy Hofmann, and Fredrik Johansson's Nemo/Hecke](https://github.com/thofma/Hecke.jl) provides useful computer algebra and number theory implementations within Julia that are used throughout within this package.
+
+## Citation
+
+If your research depends on CodingTheory.jl, please consider giving us a formal citation: [`citation.bib`](./citation.bib).
