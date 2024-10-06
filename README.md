@@ -19,7 +19,7 @@ We assume that Alice and Bob communicate by sending sequences of symbols from a 
 **Block codes** are codes in which Alice transmits words of a preditermined and fixed length.  A **code** is a subset *C &SubsetEqual; &Sigma;<sup>n</sup>*.  The words in *C* are called **code words**.  We say that *n* is the **block length**.  We use *M* to stand for *|C|*, the number of code words.  Alice has a set *&Mellintrf;*, some of which she wants to send to Bob, so she has the bijective encoding function
 <p align="center">
     E : &Mellintrf; &longrightarrow; C.
-</p>  
+</p>
 
 Similarly, Bob has a decoding function
 <p align="center">
@@ -34,3 +34,7 @@ If *&Mellintrf; &SubsetEqual; &Sigma;<sup>k</sup>* is the set of messages, then 
 
 We have some algorithms brute-force searching for the codewords in a [q, n, d]-code.  These algorithms are brute-force as they do not assume that q is a prime power.  Therefore, they go through all possible codewords of a [q, n]-code, and narrow down the code based on d.  There algorithms are namely `get_codewords_greedy` and `get_codewords_random`, both of which using `get_all_codewords`.  The `get_codewords` function iterates through possibilities of `get_codeword_random` and chooses the maximum of those iterations or the `get_codeword_greedy` length.  Despite the name, `get_codewords` is only a **probably** candidate.  Increate the keyword argument `m` to decrease the likelihood that there is a code with more codewords while maintaining the bound of the distance.  Furthermore, there is a `get_codewords` method that lists all linear combinations of rows of a generator matrix.
 
+## Similar Projects
+
+  - [Eric Sabo's CodingTheory](https://github.com/esabo/CodingTheory) may offer more comprehensive support for coding theory computation
+  - [Claus Fieker, William Hart, Tommy Hofmann, and Fredrik Johansson's Nemo/Hecke](https://github.com/thofma/Hecke.jl) provides useful computer algebra and number theory implementations within Julia that are used throughout within this package.
