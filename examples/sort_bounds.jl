@@ -1,6 +1,4 @@
-include(joinpath(dirname(@__DIR__), "src", "CodingTheory.jl"))
-using .CodingTheory
-
+using CodingTheory
 using DataFrames, CSV
 using DataFramesMeta: @where
 using Formatting

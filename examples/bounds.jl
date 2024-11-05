@@ -1,7 +1,4 @@
-using CSV, DataFrames, StatsPlots, ProgressMeter
-
-include(joinpath(dirname(dirname(@__FILE__)), "src", "CodingTheory.jl"))
-using .CodingTheory
+using CSV, DataFrames, StatsPlots, ProgressMeter, CodingTheory
 
 stop_at = parse(BigInt, ARGS[1])
 

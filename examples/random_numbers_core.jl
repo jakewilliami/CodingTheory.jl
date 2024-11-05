@@ -4,11 +4,9 @@ using Base.Threads: @threads
 using ProgressMeter: @showprogress, Progress, next!
 using FLoops: @floop, ThreadedEx
 using Plots, Formatting, CSV, DataFrames
+using CodingTheory
 
 plotly()
-
-include(joinpath(dirname(dirname(@__FILE__)), "src", "CodingTheory.jl"))
-using .CodingTheory
 
 function obtain_data(
     q::Integer, n::Integer, d::Integer, stop_at::Integer; m::Integer = 10_000
