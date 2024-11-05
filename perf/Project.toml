@@ -1,7 +1,4 @@
 [deps]
-CodingTheory = "89c41d41-0018-4667-9435-0b7cbc9fb764"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+CodingTheory = "89c41d41-0018-4667-9435-0b7cbc9fb764"
 Polynomials = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
-
-[sources]
-CodingTheory = {path = "../CodingTheory.jl"}
