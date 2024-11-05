@@ -44,9 +44,14 @@ bench: (instantiate-dev bench_dir)
 
 # Check formatting with blue style
 [group: 'ci']
-fmt:
+fmt: install-formatter
     # https://github.com/invenia/BlueStyle
     julia --project=@JuliaFormatter -e 'using JuliaFormatter; format("{{project_dir}}", style=BlueStyle())'
+
+# Install JuliaFormatter
+[private]
+install-formatter:
+    julia --project=@JuliaFormatter -e 'import Pkg; Pkg.add("JuliaFormatter")'
 
 # Instantiate main project
 instantiate:
@@ -56,3 +61,4 @@ instantiate:
 [private]
 instantiate-dev dev_project_dir:
     julia --project={{dev_project_dir}} -e '{{dev_instantiate_code}}'
+

@@ -24,3 +24,4 @@ separate_kwargs_with_semicolon = false
 surround_whereop_typeparameters = true
 short_circuit_to_if = false
 disallow_single_arg_nesting = true
+verbose = true

@@ -1,13 +1,17 @@
 name: CI
 # Run on master, tags, or any pull request
 on:
-  schedule:
-    - cron: '0 2 * * *'  # Daily at 2 AM UTC (8 PM CST)
   push:
-    branches: [master]
-    tags: ["*"]
+    branches:
+      - master
+    tags: ['*']
   pull_request:
-
+  workflow_dispatch:
+concurrency:
+  # Skip intermediate builds: always.
+  # Cancel intermediate builds: only if it is a pull request build.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 jobs:
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }}
@@ -69,7 +73,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@latest
-      - uses: julia-actions/julia-format@v3
+      - uses: extractions/setup-just@v1  # or taiki-e/install-action@just
+      
+      # Adapted from:
+      #   github.com/FluxML/Flux.jl/blob/7be1ca7a/.github/workflows/JuliaFormatter.yml
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            julia_file_change:
+              - added|modified: '**/*.jl'
+      - name: Apply JuliaFormatter
+        run: |
+          just fmt
+      - name: Check formatting diff
+        if: steps.filter.outputs.julia_file_change == 'true'
+        run: |
+          git diff --color=always --exit-code
 
   perf:
     name: Performance
