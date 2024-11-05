@@ -82,7 +82,7 @@ end
 function Ω(n)
     n == fmpz(0) && return 0
     __isprime(n) && return fmpz(1)
-	
+
     return sum(e for (__, e) ∈ __factors(n))
 end
 

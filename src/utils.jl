@@ -1,21 +1,18 @@
-#!/usr/bin/env bash
-    #=
-    exec julia --project="$(realpath $(dirname $(dirname $0)))" --color=yes --startup-file=no -e "include(popfirst!(ARGS))" \
-    "${BASH_SOURCE[0]}" "$@"
-    =#
-
 """
 ```julia
 displaymatrix(M::AbstractArray)
 ```
-	
+
 Displays a matrix `M` in a compact form from the terminal.
 """
 function displaymatrix(M::AbstractArray)
-    return show(IOContext(stdout, :limit => true, :compact => true, :short => true), "text/plain", M); print("\n")
+    return show(
+        IOContext(stdout, :limit => true, :compact => true, :short => true), "text/plain", M
+    )
+    return print("\n")
 end
 
-_Iterable{T} = Union{AbstractArray{T}, NTuple{N, T}} where N
+_Iterable{T} = Union{AbstractArray{T}, NTuple{N, T}} where {N}
 
 """
 ```julia
@@ -25,13 +22,13 @@ allequal_length(a, b...) -> Bool
 
 Check that all elements in a list are of equal length.
 """
-@inline function allequal_length(A::_Iterable{T}) where T
+@inline function allequal_length(A::_Iterable{T}) where {T}
     length(A) < 2 && return true
-	
+
     @inbounds for i in 2:length(A)
         isequal(length(first(A)), length(A[i])) || return false
     end
-	
+
     return true
 end
 @inline allequal_length(a::T...) where {T} = allequal_length(a)
@@ -44,19 +41,19 @@ allequal(a, b...) -> Bool
 
 Check that all elements in a list are equal to each other.
 """
-@inline function allequal(A::_Iterable{T}) where T
+@inline function allequal(A::_Iterable{T}) where {T}
     length(A) < 2 && return true
-    
+
     @inbounds for i in 2:length(A)
         first(A) ≠ A[i] && return false
     end
-    
+
     return true
 end
 @inline allequal(a::T...) where {T} = allequal(a)
 
 @inline function allequal2(A)
-	return !A=A[1:1]==A∪A
+    return !A = A[1:1] == A ∪ A
 end
 
 """
@@ -67,14 +64,14 @@ aredistinct(a, b...) -> Bool
 
 Check that all elements in a list are distinct from every other element in the list.
 """
-@inline function aredistinct(A::_Iterable{T}) where T
+@inline function aredistinct(A::_Iterable{T}) where {T}
     length(A) < 2 && return true
-    
-    while ! iszero(length(A))
+
+    while !iszero(length(A))
         a = pop!(A)
         a ∉ A || return false
     end
-    
+
     return true
 end
 @inline aredistinct(a::T...) where {T} = aredistinct(a)
@@ -87,11 +84,11 @@ arelessthan(x::Number, a, b...) -> Bool
 
 Check that all elements in a list are less than a given x.
 """
-@inline function arelessthan(x::Number, A::_Iterable{T}) where T
+@inline function arelessthan(x::Number, A::_Iterable{T}) where {T}
     @inbounds for a in A
         a < x || return false
     end
-    
+
     return true
 end
 @inline arelessthan(x::Number, a::Number...) = arelessthan(x, a)
@@ -104,11 +101,11 @@ areequalto(x::Number, a, b...) -> Bool
 
 Check that all elements in a list are equal to a given x.
 """
-@inline function areequalto(x, A::_Iterable{T}) where T
+@inline function areequalto(x, A::_Iterable{T}) where {T}
     @inbounds for a in A
         a != x || return false
     end
-    
+
     return true
 end
 @inline areequalto(x, a::Number...) = areequalto(x, a)
@@ -132,7 +129,7 @@ Returns the type of the inner-most element in a nested array structure.
 """
 deepeltype(a) = deepeltype(typeof(a))
 deepeltype(::Type{T}) where {T <: _Iterable{R}} where {R} = deepeltype(eltype(T))
-deepeltype(::Type{T}) where T = T
+deepeltype(::Type{T}) where {T} = T
 
 """
 ```julia
@@ -156,26 +153,32 @@ ensure_symbolic(Σ) = ensure_symbolic!(copy(Σ))
 ```julia
 _has_identity(M::Matrix, n::Union{T, Base.OneTo{T}, AbstractRange{T}}) where {T <: Integer}
 ```
+
 Inner function on `has_identity` function.  Will return a tuple of:
+
   - Whether or not the matrix has an identity;
   - Where that identity matrix starts; and
   - How big the identity matrix is.
 """
-function _has_identity(M::Matrix, n::Union{T, Base.OneTo{T}, AbstractRange{T}}) where {T <: Integer}
-	for ID_size in n # iterate through possible identity sizes; try identity matrixes from the maximum size down
-		n isa Integer || (isone(ID_size) && continue) # skip I(1) unless that is the integer specifically given
-		max_starting_row, max_starting_col = size(M) .- (ID_size - 1)
-		for i in CartesianIndices(M) # iterate through all possible starting positions
-			m = M[i]
-			(isone(m) || iszero(m)) || continue # skip starting positions that are invalid
-			_row, _col = Tuple(i)
-			if _row ≤ max_starting_row && _col ≤ max_starting_col # ensure the matrix at position i has enough space for an identity
-				isequal(M[_row:(_row + ID_size - 1), _col:(_col + ID_size - 1)], I(ID_size)) && return true, (_row, _col), ID_size
-			end
-		end
-	end
-	
-	return false, ntuple(_ -> nothing, ndims(M)), nothing
+function _has_identity(
+    M::Matrix, n::Union{T, Base.OneTo{T}, AbstractRange{T}}
+) where {T <: Integer}
+    for ID_size in n # iterate through possible identity sizes; try identity matrixes from the maximum size down
+        n isa Integer || (isone(ID_size) && continue) # skip I(1) unless that is the integer specifically given
+        max_starting_row, max_starting_col = size(M) .- (ID_size - 1)
+        for i in CartesianIndices(M) # iterate through all possible starting positions
+            m = M[i]
+            (isone(m) || iszero(m)) || continue # skip starting positions that are invalid
+            _row, _col = Tuple(i)
+            if _row ≤ max_starting_row && _col ≤ max_starting_col # ensure the matrix at position i has enough space for an identity
+                isequal(
+                    M[_row:(_row + ID_size - 1), _col:(_col + ID_size - 1)], I(ID_size)
+                ) && return true, (_row, _col), ID_size
+            end
+        end
+    end
+
+    return false, ntuple(_ -> nothing, ndims(M)), nothing
 end
 
 """
@@ -185,10 +188,10 @@ has_identity(M::Matrix, n::Integer) -> Bool
 ```
 
 Checks if a matrix has an identity in it.  If given a number `n`, the function will specifically check if it has an identity matrix _of size n_ in `M`.
-	
+
 See `CodingTheory._has_identity` for more information.
 
----
+* * *
 
 ### Examples
 
@@ -211,7 +214,14 @@ julia> C = [-96 -66 20 1 0 0; -65 59 -82 0 1 0; -16 87 -113 0 0 1]
 -65   59   -82  0  1  0
 -16   87  -113  0  0  1
 
-julia> D = [78 -99 125 -123 -111 -71 17; -115 78 40 -88 81 -40 78; -99 126 -54 1 0 0 24; -55 88 42 0 1 0 -8; 119 55 2 0 0 1 -92; -40 -21 -89 -79 59 -44 9]
+julia> D = [
+           78 -99 125 -123 -111 -71 17
+           -115 78 40 -88 81 -40 78
+           -99 126 -54 1 0 0 24
+           -55 88 42 0 1 0 -8
+           119 55 2 0 0 1 -92
+           -40 -21 -89 -79 59 -44 9
+       ]
 6×7 Array{Int64,2}:
    78  -99  125  -123  -111  -71   17
  -115   78   40   -88    81  -40   78
@@ -239,10 +249,8 @@ julia> has_identity(D, 4)
 false
 ```
 """
-has_identity(M::Matrix) =
-	_has_identity(M, reverse(minimum(axes(M))))[1]
-has_identity(M::Matrix, n::T) where {T <: Integer} =
-	_has_identity(M, n)[1]
+has_identity(M::Matrix) = _has_identity(M, reverse(minimum(axes(M))))[1]
+has_identity(M::Matrix, n::T) where {T <: Integer} = _has_identity(M, n)[1]
 
 """
 ```julia
@@ -251,7 +259,7 @@ has_identity_on_left(M::Matrix) -> Bool
 
 Checks if the left-hand side of a matrix contains an identity matrix.
 
----
+* * *
 
 ### Examples
 
@@ -286,9 +294,11 @@ sizeof_perfect_code(q::Number, n::Number, d::Number) -> Number
 Calculates the number of gigabytes required to store a perfect code of parameters q, n, and d.
 """
 function sizeof_perfect_code(q::Int, n::Int, d::Int)
-	return (sizeof(ntuple(_ -> gensym(), n)) * hamming_bound(big.([q, n, d])...)) / (2^30)
+    return (sizeof(ntuple(_ -> gensym(), n)) * hamming_bound(big.([q, n, d])...)) / (2^30)
 end
-sizeof_perfect_code(q::Number, n::Number, d::Number) = sizeof_perfect_code(round.(BigInt, [q, n, d])...)
+function sizeof_perfect_code(q::Number, n::Number, d::Number)
+    return sizeof_perfect_code(round.(BigInt, [q, n, d])...)
+end
 
 """
 ```julia
@@ -298,6 +308,6 @@ sizeof_all_words(q::Number, n::Number) -> Number
 Calculates the number of gigabytes required to store all unique words of length n from an alphabet of size q.
 """
 function sizeof_all_words(q::Int, n::Int)
-	return (sizeof(ntuple(_ -> gensym(), n)) * big(q)^n) / (2^30)
+    return (sizeof(ntuple(_ -> gensym(), n)) * big(q)^n) / (2^30)
 end
 sizeof_all_words(q::Number, n::Number) = sizeof_all_words(round.(BigInt, (q, n))...)

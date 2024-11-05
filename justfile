@@ -7,14 +7,14 @@
 # as the root project directory that Julia uses.
 #
 # [1]: https://just.systems/man/en/functions.html#justfile-and-justfile-directory
-project_dir := justfile_dir() + "/"
-test_dir := project_dir + "test/"
-test_file := test_dir + "runtests.jl"
-docs_dir := project_dir + "docs/"
-docs_mk_file := docs_dir + "make.jl"
-dev_dir := project_dir + "dev/"
-bench_dir := project_dir + "perf/"
-bench_file := bench_dir + "runbenchmarks.jl"
+project_dir := justfile_dir() / "/"
+test_dir := project_dir / "test/"
+test_file := test_dir / "runtests.jl"
+docs_dir := project_dir / "docs/"
+docs_mk_file := docs_dir / "make.jl"
+dev_dir := project_dir / "dev/"
+bench_dir := project_dir / "perf/"
+bench_file := bench_dir / "runbenchmarks.jl"
 standard_instantiate_code := """
 import Pkg
 Pkg.instantiate()
@@ -43,10 +43,11 @@ docs: (instantiate-dev docs_dir)
 bench: (instantiate-dev bench_dir)
     julia --project={{bench_dir}} {{bench_file}}
 
-# check formatting
+# Check formatting with blue style
 [group: 'ci']
 fmt:
-    julia --project={{dev_dir}} -e 'using JuliaFormatter; format(".")'
+    # https://github.com/invenia/BlueStyle
+    julia --project={{dev_dir}} -e 'using JuliaFormatter; format("{{project_dir}}", style=BlueStyle())'
 
 # Instantiate main project
 instantiate:

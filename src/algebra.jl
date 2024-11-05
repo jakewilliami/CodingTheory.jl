@@ -1,9 +1,3 @@
-#!/usr/bin/env bash
-    #=
-    exec julia --project="$(realpath $(dirname $(dirname $0)))" --color=yes --startup-file=no -e "include(popfirst!(ARGS))" \
-    "${BASH_SOURCE[0]}" "$@"
-    =#
-
 """
 ```julia
 struct FinitePolynomial <: FiniteField
@@ -20,13 +14,13 @@ FinitePolynomial(p::AbstractPolynomial, n::Int)
 A constructor method for `FinitePolynomial`.  Takes in a polynomial `p` and a number `n`, and constructs a polynomial under modulo n.
 """
 struct FinitePolynomial <: FiniteField
-	p::AbstractPolynomial
-	n::Int
-	
-	function FinitePolynomial(p::AbstractPolynomial, n::Int)
-		p = Polynomial(mod.(p.coeffs, n))
-		new(p, n)
-	end
+    p::AbstractPolynomial
+    n::Int
+
+    function FinitePolynomial(p::AbstractPolynomial, n::Int)
+        p = Polynomial(mod.(p.coeffs, n))
+        return new(p, n)
+    end
 end
 
 """
@@ -76,7 +70,8 @@ Returns:
   - `Array`: An array of polynomials of degree less than n, under modulo m.
 """
 function list_polys(n::Int, m::Int)
-	return collect(Polynomial(collect(t)) for t in Iterators.product([0:(m-1) for i in 1:n]...))
+    return collect(Polynomial(collect(t)) for
+                   t in Iterators.product([0:(m - 1) for i in 1:n]...))
 end
 
 """
@@ -112,21 +107,21 @@ julia> julia> multiplication_table(2, 3) # multiplication table of all polynomia
 ```
 """
 function multiplication_table(degree::Int, modulo::Int)
-	polys = list_polys(degree, modulo)
-	number_of_polys = length(polys)
-	poly_matrix = Matrix{Polynomial}(undef, number_of_polys, number_of_polys)
-	
-	for i in 1:number_of_polys, j in 1:number_of_polys
-		poly_matrix[i,j] = mod(polys[i] * polys[j], modulo)
-	end
+    polys = list_polys(degree, modulo)
+    number_of_polys = length(polys)
+    poly_matrix = Matrix{Polynomial}(undef, number_of_polys, number_of_polys)
 
-	return poly_matrix
+    for i in 1:number_of_polys, j in 1:number_of_polys
+        poly_matrix[i, j] = mod(polys[i] * polys[j], modulo)
+    end
+
+    return poly_matrix
 end
 
-function __list_span_inner(modulo::Int, u̲::Vector{T}...) where T <: Number
+function __list_span_inner(modulo::Int, u̲::Vector{T}...) where {T <: Number}
     n_vec = length(u̲)
     span = Vector{T}[zero(u̲[1])]
-	
+
     for n in 1:n_vec
         new_span = copy(span)
         for v in span, λ in 1:(modulo - 1)
@@ -137,8 +132,8 @@ function __list_span_inner(modulo::Int, u̲::Vector{T}...) where T <: Number
         end
         span = new_span
     end
-	
-	return span
+
+    return span
 end
 
 """
@@ -175,7 +170,7 @@ julia> list_span([2, 1, 1], [1, 1, 1], 3) # list the span of two vectors modulo 
  [0, 1, 1]
 ```
 """
-list_span(args...) = __list_span_inner(last(args), args[1:end-1]...)
+list_span(args...) = __list_span_inner(last(args), args[1:(end - 1)]...)
 
 """
 ```julia
@@ -203,36 +198,37 @@ false
 ```
 """
 function islinear(C::Vector, modulo::Int; verbose::Bool = false)
-	allequal_length(C) || return false # not all codes are of the same length
-	block_length = length(C[1])
-	𝟎 = fill(0, block_length)
-		
-	if 𝟎 ∉ C
-		verbose && println("The zero vector 0̲ is not in C.\n")
-		return false # the zero vector is not in the code
-	end
-	
-	for c̲ ∈ C
-		for λ in 0:modulo-1
-			if mod.(λ*c̲, modulo) ∉ C
-				verbose && println(λ, " ⋅ ", c̲, " = ", mod.(λ*c̲, modulo), " ∉ C\n")
-				return false # this code isn't closed under scalar multiplication
-			end
-		end
-		
-		for c̲ ∈ C, c̲′ ∈ C
-			if c̲ ≠ c̲′
-				if mod.(c̲ + c̲′, modulo) ∉ C
-					verbose && println(c̲, " + ", c̲′, " = ", mod.(c̲ + c̲′, modulo), " ∉ C\n")
-					return false # this code isn't closed under addition
-				end
-			end
-		end
-	end
-	
-	verbose && println()
-	
-	return true
+    allequal_length(C) || return false # not all codes are of the same length
+    block_length = length(C[1])
+    𝟎 = fill(0, block_length)
+
+    if 𝟎 ∉ C
+        verbose && println("The zero vector 0̲ is not in C.\n")
+        return false # the zero vector is not in the code
+    end
+
+    for c̲ in C
+        for λ in 0:(modulo - 1)
+            if mod.(λ * c̲, modulo) ∉ C
+                verbose && println(λ, " ⋅ ", c̲, " = ", mod.(λ * c̲, modulo), " ∉ C\n")
+                return false # this code isn't closed under scalar multiplication
+            end
+        end
+
+        for c̲ in C, c̲′ in C
+            if c̲ ≠ c̲′
+                if mod.(c̲ + c̲′, modulo) ∉ C
+                    verbose &&
+                        println(c̲, " + ", c̲′, " = ", mod.(c̲ + c̲′, modulo), " ∉ C\n")
+                    return false # this code isn't closed under addition
+                end
+            end
+        end
+    end
+
+    verbose && println()
+
+    return true
 end
 
 """
@@ -259,15 +255,15 @@ true
 ```
 """
 function isirreducible(f::Polynomial, modulo::Int)
-	deg = length(f.coeffs) - 1
-	f = mod(f, deg)
-	polys = list_polys(deg, modulo)
+    deg = length(f.coeffs) - 1
+    f = mod(f, deg)
+    polys = list_polys(deg, modulo)
 
-	for a in polys, b in polys
-		isequal(f, mod(a*b, modulo)) && return false
-	end
-	
-	return true
+    for a in polys, b in polys
+        isequal(f, mod(a * b, modulo)) && return false
+    end
+
+    return true
 end
 
 """
@@ -299,7 +295,7 @@ julia> normal_form!([1 2 0 1 2 1 2; 2 2 2 0 1 1 1; 1 0 1 1 2 1 2; 0 1 0 1 1 2 2]
 ```
 """
 function normal_form!(M::AbstractArray{Int}, n::Int)
-	return rref!(M, n, colswap = false)
+    return rref!(M, n; colswap = false)
 end
 
 """
@@ -331,7 +327,7 @@ julia> normal_form([1 2 0 1 2 1 2; 2 2 2 0 1 1 1; 1 0 1 1 2 1 2; 0 1 0 1 1 2 2],
 ```
 """
 function normal_form(M::AbstractArray{Int}, n::Int)
-	normal_form!(copy(M), n)
+    return normal_form!(copy(M), n)
 end
 
 """
@@ -363,7 +359,7 @@ julia> equivalent_code!([1 2 0 1 2 1 2; 2 2 2 0 1 1 1; 1 0 1 1 2 1 2; 0 1 0 1 1 
 ```
 """
 function equivalent_code!(M::AbstractArray{Int}, n::Int)
-	return rref!(M, n, colswap=true)
+    return rref!(M, n; colswap = true)
 end
 
 """
@@ -394,7 +390,7 @@ julia> equivalent_code([1 2 0 1 2 1 2; 2 2 2 0 1 1 1; 1 0 1 1 2 1 2; 0 1 0 1 1 2
 ```
 """
 function equivalent_code(M::AbstractArray{Int}, n::Int)
-	equivalent_code!(copy(M), n)
+    return equivalent_code!(copy(M), n)
 end
 
 """
@@ -413,7 +409,7 @@ Returns:
   - `Matrix{Int}`: A generating matrix.
 """
 function generator!(M::AbstractArray{Int}, n::Int; colswap::Bool = false)
-	return ifelse(colswap, equivalent_code!(M, n), normal_form!(M, n))
+    return ifelse(colswap, equivalent_code!(M, n), normal_form!(M, n))
 end
 
 """
@@ -432,7 +428,7 @@ Returns:
   - `Matrix{Int}`: A generating matrix.
 """
 function generator(M::AbstractArray{Int}, n::Int; colswap::Bool = true)
-	generator!(copy(M), n, colswap=colswap)
+    return generator!(copy(M), n; colswap = colswap)
 end
 
 """
@@ -450,10 +446,11 @@ Returns:
   - `Matrix{Int}`: A parity check matrix.
 """
 function parity_check(M::AbstractArray{Int}, n::Int)
-	has_identity_on_left(M) || throw(error("This matrix is not in normal form.  Use normal_form or equivalent_code."))
-	
-	minus_Dᵀ = mod.(-one(Int) .* transpose(M[:, (size(M, 1) + 1):end]), n)
-	return H = Int[minus_Dᵀ I(size(minus_Dᵀ, 1))]
+    has_identity_on_left(M) ||
+        throw(error("This matrix is not in normal form.  Use normal_form or equivalent_code."))
+
+    minus_Dᵀ = mod.(-one(Int) .* transpose(M[:, (size(M, 1) + 1):end]), n)
+    return H = Int[minus_Dᵀ I(size(minus_Dᵀ, 1))]
 end
 
 """
@@ -485,7 +482,7 @@ julia> syndrome([0, 2, 1, 2, 0, 1, 0], transpose(parity_check([1 0 0 0 2 2 2; 0 
 ```
 """
 function syndrome(v̲::Vector, Hᵀ::AbstractArray{Int}, n::Int)
-	return mod.(v̲' * Hᵀ, n)
+    return mod.(v̲' * Hᵀ, n)
 end
 
 """
@@ -512,5 +509,5 @@ true
 ```
 """
 function isincode(v̲::Vector, Hᵀ::AbstractArray{Int}, n::Int)
-	return iszero(syndrome(v̲, Hᵀ, n))
+    return iszero(syndrome(v̲, Hᵀ, n))
 end

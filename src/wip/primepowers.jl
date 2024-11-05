@@ -4,18 +4,18 @@ using Primes: primes, factor, isprime
 
 ### Helpers
 
-nroot(x::Number, n::Number) = x^(1/n)
+nroot(x::Number, n::Number) = x^(1 / n)
 
 function factors(n::Integer)
     f = [one(n)]
 
-    for (p,e) in factor(n)
-        f = reduce(vcat, [f*p^j for j in 1:e], init=f)
+    for (p, e) in factor(n)
+        f = reduce(vcat, [f * p^j for j in 1:e]; init = f)
     end
 
     return ifelse(isone(length(f)), [one(n), n], sort!(f))
 end
- 
+
 """
     ord(q::Integer, n::Integer) -> Integer
 
@@ -27,7 +27,7 @@ function ord(q::Integer, n::Integer)
 
     for (p, e) in factor(q)
         m = p^e
-        t = div(q, p) * (p-1)
+        t = div(q, p) * (p - 1)
         for f in factors(t)
             if isone(powermod(n, f, q))
                 res = lcm(res, f)
@@ -38,8 +38,6 @@ function ord(q::Integer, n::Integer)
 
     return res
 end
-
-
 
 ### Main code
 #=
@@ -59,7 +57,7 @@ From \texttt{Powers.pdf}, section 21:\begin{quotation}
 	\textbf{Lemma 21.1.}  \emph{If $2i\equiv 2j \mod 2^{b+1}$, and $b\geq 1$, then $i^2\equiv j^2\mod w^{b+1}.$}\par
 	\textbf{2-adoc approximate powers.}  Fix positive integers $k$ and $b$.  For any integer $m$ define $\text{pow}_{2,b}(m,k)=m^k\mod 2^b$.  See section 6 for methods of computing $\text{pow}_{2, b}$ without many multiplications.  As I compute $\text{pow}_{2,b}(m, k)$, I keep track of an ``overflow bit'' to figure out whether $m^k\mod 2^b=m^k$.
 \end{quotation}
-	
+
 From \texttt{Powers.pdf}, section 6:\begin{quotation}
 	Let $r$ be a positive floating-point number, and let $k$ be positive integers.  Then $\text{pow}_{b}(r, k)$, the \textbf{$\mathbf{b}$-bit approximate $\mathbf{k}th$ power of $\mathbf{r}$} is a floating-point approximation to $r^k$.  In this section, I show how to compute $\text{pow}_b(r,k)$ in $M$-time at most $P(k)M(b), where $P(k)\leq 2\lfloor\text{lg} k\rfloor$.\par
 	Define $P(k)$ for $k\geq 1$ as follows: $P(1)=0;P(2k)=P(k)+1;P(2k+1)=P(2k)+1$.\par
@@ -73,10 +71,9 @@ From \texttt{Powers.pdf}, section 6:\begin{quotation}
 \end{quotation}
 
 From \texttt{Powers.pdf}, section 22:\begin{quotation}
-	
+
 \end{quotation}
 =#
-
 
 lg(x) = log2(x)
 
@@ -87,52 +84,52 @@ Design an algorithm that divides a nonnegative n-place integer $(u_1u_2\ldots u_
 =#
 
 """
-	divrem(b::Integer, u::Integer, v::Real)
+    divrem(b::Integer, u::Integer, v::Real)
 
 This algorithm divides a non-negative n-place integer (u1 u2 ... un) by v, where v is a single-precision number (i.e., 0 < v < b), producing the quotient (w1 w2 ... wn) and remainder r.
 
 This algorithm was written by Donald Knuth, in The Art of Computer Programming, semi-numerical algorithms, 2nd edition, exercise 4.3.1, 16.
 """
 function Base.divrem(b::Integer, u::Integer, v::Real)
-	r, j = 0, 1
-	n = ndigits(u) #; base = b
-	u̲ = round.(reverse(digits(u)), base = b)
-	w̲ = Vector{Int}(undef, n)
-	
-	while j ≤ n
-		w̲[j] = floor(Int, (r*b + u̲[j]) / v)
-		r = mod(r*b + u̲[j], v)
-		j += 1
-	end
-	
-	# w = sum(w̲[i] * 10 ^ (length(w̲) - i) for i in eachindex(w̲))
-	w = parse(Int, join(string.(w̲)))
-	# w = foldr((i, j) -> 10 * j + i, reverse(w̲))
-	#
-	# n = 0
-	# reduce(w̲) do i, j
-	# 	10 * j + i
-	# 	# global n = n + ndigits(w̲[i])
-	# end
-	# n = 0
-	# w = sum(eachindex(w̲)) do i
-	# 	w̲[i] * 10 ^ (length(w̲) - i + n)
-	# 	global n = n + ndigits(w̲[i])
-	# end
-	# n = 0
-	
-	return w, r
+    r, j = 0, 1
+    n = ndigits(u) #; base = b
+    u̲ = round.(reverse(digits(u)), base = b)
+    w̲ = Vector{Int}(undef, n)
+
+    while j ≤ n
+        w̲[j] = floor(Int, (r * b + u̲[j]) / v)
+        r = mod(r * b + u̲[j], v)
+        j += 1
+    end
+
+    # w = sum(w̲[i] * 10 ^ (length(w̲) - i) for i in eachindex(w̲))
+    w = parse(Int, join(string.(w̲)))
+    # w = foldr((i, j) -> 10 * j + i, reverse(w̲))
+    #
+    # n = 0
+    # reduce(w̲) do i, j
+    # 	10 * j + i
+    # 	# global n = n + ndigits(w̲[i])
+    # end
+    # n = 0
+    # w = sum(eachindex(w̲)) do i
+    # 	w̲[i] * 10 ^ (length(w̲) - i + n)
+    # 	global n = n + ndigits(w̲[i])
+    # end
+    # n = 0
+
+    return w, r
 end
 
 """
-	div(b::Integer, u::Integer, v::Real)
+    div(b::Integer, u::Integer, v::Real)
 
 This algorithm divides a non-negative n-place integer (u1 u2 ... un) by v, where v is a single-precision number (i.e., 0 < v < b), producing the quotient (w1 w2 ... wn) and ommiting the remained.  To return the quotient and the remainder, see `divrem`.
 """
 Base.div(b::Integer, u::Integer, v::Real) = first(divrem(b, u, v))
 
 """
-	rem(b::Integer, u::Integer, v::Real)
+    rem(b::Integer, u::Integer, v::Real)
 
 This algorithm divides a non-negative n-place integer (u1 u2 ... un) by v, where v is a single-precision number (i.e., 0 < v < b), producing a remainder r.  To return the quotient and the remainder, see `divrem`.
 """
@@ -143,13 +140,13 @@ In this section, I define truncation to $b$ bits, written $\text{trunc}_b$, and 
 =#
 
 """
-	trunc(b::Integer, n::Real)
-	
+    trunc(b::Integer, n::Real)
+
 Truncates a number `n` to `b` bits.
 """
 function Base.trunc(b::Integer, n::Real)
-	return n & (1 << b - 1)
-	# return div(b, n, 1)
+    return n & (1 << b - 1)
+    # return div(b, n, 1)
 end
 
 #=
@@ -162,55 +159,55 @@ Given a positive floating-point number r and two positive integers b, k, to prim
 =#
 
 """
-	pow(b::Integer, r::Real, k::Integer)
-	
+    pow(b::Integer, r::Real, k::Integer)
+
 Given a positive floating-point number r and two positive integers b and k, pow(b, r, k) computes the b-bit approximate kth power of r.  pow_b(r, k) ≤ r^k < pow_b(r, k)(1 + 2^(1 - b))^(2k - 1).
 """
 function pow(b::Integer, r::Real, k::Integer)
-	if r ≤ 0 || b ≤ 0 || k ≤ 0
-		throw(error("r, b, and k must be positive numbers to compute pow_b(r, k)."))
-	end
-	isone(k) && return trunc(b, r)
-	iszero(mod(k, 2)) && return trunc(b, pow(b, r, k ÷ 2)^2) # use \div because k is even
-	return trunc(b, pow(b, r, k - 1) * trunc(b, r))
+    if r ≤ 0 || b ≤ 0 || k ≤ 0
+        throw(error("r, b, and k must be positive numbers to compute pow_b(r, k)."))
+    end
+    isone(k) && return trunc(b, r)
+    iszero(mod(k, 2)) && return trunc(b, pow(b, r, k ÷ 2)^2) # use \div because k is even
+    return trunc(b, pow(b, r, k - 1) * trunc(b, r))
 end
 
 """
-	pow2(b::Integer, r::Real, k::Integer)
-	
+    pow2(b::Integer, r::Real, k::Integer)
+
 Given a positive floating-point number r and two positive integers b and k, pow2(b, r, k) computes the 2-adic b-bit approximate kth power of r.
 """
 function pow2(b::Integer, m::Integer, k::Integer)
-	if k ≤ 0 || b ≤ 0
-		throw(error("k, and b must be positive integers to find a 2-adic approximate power."))
-	end
-		
-	return mod(m^k, 2^b)
+    if k ≤ 0 || b ≤ 0
+        throw(error("k, and b must be positive integers to find a 2-adic approximate power."))
+    end
+
+    return mod(m^k, 2^b)
 end
 
 """
-	tentative_check_kth_roots(n::Integer, x::Integer, k::Integer)
+    tentative_check_kth_roots(n::Integer, x::Integer, k::Integer)
 
 A straight forward algorithm for checking whether x^k = n.
 """
 function tentative_check_kth_roots(n::Integer, x::Integer, k::Integer)
-	if n ≤ 0 || x ≤ 0 || k ≤ 0
-		throw(error("n, x, and k must be positive integers to compute check whether n=x^k."))
-	end
-	
-	f = floor(Integer, lg(2*n))
-	
-	isone(x) && return ifelse(isone(n), true, false) # return ifelse(isone(n), 0, 2)
-	
-	b = 1
-	while true
-		# r = pow(x, b, k) # 2, b
-		r = pow2(b, x, k)
-		isequal(mod(n, 2^b), r) || return false # 2
-		b ≥ f && return ifelse(isequal(r, x^k), true, false) # ifelse(isequal(r, x^k), 0, 2)
-		
-		b = min(2*b, f)
-	end
+    if n ≤ 0 || x ≤ 0 || k ≤ 0
+        throw(error("n, x, and k must be positive integers to compute check whether n=x^k."))
+    end
+
+    f = floor(Integer, lg(2 * n))
+
+    isone(x) && return ifelse(isone(n), true, false) # return ifelse(isone(n), 0, 2)
+
+    b = 1
+    while true
+        # r = pow(x, b, k) # 2, b
+        r = pow2(b, x, k)
+        isequal(mod(n, 2^b), r) || return false # 2
+        b ≥ f && return ifelse(isequal(r, x^k), true, false) # ifelse(isequal(r, x^k), 0, 2)
+
+        b = min(2 * b, f)
+    end
 end
 
 #=
@@ -230,60 +227,61 @@ Write a MIX program that multiplies $(u_1u_2\ldots u_n)_b$ by $v$, where $v$ is 
 		LDA		U,1		N	DEC1	1		N
 		MUL		V		N	J1P		2B		N
 		SLC		5		N	STX		W		1
-		
+
 The running time is 23N + K + 5 cycles, and K is rougly (1/2)N.
 =#
 
 """
-	mul2(b::Integer, m::Integer, k::Integer)
+    mul2(b::Integer, m::Integer, k::Integer)
 
 The notation mul(r, k) is used in the Bernstein paper to denote k * r.  The notation mul_{2, b}(m, k) represents 2-adic multiplication.
 """
 function mul2(b::Integer, m::Integer, k::Integer)
-	if k ≤ 0
-		throw(error("Cannot compute mul(m, k) when k is negative using the 2-adic method."))
-	end
-	
-	return mod(k*m, 2^b)
+    if k ≤ 0
+        throw(error("Cannot compute mul(m, k) when k is negative using the 2-adic method."))
+    end
+
+    return mod(k * m, 2^b)
 end
 
 """
-	div2(b::Integer, m::Integer, k::Integer)
+    div2(b::Integer, m::Integer, k::Integer)
+
 div_b is defined as a floating-point approximation to r/k, so that r/k div_b(r, k) is between 1 and 1 + 2^(1 - b).  div2 is the 2-adic approximation of this.
 """
 function div2(b::Integer, m::Integer, k::Integer)
-	if k ≤ 0
-		throw(error("Cannot compute mul(m, k) when k is negative using the 2-adic method."))
-	end
-	
-	for m in 0:2^b
-		if isequal(m, mod(div(b, m, k), 2^b))
-			return div(b, m, k)
-		end
-	end
+    if k ≤ 0
+        throw(error("Cannot compute mul(m, k) when k is negative using the 2-adic method."))
+    end
+
+    for m in 0:(2^b)
+        if isequal(m, mod(div(b, m, k), 2^b))
+            return div(b, m, k)
+        end
+    end
 end
 
 """
-	odd_nroot2(b::Integer, y::Integer, k::Integer)
+    odd_nroot2(b::Integer, y::Integer, k::Integer)
 
 Fix an odd integer y and a positive odd integer k.  odd_nroot2 finds an approximate negative kth root of y by Newton's method.
 """
 function odd_nroot2(b::Integer, y::Integer, k::Integer)
-	if k ≤ 0 || b ≤ 0
-		throw(error("Cannot use this method for negative number k and b."))
-	end
-	
-	if iseven(y) || iseven(k)
-		throw(error("Cannot use this method for even y and k."))
-	end
-	
-	b′ = ceil(Integer, b / 2)
-	
-	isone(b) && return 1
-	z = odd_nroot2(b′, y, k)
-	r₂ = mul2(b, z, k + 1)
-	r₃ = mod(y * pow2(b, z, k + 1), 2^b)
-	return r₄ = div2(b, r₂ - r₃, k)
+    if k ≤ 0 || b ≤ 0
+        throw(error("Cannot use this method for negative number k and b."))
+    end
+
+    if iseven(y) || iseven(k)
+        throw(error("Cannot use this method for even y and k."))
+    end
+
+    b′ = ceil(Integer, b / 2)
+
+    isone(b) && return 1
+    z = odd_nroot2(b′, y, k)
+    r₂ = mul2(b, z, k + 1)
+    r₃ = mod(y * pow2(b, z, k + 1), 2^b)
+    return r₄ = div2(b, r₂ - r₃, k)
 end
 
 #=
@@ -292,28 +290,28 @@ end
 =#
 
 """
-	sqrt_nroot2(b::Integer, y::Integer)
+    sqrt_nroot2(b::Integer, y::Integer)
 
 Fix odd integer y.  For each b ≥ 1, define and construct nroot_(2, b)(y, 2).
 """
 function sqrt_nroot2(b::Integer, y::Integer)
-	# if b ≤ 0
-	# 	throw(error("Cannot use this method for negative number b."))
-	# end
-	#
-	# if iseven(y)
-	# 	throw(error("Cannot use this method for even y."))
-	# end
-	
-	b′ = ceil(Integer, (b + 1) / 2)
-	
-	isone(b) && return ifelse(isone(mod(y, 4)), 1, 0)
-	isequal(b, 2) && return ifelse(isone(mod(y, 8)), 1, 0)
-	iszero(z) && return 0
-	
-	r₂ = mul2(b + 1, z, 3)
-	r₃ = mod(y * pow2(b + 1, z, 3), 2^(b + 1))
-	return r₄ = mod(r₂ - r₃, 2^b)
+    # if b ≤ 0
+    # 	throw(error("Cannot use this method for negative number b."))
+    # end
+    #
+    # if iseven(y)
+    # 	throw(error("Cannot use this method for even y."))
+    # end
+
+    b′ = ceil(Integer, (b + 1) / 2)
+
+    isone(b) && return ifelse(isone(mod(y, 4)), 1, 0)
+    isequal(b, 2) && return ifelse(isone(mod(y, 8)), 1, 0)
+    iszero(z) && return 0
+
+    r₂ = mul2(b + 1, z, 3)
+    r₃ = mod(y * pow2(b + 1, z, 3), 2^(b + 1))
+    return r₄ = mod(r₂ - r₃, 2^b)
 end
 
 #=
@@ -322,31 +320,31 @@ end
 =#
 
 """
-	perfect_power_decomp_odd(n::Integer, k::Integer, y::Integer)
+    perfect_power_decomp_odd(n::Integer, k::Integer, y::Integer)
 
 Given a positive odd integer n, an integer k ≥ 2 such that either k = 2 or k is odd, and an odd integer y, `perfect_power_decomp_odd` checks if n is a kth power.
 """
 function perfect_power_decomp_odd(n::Integer, k::Integer, y::Integer)
-	if iseven(n) && !isequal(k, 2)
-		throw(error("Cannot use this algorithm on even n."))
-	end
-	
-	if k < 2
-		throw(error("k must be ≥ 2."))
-	else
-		if iseven(k) && !isequal(k, 2)
-			throw(error("k must be 2 or odd."))
-		end
-	end
-	
-	f = floor(Integer, lg(2*n))
-	b = ceil(Integer, f / k)
-	
-	r = odd_nroot2(b, y, k)
-	(isequal(k, 2) && iszero(r)) && return 0
-	tentative_check_kth_roots(n, r, k) && return r
-	(isequal(k, 2) && tentative_check_kth_roots(n, 2^b - r, k)) && return 2^b - r
-	return 0
+    if iseven(n) && !isequal(k, 2)
+        throw(error("Cannot use this algorithm on even n."))
+    end
+
+    if k < 2
+        throw(error("k must be ≥ 2."))
+    else
+        if iseven(k) && !isequal(k, 2)
+            throw(error("k must be 2 or odd."))
+        end
+    end
+
+    f = floor(Integer, lg(2 * n))
+    b = ceil(Integer, f / k)
+
+    r = odd_nroot2(b, y, k)
+    (isequal(k, 2) && iszero(r)) && return 0
+    tentative_check_kth_roots(n, r, k) && return r
+    (isequal(k, 2) && tentative_check_kth_roots(n, 2^b - r, k)) && return 2^b - r
+    return 0
 end
 
 #=
@@ -355,21 +353,21 @@ end
 =#
 
 """
-	odd_decomp_perf_pow(n::Integer)
+    odd_decomp_perf_pow(n::Integer)
 
 Given an odd integer n ≥ 2, `odd_decomp_perf_pow` decomposes n as a perfect power if possible.
 """
 function perfectpower(n::Integer)
     # isprime(n) && return n, 1
 
-	# if iseven(n) && !isequal(n, 2)
-	# 	throw(error("This method must have odd n."))
-	# end
-	
-	if n < 2
-		throw(error("n must be ≥ 2."))
-	end
-    
+    # if iseven(n) && !isequal(n, 2)
+    # 	throw(error("This method must have odd n."))
+    # end
+
+    if n < 2
+        throw(error("n must be ≥ 2."))
+    end
+
     isprime(n) && return n, 1
 
     # sqrt_val = sqrt(n)
@@ -383,16 +381,16 @@ function perfectpower(n::Integer)
         end
     end
 
-	f = floor(Integer, lg(2*n))
-	
-	y = odd_nroot2(ceil(Integer, f / 2) + 1, n, 1)
+    f = floor(Integer, lg(2 * n))
 
-	for p in primes(f - 1)
-		x = perfect_power_decomp_odd(n, p, y)
-		x > 0 && return x, p
-	end
-	
-	return n, 1
+    y = odd_nroot2(ceil(Integer, f / 2) + 1, n, 1)
+
+    for p in primes(f - 1)
+        x = perfect_power_decomp_odd(n, p, y)
+        x > 0 && return x, p
+    end
+
+    return n, 1
 end
 
 #=
@@ -411,6 +409,6 @@ As usual, fix $n\geq 2$.  In this section I discuss several tricks based on comp
 
 function lower_exp_bound(n::Integer, x::Integer, k::Integer)
     # if isodd(n)
-        # continue
+    # continue
     # end
 end
