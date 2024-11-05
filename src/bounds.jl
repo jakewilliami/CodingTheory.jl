@@ -274,8 +274,7 @@ function ishammingperfect(r::Int, q::Int)
 
     isequal(n, (q^r - 1) / (q - 1)) && \
     isequal(d, 3) && \
-    isequal(M, q^(((q^r - 1) / (q - 1)) - r)) && \
-    return true
+    isequal(M, q^(((q^r - 1) / (q - 1)) - r)) && return true
     return false
 end
 

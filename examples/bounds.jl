@@ -57,7 +57,7 @@ function make_integer_csv(stop_at::Integer)
 
     CSV.write(data_file_desktop, D)
     CSV.write(data_file_other, D)
-    return println("\nWrote data to $(data_file_other).")
+    println("\nWrote data to $(data_file_other).")
 end
 
 function bound_comparison(stop_at::Integer)::Tuple{Int, Array{Array{Number, 1}}}
@@ -119,7 +119,7 @@ function plot_bound_comparison(stop_at::Integer)
     println("Data written to $(data_file_desktop) and $(data_file_other)")
 
     `Rscript --vanilla "~"/projects/CodingTheory.jl/other/regression-tree.R $data_file_other $stop_at`
-    return println("Regression tree saved at $(joinpath(dirname(dirname(@__FILE__)), "other", "Rplots_$(stop_at).pdf"))",)
+    println("Regression tree saved at $(joinpath(dirname(dirname(@__FILE__)), "other", "Rplots_$(stop_at).pdf"))",)
 end
 
 # make_integer_csv constructs a csv file which looks for hamming bounds (given certain conditions) that are integers before rounding

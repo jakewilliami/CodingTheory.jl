@@ -54,7 +54,7 @@ function graphing_time(stop_at::Integer)
 
     CSV.write(data_file_desktop, D)
     CSV.write(data_file_other, D)
-    return println("Wrote data to $(data_file_other).")
+    println("Wrote data to $(data_file_other).")
 end
 
 graphing_time(stop_at)

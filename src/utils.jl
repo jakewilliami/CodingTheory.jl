@@ -6,10 +6,10 @@ displaymatrix(M::AbstractArray)
 Displays a matrix `M` in a compact form from the terminal.
 """
 function displaymatrix(M::AbstractArray)
-    return show(
+    show(
         IOContext(stdout, :limit => true, :compact => true, :short => true), "text/plain", M
     )
-    return print("\n")
+    print("\n")
 end
 
 _Iterable{T} = Union{AbstractArray{T}, NTuple{N, T}} where {N}

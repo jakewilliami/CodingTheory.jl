@@ -11,7 +11,7 @@ function add_plot_info(
     factor2 = y > 1 ? 4 : 2.5
     # plot!(annotations = (max(x * 2, x+100), (y - 10 * counter) / factor1,
     #        text(extra, :left, 13)))
-    return annotate!(plt, max(x * 2, x + 100), ((y - 10 * counter) / factor1), extra)
+    annotate!(plt, max(x * 2, x + 100), ((y - 10 * counter) / factor1), extra)
 end
 
 function graphing(
@@ -170,5 +170,5 @@ function graphing(
 end
 
 function graphing(q::Integer, n::Integer, d::Integer, stop_at::Integer; m::Integer = 10_000)
-    return graphing(q, n, d, obtain_data(q, n, d, stop_at; m = m), stop_at; m = m)
+    graphing(q, n, d, obtain_data(q, n, d, stop_at; m = m), stop_at; m = m)
 end

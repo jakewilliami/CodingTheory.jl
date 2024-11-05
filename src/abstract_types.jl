@@ -36,7 +36,8 @@ mutable struct Word{N, T}
 
     Word(w::NTuple{N, T}) where {N, T} = new{N, T}(MVector{N, T}(w))
     function Word(w::AbstractVector{T}) where {T}
-        return (len = length(w); new{len, T}(MVector{len, T}(w)))
+        len = length(w)
+        return new{len, T}(MVector{len, T}(w))
     end
     Word(w::AbstractString) = MVector{length(w), eltype(w)}(collect(w))
     Word(i::T...) where {T} = (len = length(i); new{len, T}(MVector{len, T}(i)))
@@ -103,8 +104,8 @@ struct Alphabet{N} <: AbstractVector{Symbol} where {N}
     Σ::AbstractVector{Symbol}
 
     function Alphabet(Σ::Union{Vector{T}, String}) where {T}
-        return (Σ_unique = Set(Σ);
-        new{length(Σ_unique)}(ensure_symbolic(Σ_unique)))
+        Σ_unique = Set(Σ)
+        return new{length(Σ_unique)}(ensure_symbolic(Σ_unique))
     end
 end # end struct
 

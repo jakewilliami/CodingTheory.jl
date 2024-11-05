@@ -27,13 +27,13 @@ end
 ```julia
 mod(p::Polynomial, n::Int) -> Polynomial
 ```
-	
+
 Uses the `FinitePolynomial` constructor to return a polynomial `p` under modulus `n`.
 
 Parameters:
   - `p::Polynomial`: The input polynomial.
   - `n::Int`: The modulus of the field.
-  
+
 Returns
   - Polynomial: A polynomial modulo n.
 """
@@ -43,13 +43,13 @@ Base.mod(p::Polynomial, n::Int) = FinitePolynomial(p, n).p
 ```julia
 Polynomial(A::Union{NTuple{N, T}, Vector{T}}, n::Int) -> Polynomial
 ```
-	
+
 Constructs a polynomial under modulo `n`.
 
 Parameters:
   - `A::Union{Tuple, AbstractArray}`: The polynomial coefficients.
   - `n::Int`: The modulus of the field.
-  
+
 Returns
   - `Polynomial`: A polynomial modulo n.
 """
@@ -59,13 +59,13 @@ Polynomial(A::Union{NTuple{N, T}, Vector{T}}, n::Int) where {N, T} = mod(Polynom
 ```julia
 list_polys(n::Int, m::Int) -> Array
 ```
-	
+
 Lists all polynomials of degree less than to `n` under modulo `m`.
 
 Parameters:
   - `n::Int`: Highest degree of polynomial.
   - `m::Int`: The modulus of the field.
-  
+
 Returns:
   - `Array`: An array of polynomials of degree less than n, under modulo m.
 """
@@ -78,13 +78,13 @@ end
 ```julia
 multiplication_table(degree::Int, modulo::Int) -> Matrix
 ```
-	
+
 Returns a table (matrix) of the multiplication of all combinations of polynomials for degree less than `degree`, under modulo `modulo`.
 
 Parameters:
   - `degree::Int`: Highest degree of polynomial.
   - `modulo::Int`: The modulus of the field.
-  
+
 Returns:
   - `Matrix`: A multiplication table of all polynomials with degree less than n, under modulus.
 
@@ -148,7 +148,7 @@ Parameters:
   - `v̲::Vector`: Another vector.
   - `...`: Other vectors.
   - `modulo::Int`: The modulus of the field.
-  
+
 Returns:
   - `Array`: All vectors in the span of u̲ and v̲, under modulo.
 
@@ -176,14 +176,14 @@ list_span(args...) = __list_span_inner(last(args), args[1:(end - 1)]...)
 ```julia
 islinear(C::Vector, modulo::Int; verbose::Bool = false) -> Bool
 ```
-	
+
 Determines whether a code `C` is a linear code (i.e., if it is closed under addition, scalar multiplication, and has the zero vector in it).
 
 Parameters:
   - `C::Vector`: A code, typically consisting of multiple vectors or strings.
   - `modulo::Int`: The modulus of the field under which you are working.
   - `verbose::Bool` (kwarg): print the point at which C fails, if it does.
-  
+
 Returns:
   - `Bool`: Whether or not the code `C` is linear (true or false).
 
@@ -235,13 +235,13 @@ end
 ```julia
 isirreducible(f::AbstractPolynomial, modulo::Int) -> Bool
 ```
-	
+
 Checks if a polynomial is irreducible.
-	
+
 Parameters:
   - `f::Polynomial`: The polynomial you need to check.
   - `modulo::Int`: The modulus under which you are working.
-  
+
 Returns:
   - `Bool`: Whether or not the polynomial is irreducible (true or false).
 
@@ -276,7 +276,7 @@ Convert a matrix M into normal form under modulo n via Gauss-Jordan elimination.
 Parameters:
   - `M::AbstractArray{Int}`: A matrix of Ints.
   - `n::Int`: The modulus of the finite field.
-  
+
 Returns:
   - `Matrix{Int}`: A matrix in normal form from Gauss-Jordan elimination.
 
@@ -308,7 +308,7 @@ Convert a matrix M into normal form under modulo n via Gauss-Jordan elimination.
 Parameters:
   - `M::AbstractArray{Int}`: A matrix of Ints.
   - `n::Int`: The modulus of the finite field.
-  
+
 Returns:
   - `Matrix{Int}`: A matrix in normal form from Gauss-Jordan elimination.
 
@@ -340,7 +340,7 @@ Peforms Gauss-Jordan elimination on a matrix M, but allows for column swapping. 
 Parameters:
   - `M::AbstractArray{Int}`: A matrix of Ints.
   - `n::Int`: The modulus of the finite field.
-  
+
 Returns:
   - `Matrix{Int}`: A which represents an "equivalent" code to that of the matrix M.
 
@@ -372,7 +372,7 @@ Peforms Gauss-Jordan elimination on a matrix M, but allows for column swapping.
 Parameters:
   - `M::AbstractArray{Int}`: A matrix of Ints.
   - `n::Int`: The modulus of the finite field.
-  
+
 Returns:
   - `Matrix{Int}`: A which represents an "equivalent" code to that of the matrix M.
 
@@ -404,12 +404,12 @@ Parameters:
   - `M::AbstractArray{Int}`: A matrix of Ints.
   - `n::Int`: The modulus of the finite field.
   - `colswap::Bool` (kwarg): A boolean flag indicating whether or not you allow for swapping of columns when constructing the generating matrix.
-	
+
 Returns:
   - `Matrix{Int}`: A generating matrix.
 """
 function generator!(M::AbstractArray{Int}, n::Int; colswap::Bool = false)
-    return ifelse(colswap, equivalent_code!(M, n), normal_form!(M, n))
+    return colswap ? equivalent_code!(M, n) : normal_form!(M, n)
 end
 
 """
@@ -423,7 +423,7 @@ Parameters:
   - `M::AbstractArray{Int}`: A matrix of Ints.
   - `n::Int`: The modulus of the finite field.
   - `colswap::Bool` (kwarg): A boolean flag indicating whether or not you allow for swapping of columns when constructing the generating matrix.
-	
+
 Returns:
   - `Matrix{Int}`: A generating matrix.
 """
@@ -435,13 +435,13 @@ end
 ```julia
 parity_check(M::AbstractArray{Int}, n::Int) -> Matrix{Int}
 ```
-	
+
 Constructs a parity check matrix.  This is calculated from taking the non-identity part of a matrix in normal form (or equivalent &mdash; see `generator`), transposing it, multiplying it by negative one, and appending to it an appropriate sized identity matrix.
-	
+
 Parameters:
   - `M::AbstractArray{Int}`: A matrix of Ints.
   - `n::Int`: The modulus of the finite field.
-	
+
 Returns:
   - `Matrix{Int}`: A parity check matrix.
 """
@@ -457,16 +457,16 @@ end
 ```julia
 syndrome(v̲::Vector, Hᵀ::AbstractArray{Int}, n::Int) -> Matrix{Int}
 ```
-	
+
 Calculates the syndrome of a given word v̲ and a parity check matrix, transposed (Hᵀ), under modulo n.
 
 Parameters:
   - `v̲::Vector`: A word in the code.
   - `Hᵀ::AbstractArray{Int}`: The transpose of a parity check matrix.
-  
+
 Returns:
   - `Vector`: The syndrome of a word in the code.
- 
+
 ---
 
 ### Examples
@@ -495,7 +495,7 @@ If the syndrome of a code is the zero vector, then the word used to calculate th
 Parameters:
   - `v̲::Vector`: A word.
   - `Hᵀ::AbstractArray{Int}`: The transpose of a parity check matrix.
-  
+
 Returns:
   - `Bool`: If the word is in the code or not (true or false).
 

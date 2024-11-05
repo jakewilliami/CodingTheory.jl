@@ -162,37 +162,28 @@ function get_codewords_greedy(𝒰::UniverseParameters, d::Int)
 
     return C
 end
-function get_codewords_greedy(Σ::Alphabet{N}, q::Int, n::Int, d::Int) where {N}
-    return get_codewords_greedy(UniverseParameters(Σ, q, n), d)
-end
-function get_codewords_greedy(Σ::Alphabet{N}, n::Int, d::Int) where {N}
-    return get_codewords_greedy(UniverseParameters(Σ, n), d)
-end
-function get_codewords_greedy(q::Int, n::Int, d::Int)
-    return get_codewords_greedy(UniverseParameters(q, n), d)
-end
-function get_codewords_greedy(Σ::AbstractArray, q::Int, n::Int, d::Int)
-    return get_codewords_greedy(Alphabet(Σ), q, n, d)
-end
-function get_codewords_greedy(Σ::AbstractArray, n::Int, d::Int)
-    return get_codewords_greedy(UniverseParameters(Σ, n), d)
-end
-function get_codewords_greedy(Σ::AbstractArray, q::Int, n::Int, d::Int, 𝒰::AbstractArray)
-    return get_codewords_greedy(Alphabet(Σ), q, n, d, 𝒰)
-end
+get_codewords_greedy(Σ::Alphabet{N}, q::Int, n::Int, d::Int) where {N} =
+    get_codewords_greedy(UniverseParameters(Σ, q, n), d)
+get_codewords_greedy(Σ::Alphabet{N}, n::Int, d::Int) where {N} =
+    get_codewords_greedy(UniverseParameters(Σ, n), d)
+get_codewords_greedy(q::Int, n::Int, d::Int) =
+    get_codewords_greedy(UniverseParameters(q, n), d)
+get_codewords_greedy(Σ::AbstractArray, q::Int, n::Int, d::Int) =
+    get_codewords_greedy(Alphabet(Σ), q, n, d)
+get_codewords_greedy(Σ::AbstractArray, n::Int, d::Int) =
+    get_codewords_greedy(UniverseParameters(Σ, n), d)
+get_codewords_greedy(Σ::AbstractArray, q::Int, n::Int, d::Int, 𝒰::AbstractArray) =
+    get_codewords_greedy(Alphabet(Σ), q, n, d, 𝒰)
 
-function argmaxminima(A::AbstractArray; dims::Int)
-    return getindex(argmin(A; dims = dims), argmax(argmin(A; dims = dims)))
-end
-function maxminima(A::AbstractArray; dims::Int)
-    return getindex(minimum(A; dims = dims), maximum(minimum(A; dims = dims)))
-end
-function argminmaxima(A::AbstractArray; dims::Int)
-    return getindex(argmax(A; dims = dims), argmin(argmax(A; dims = dims)))
-end
-function minmaxima(A::AbstractArray; dims::Int)
-    return getindex(maximum(A; dims = dims), minimum(maximum(A; dims = dims)))
-end
+"TODO: need to document this"
+argmaxminima(A::AbstractArray; dims::Int) =
+    getindex(argmin(A, dims = dims), argmax(argmin(A, dims = dims)))
+maxminima(A::AbstractArray; dims::Int) =
+    getindex(minimum(A, dims = dims), maximum(minimum(A, dims = dims)))
+argminmaxima(A::AbstractArray; dims::Int) =
+    getindex(argmax(A, dims = dims), argmin(argmax(A, dims = dims)))
+minmaxima(A::AbstractArray; dims::Int) =
+    getindex(maximum(A, dims = dims), minimum(maximum(A, dims = dims)))
 
 """
 ```julia
@@ -223,77 +214,85 @@ Returns:
   - `Codewords{M}`: An array of codewords, each of length `M`.  Each codewords is a tuple, and each character in said word is a symbol. # get a random word in the code start
 """
 function get_codewords_random(𝒰::UniverseParameters, d::Int; m::Int = 1000)
-    C = eltype(𝒰)[]
-
-    starting_word = rand(𝒰) # get a random word in the code start
-    push!(C, starting_word)
-
-    for _ in 1:length(𝒰)
-        C′ = eltype(𝒰)[]
-        # while length(C′) < m
-        for _ in 1:m
-            wᵣ = rand(𝒰)
-            push_if_allowed!(C, C′, wᵣ, d) # if allowed in C, push to C′
-            # wᵣ ∉ C′ && push_if_allowed!(C, C′, wᵣ, d)
+    out = eltype(𝒰)[]
+    for c in 𝒰.Σ
+        starting_word = ntuple(_ -> c, 𝒰.n)
+        C = eltype(𝒰)[]
+        function central_word(𝒰)
+            if isodd(length(𝒰.Σ))
+                i = cld(length(𝒰.Σ), 2)
+                return ntuple(_ -> 𝒰.Σ[i], 𝒰.n)
+            end
+            l, u = fld(length(𝒰.Σ), 2), cld(length(𝒰.Σ), 2)
+            return ntuple(_ -> rand((𝒰.Σ[l], 𝒰.Σ[u])), 𝒰.n)
         end
-        isempty(C′) && break
-        # [push_if_allowed!(C, C′, w, d) for _ in 1:m]
-        distances = Int[hamming_distance(wᵢ, wⱼ) for wᵢ in C, wⱼ in C′]
-        best_word = getindex(C′, getindex(argmaxminima(distances; dims = 1), 2))
-        push!(C, best_word)
+        # starting_word = rand(𝒰) # get a random word in the code start
+        # starting_word = central_word(𝒰)
+        push!(C, starting_word)
+
+        for _ in 1:length(𝒰)
+            C′ = eltype(𝒰)[]
+            # while length(C′) < m
+            for _ in 1:m
+                wᵣ = rand(𝒰)
+                push_if_allowed!(C, C′, wᵣ, d) # if allowed in C, push to C′
+                # wᵣ ∉ C′ && push_if_allowed!(C, C′, wᵣ, d)
+            end
+            isempty(C′) && break
+            # [push_if_allowed!(C, C′, w, d) for _ in 1:m]
+            distances = Int[hamming_distance(wᵢ, wⱼ) for wᵢ in C, wⱼ in C′]
+            # TODO: need to document this
+            best_word = getindex(C′, getindex(argmaxminima(distances, dims = 1), 2))
+            push!(C, best_word)
+        end
+        println("$c: $(length(C))")
+        if length(out) < length(C)
+            out = copy(C)
+        end
     end
 
-    return C
+    return out
 end
-function get_codewords_random(
-    Σ::Alphabet{N}, q::Int, n::Int, d::Int; m::Int = 1000
-) where {N}
-    return get_codewords_random(UniverseParameters(Σ, q, n), d; m = m)
-end
-function get_codewords_random(Σ::Alphabet{N}, n::Int, d::Int; m::Int = 1000) where {N}
-    return get_codewords_random(UniverseParameters(Σ, n), d; m = m)
-end
-function get_codewords_random(q::Int, n::Int, d::Int; m::Int = 1000)
-    return get_codewords_random(UniverseParameters(q, n), d; m = m)
-end
-function get_codewords_random(Σ::AbstractArray, q::Int, n::Int, d::Int; m::Int = 1000)
-    return get_codewords_random(Alphabet(Σ), q, n, d; m = m)
-end
-function get_codewords_random(Σ::AbstractArray, n::Int, d::Int; m::Int = 1000)
-    return get_codewords_random(UniverseParameters(Σ, n), d; m = m)
-end
-function get_codewords_random(
+get_codewords_random(Σ::Alphabet{N}, q::Int, n::Int, d::Int; m::Int = 1000) where {N} =
+    get_codewords_random(UniverseParameters(Σ, q, n), d, m = m)
+get_codewords_random(Σ::Alphabet{N}, n::Int, d::Int; m::Int = 1000) where {N} =
+    get_codewords_random(UniverseParameters(Σ, n), d, m = m)
+get_codewords_random(q::Int, n::Int, d::Int; m::Int = 1000) =
+    get_codewords_random(UniverseParameters(q, n), d, m = m)
+get_codewords_random(Σ::AbstractArray, q::Int, n::Int, d::Int; m::Int = 1000) =
+    get_codewords_random(Alphabet(Σ), q, n, d, m = m)
+get_codewords_random(Σ::AbstractArray, n::Int, d::Int; m::Int = 1000) =
+    get_codewords_random(UniverseParameters(Σ, n), d, m = m)
+get_codewords_random(
     Σ::AbstractArray, q::Int, n::Int, d::Int, 𝒰::AbstractArray; m::Int = 1000
-)
-    return get_codewords_random(Alphabet(Σ), q, n, d, 𝒰; m = m)
-end
+) = get_codewords_random(Alphabet(Σ), q, n, d, 𝒰, m = m)
 
 # using Mmap
 # function get_codewords_random_mmap(mmappath::AbstractString, 𝒰::UniverseParameters, d::Int)
-# 	io = open(mmappath, "r+") # allow read and write
-# 	# write(s, size(A,2))
-# 	# read(s, Int)
-# 	# close(s)
-# 	# B = Mmap.mmap(io, BitArray, (25,30000))
-# 	# Mmap.sync!(B);
-# 	# close(io);
-# 	# rm("mmap.bin")
-# 	starting_word = rand(𝒰) # get a random word in the code start
-# 	push!(C, starting_word)
+#   io = open(mmappath, "r+") # allow read and write
+#   # write(s, size(A,2))
+#   # read(s, Int)
+#   # close(s)
+#   # B = Mmap.mmap(io, BitArray, (25,30000))
+#   # Mmap.sync!(B);
+#   # close(io);
+#   # rm("mmap.bin")
+#   starting_word = rand(𝒰) # get a random word in the code start
+#   push!(C, starting_word)
 #
-# 	for _ in 1:length(𝒰)
-# 		C′ = Tuple[]
-# 		for _ in 1:m
-# 			push_if_allowed!(C, C′, rand(𝒰), d) # if allowed in C, push to C′
-# 		end
-# 		isempty(C′) && break
-# 		# [push_if_allowed!(C, C′, w, d) for _ in 1:m]
-# 		distances = [hamming_distance(wᵢ, wⱼ) for wᵢ in C, wⱼ in C′]
-# 		best_word = getindex(C′, getindex(argmaxminima(distances, dims = 1), 2))
-# 		push!(C, best_word)
-# 	end
+#   for _ in 1:length(𝒰)
+#       C′ = Tuple[]
+#       for _ in 1:m
+#           push_if_allowed!(C, C′, rand(𝒰), d) # if allowed in C, push to C′
+#       end
+#       isempty(C′) && break
+#       # [push_if_allowed!(C, C′, w, d) for _ in 1:m]
+#       distances = [hamming_distance(wᵢ, wⱼ) for wᵢ in C, wⱼ in C′]
+#       best_word = getindex(C′, getindex(argmaxminima(distances, dims = 1), 2))
+#       push!(C, best_word)
+#   end
 #
-# 	return C
+#   return C
 # end
 
 # get_codewords_random(𝒰::UniverseParameters, d::Int) = get_codewords_random(joinpath(tempdir(), "mmap.bin"), 𝒰, d)
@@ -453,9 +452,9 @@ function get_codewords(G::AbstractArray, m::Int)
 end
 
 # function obtain_maximal_code(𝒰::UniverseParameters, d::Int)
-# 	adj_matrix = Matrix{Int8}(undef, length(𝒰), length(𝒰))
+#   adj_matrix = Matrix{Int8}(undef, length(𝒰), length(𝒰))
 #
-# 	for u in CodeUniverseIterator(𝒰), u′ in CodeUniverseIterator(𝒰)
-# 		distance = hamming_distance(u, u′)
-# 	end
+#   for u in CodeUniverseIterator(𝒰), u′ in CodeUniverseIterator(𝒰)
+#       distance = hamming_distance(u, u′)
+#   end
 # end
