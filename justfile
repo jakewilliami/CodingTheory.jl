@@ -12,7 +12,6 @@ test_dir := project_dir / "test/"
 test_file := test_dir / "runtests.jl"
 docs_dir := project_dir / "docs/"
 docs_mk_file := docs_dir / "make.jl"
-dev_dir := project_dir / "dev/"
 bench_dir := project_dir / "perf/"
 bench_file := bench_dir / "runbenchmarks.jl"
 standard_instantiate_code := """
@@ -47,7 +46,7 @@ bench: (instantiate-dev bench_dir)
 [group: 'ci']
 fmt:
     # https://github.com/invenia/BlueStyle
-    julia --project={{dev_dir}} -e 'using JuliaFormatter; format("{{project_dir}}", style=BlueStyle())'
+    julia --project=@JuliaFormatter -e 'using JuliaFormatter; format("{{project_dir}}", style=BlueStyle())'
 
 # Instantiate main project
 instantiate:
