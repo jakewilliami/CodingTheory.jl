@@ -1,5 +1,4 @@
-include(joinpath(dirname(@__DIR__), "src", "CodingTheory.jl"))
-using Documenter, .CodingTheory
+using CodingTheory, Documenter
 
 Documenter.makedocs(
     clean = true,
