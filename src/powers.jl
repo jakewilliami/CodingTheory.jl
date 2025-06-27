@@ -9,7 +9,7 @@ Given an integer `n`, returns `true` or `false` depending on whether or not it i
 
 Here, a perfect power is some number of the form ``a^b``, where ``a, b \in \mathbb{N}``, and ``b > 1``.
 
-This function is a wrapper around [Hecke.jl's really excellent and efficient `ispower` function](https://github.com/thofma/Hecke.jl/blob/master/src/Misc/Integer.jl#L413-L443).
+This function is a wrapper around [Hecke.jl's really excellent and efficient `ispower` function](https://github.com/thofma/Hecke.jl/blob/600fa8b/src/Misc/Integer.jl#L413-L443).
 
 !!! note
 	
@@ -34,7 +34,7 @@ Given an integer `n`, returns `true` or `false` depending on whether or not it i
 
 A prime power is some number of the form ``p^b``, where ``p, b \in \mathbb{N}``, and ``p`` is a prime number``.
 
-This function is a wrapper around [Hecke.jl's really excellent and effcient `ispower` function](https://github.com/thofma/Hecke.jl/blob/master/src/Misc/Integer.jl#L756-L769).
+This function is a wrapper around [Hecke.jl's really excellent and effcient `ispower` function](https://github.com/thofma/Hecke.jl/blob/600fa8b/src/Misc/Integer.jl#L756-L769).
 
 See also: `CodingTheory.isperfectpower`.
 """
